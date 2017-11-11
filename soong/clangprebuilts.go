@@ -104,8 +104,8 @@ func libfuzzerPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 	p.Export_include_dirs = []string{headerDir}
 	p.Target.Android_arm.Srcs = []string{path.Join(libDir, "arm/libFuzzer.a")}
 	p.Target.Android_arm64.Srcs = []string{path.Join(libDir, "aarch64/libFuzzer.a")}
-	p.Target.Android_mips.Srcs = []string{path.Join(libDir, "mips/libFuzzer.a")}
-	p.Target.Android_mips64.Srcs = []string{path.Join(libDir, "mips64/libFuzzer.a")}
+	p.Target.Android_mips.Srcs = []string{path.Join(libDir, "mipsel/libFuzzer.a")}
+	p.Target.Android_mips64.Srcs = []string{path.Join(libDir, "mips64el/libFuzzer.a")}
 	p.Target.Android_x86.Srcs = []string{path.Join(libDir, "i386/libFuzzer.a")}
 	p.Target.Android_x86_64.Srcs = []string{path.Join(libDir, "x86_64/libFuzzer.a")}
 	ctx.AppendProperties(p)
@@ -119,16 +119,16 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext) {
 	libDir, _ := getClangDirs(ctx)
 
 	type props struct {
-		Srcs []string
+		Srcs               []string
 		System_shared_libs []string
-		Sanitize struct {
-			Never bool
+		Sanitize           struct {
+			Never *bool
 		}
 		Strip struct {
-			None bool
+			None *bool
 		}
 		Pack_relocations *bool
-		Stl *string
+		Stl              *string
 	}
 
 	p := &props{}
@@ -137,8 +137,8 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext) {
 
 	p.Srcs = []string{path.Join(libDir, name+".so")}
 	p.System_shared_libs = []string{}
-	p.Sanitize.Never = true
-	p.Strip.None = true
+	p.Sanitize.Never = proptools.BoolPtr(true)
+	p.Strip.None = proptools.BoolPtr(true)
 	disable := false
 	p.Pack_relocations = &disable
 	none := "none"
@@ -156,7 +156,7 @@ func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 	name := strings.Replace(ctx.ModuleName(), "prebuilt_", "", 1)
 
 	p := &props{}
-	p.Srcs = []string{path.Join(libDir, name + ".a")}
+	p.Srcs = []string{path.Join(libDir, name+".a")}
 	ctx.AppendProperties(p)
 }
 
