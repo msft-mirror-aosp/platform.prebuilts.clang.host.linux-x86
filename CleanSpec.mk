@@ -48,3 +48,7 @@
 # NEWER CLEAN STEPS MUST BE AT THE END OF THE LIST
 # ************************************************
 $(call add-clean-step, rm -rf $(PRODUCT_OUT)/vendor/lib/libclang_rt*)
+
+
+# libclang_rt.asan libs are now LLNDK, and thus should be removed from /system/lib/vndk
+$(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/lib/vndk/libclang_rt.asan*)

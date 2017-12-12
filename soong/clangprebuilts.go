@@ -39,6 +39,8 @@ func init() {
 		libClangRtPrebuiltLibrarySharedFactory)
 	android.RegisterModuleType("libclang_rt_prebuilt_library_static",
 		libClangRtPrebuiltLibraryStaticFactory)
+	android.RegisterModuleType("libclang_rt_llndk_library",
+		libClangRtLLndkLibraryFactory)
 }
 
 func getClangDirs(ctx android.LoadHookContext) (libDir string, headerDir string) {
@@ -160,6 +162,19 @@ func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 	ctx.AppendProperties(p)
 }
 
+func libClangRtLLndkLibrary(ctx android.LoadHookContext) {
+	libDir, _ :=  getClangDirs(ctx)
+
+	type props struct {
+		Symbol_file *string
+	}
+
+	p := &props{}
+	symbol_file := string(path.Join(libDir, strings.Replace(ctx.ModuleName(), ".llndk", "", 1) + ".map.txt"))
+	p.Symbol_file = proptools.StringPtr(symbol_file)
+	ctx.AppendProperties(p)
+}
+
 func libfuzzerPrebuiltLibraryStaticFactory() android.Module {
 	module, _ := cc.NewPrebuiltStaticLibrary(android.HostAndDeviceSupported)
 	android.AddLoadHook(module, libfuzzerPrebuiltLibraryStatic)
@@ -175,5 +190,11 @@ func libClangRtPrebuiltLibrarySharedFactory() android.Module {
 func libClangRtPrebuiltLibraryStaticFactory() android.Module {
 	module, _ := cc.NewPrebuiltStaticLibrary(android.DeviceSupported)
 	android.AddLoadHook(module, libClangRtPrebuiltLibraryStatic)
+	return module.Init()
+}
+
+func libClangRtLLndkLibraryFactory() android.Module {
+	module := cc.NewLLndkStubLibrary()
+	android.AddLoadHook(module, libClangRtLLndkLibrary)
 	return module.Init()
 }
