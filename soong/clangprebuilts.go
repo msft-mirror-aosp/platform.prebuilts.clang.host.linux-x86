@@ -28,13 +28,14 @@ import (
 	"android/soong/cc/config"
 )
 
-// This module is used to generate libfuzzer static libraries and libclang_rt.* shared libraries. When
-// LLVM_PREBUILTS_VERSION and LLVM_RELEASE_VERSION are set, the library will
-// generated from the given path.
+// This module is used to generate libfuzzer, libomp static libraries and
+// libclang_rt.* shared libraries. When LLVM_PREBUILTS_VERSION and
+// LLVM_RELEASE_VERSION are set, the library will generated from the given
+// path.
 
 func init() {
-	android.RegisterModuleType("libfuzzer_prebuilt_library_static",
-		libfuzzerPrebuiltLibraryStaticFactory)
+	android.RegisterModuleType("llvm_prebuilt_library_static",
+		llvmPrebuiltLibraryStaticFactory)
 	android.RegisterModuleType("libclang_rt_prebuilt_library_shared",
 		libClangRtPrebuiltLibrarySharedFactory)
 	android.RegisterModuleType("libclang_rt_prebuilt_library_static",
@@ -43,16 +44,18 @@ func init() {
 		libClangRtLLndkLibraryFactory)
 }
 
-func getClangDirs(ctx android.LoadHookContext) (libDir string, headerDir string) {
-	clangDir := path.Join(
+func getClangPrebuiltDir(ctx android.LoadHookContext) string {
+	return path.Join(
 		"./",
 		ctx.AConfig().GetenvWithDefault("LLVM_PREBUILTS_VERSION", config.ClangDefaultVersion),
 	)
-	headerDir = path.Join(clangDir, "prebuilt_include", "llvm", "lib", "Fuzzer")
+}
+
+func getClangResourceDir(ctx android.LoadHookContext) string {
+	clangDir := getClangPrebuiltDir(ctx)
 	releaseVersion := ctx.AConfig().GetenvWithDefault("LLVM_RELEASE_VERSION",
 		config.ClangDefaultShortVersion)
-	libDir = path.Join(clangDir, "lib64", "clang", releaseVersion, "lib", "linux")
-	return
+	return path.Join(clangDir, "lib64", "clang", releaseVersion, "lib", "linux")
 }
 
 type archProps struct {
@@ -76,23 +79,25 @@ type archProps struct {
 	}
 }
 
-func libfuzzerPrebuiltLibraryStatic(ctx android.LoadHookContext) {
+func llvmPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 	// Because of b/38393317, changing clang base dir is not allowed.  Mark
-	// libFuzzer as disabled if LLVM_PREBUILTS_BASE is used to specify a
-	// different base dir other than $ANDROID_BUILD_TOP/prebuilts/clang/host
-	// (i.e. $CWD/..).  libFuzzer would be unavailable only for the stage2
-	// of the aosp-llvm build, where it is not needed.
-	var enableLibFuzzer bool
-	enableLibFuzzer = true
+	// libFuzzer and libomp as disabled if LLVM_PREBUILTS_BASE is used to
+	// specify a different base dir other than
+	// $ANDROID_BUILD_TOP/prebuilts/clang/host (i.e. $CWD/..).  libFuzzer
+	// would be unavailable only for the stage2 of the aosp-llvm build,
+	// where it is not needed.
+	var enableLLVMPrebuilts bool
+	enableLLVMPrebuilts = true
 	if prebuiltsBase := ctx.AConfig().Getenv("LLVM_PREBUILTS_BASE"); prebuiltsBase != "" {
 		prebuiltsBaseAbs, err1 := filepath.Abs(prebuiltsBase)
 		moduleBaseAbs, err2 := filepath.Abs("..")
 		if err1 == nil && err2 == nil && prebuiltsBaseAbs != moduleBaseAbs {
-			enableLibFuzzer = false
+			enableLLVMPrebuilts = false
 		}
 	}
 
-	libDir, headerDir := getClangDirs(ctx)
+	libDir := getClangResourceDir(ctx)
+	name := strings.TrimPrefix(ctx.ModuleName(), "prebuilt_") + ".a"
 
 	type props struct {
 		Enabled             *bool
@@ -102,14 +107,18 @@ func libfuzzerPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 
 	p := &props{}
 
-	p.Enabled = proptools.BoolPtr(enableLibFuzzer)
-	p.Export_include_dirs = []string{headerDir}
-	p.Target.Android_arm.Srcs = []string{path.Join(libDir, "arm/libFuzzer.a")}
-	p.Target.Android_arm64.Srcs = []string{path.Join(libDir, "aarch64/libFuzzer.a")}
-	p.Target.Android_mips.Srcs = []string{path.Join(libDir, "mipsel/libFuzzer.a")}
-	p.Target.Android_mips64.Srcs = []string{path.Join(libDir, "mips64el/libFuzzer.a")}
-	p.Target.Android_x86.Srcs = []string{path.Join(libDir, "i386/libFuzzer.a")}
-	p.Target.Android_x86_64.Srcs = []string{path.Join(libDir, "x86_64/libFuzzer.a")}
+	p.Enabled = proptools.BoolPtr(enableLLVMPrebuilts)
+	if (name == "libFuzzer.a") {
+		headerDir := path.Join(getClangPrebuiltDir(ctx), "prebuilt_include", "llvm", "lib", "Fuzzer")
+		p.Export_include_dirs = []string{headerDir}
+	}
+
+	p.Target.Android_arm.Srcs = []string{path.Join(libDir, "arm", name)}
+	p.Target.Android_arm64.Srcs = []string{path.Join(libDir, "aarch64", name)}
+	p.Target.Android_mips.Srcs = []string{path.Join(libDir, "mipsel", name)}
+	p.Target.Android_mips64.Srcs = []string{path.Join(libDir, "mips64el", name)}
+	p.Target.Android_x86.Srcs = []string{path.Join(libDir, "i386", name)}
+	p.Target.Android_x86_64.Srcs = []string{path.Join(libDir, "x86_64", name)}
 	ctx.AppendProperties(p)
 }
 
@@ -118,7 +127,7 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext) {
 		return
 	}
 
-	libDir, _ := getClangDirs(ctx)
+	libDir := getClangResourceDir(ctx)
 
 	type props struct {
 		Srcs               []string
@@ -135,7 +144,7 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext) {
 
 	p := &props{}
 
-	name := strings.Replace(ctx.ModuleName(), "prebuilt_", "", 1)
+	name := strings.TrimPrefix(ctx.ModuleName(), "prebuilt_")
 
 	p.Srcs = []string{path.Join(libDir, name+".so")}
 	p.System_shared_libs = []string{}
@@ -149,13 +158,13 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext) {
 }
 
 func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext) {
-	libDir, _ := getClangDirs(ctx)
+	libDir := getClangResourceDir(ctx)
 
 	type props struct {
 		Srcs []string
 	}
 
-	name := strings.Replace(ctx.ModuleName(), "prebuilt_", "", 1)
+	name := strings.TrimPrefix(ctx.ModuleName(), "prebuilt_")
 
 	p := &props{}
 	p.Srcs = []string{path.Join(libDir, name+".a")}
@@ -163,21 +172,21 @@ func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 }
 
 func libClangRtLLndkLibrary(ctx android.LoadHookContext) {
-	libDir, _ :=  getClangDirs(ctx)
+	libDir := getClangResourceDir(ctx)
 
 	type props struct {
 		Symbol_file *string
 	}
 
 	p := &props{}
-	symbol_file := string(path.Join(libDir, strings.Replace(ctx.ModuleName(), ".llndk", "", 1) + ".map.txt"))
+	symbol_file := string(path.Join(libDir, strings.TrimSuffix(ctx.ModuleName(), ".llndk") + ".map.txt"))
 	p.Symbol_file = proptools.StringPtr(symbol_file)
 	ctx.AppendProperties(p)
 }
 
-func libfuzzerPrebuiltLibraryStaticFactory() android.Module {
-	module, _ := cc.NewPrebuiltStaticLibrary(android.HostAndDeviceSupported)
-	android.AddLoadHook(module, libfuzzerPrebuiltLibraryStatic)
+func llvmPrebuiltLibraryStaticFactory() android.Module {
+	module, _ := cc.NewPrebuiltStaticLibrary(android.DeviceSupported)
+	android.AddLoadHook(module, llvmPrebuiltLibraryStatic)
 	return module.Init()
 }
 

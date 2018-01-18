@@ -14,8 +14,16 @@
 // limitations under the License.
 //
 
-libfuzzer_prebuilt_library_static {
+llvm_prebuilt_library_static {
     name: "libFuzzer",
+    sanitize: {
+        never: true,
+    },
+}
+
+llvm_prebuilt_library_static {
+    name: "libomp",
+    vendor_available: true,
     sanitize: {
         never: true,
     },
@@ -192,6 +200,7 @@ libclang_rt_prebuilt_library_shared {
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-arm-android",
     enabled: false,
+    vendor_available: true,
     arch: {
         arm: {
             enabled: true,
@@ -202,6 +211,7 @@ libclang_rt_prebuilt_library_static {
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-aarch64-android",
     enabled: false,
+    vendor_available: true,
     arch: {
         arm64: {
             enabled: true,
@@ -212,6 +222,7 @@ libclang_rt_prebuilt_library_static {
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-mips-android",
     enabled: false,
+    vendor_available: true,
     arch: {
         mips: {
             enabled: true,
@@ -222,6 +233,7 @@ libclang_rt_prebuilt_library_static {
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-mips64-android",
     enabled: false,
+    vendor_available: true,
     arch: {
         mips64: {
             enabled: true,
@@ -232,6 +244,7 @@ libclang_rt_prebuilt_library_static {
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-i686-android",
     enabled: false,
+    vendor_available: true,
     arch: {
         x86: {
             enabled: true,
@@ -242,6 +255,7 @@ libclang_rt_prebuilt_library_static {
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-x86_64-android",
     enabled: false,
+    vendor_available: true,
     arch: {
         x86_64: {
             enabled: true,
