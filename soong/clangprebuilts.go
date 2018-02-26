@@ -18,7 +18,6 @@ package clangprebuilts
 
 import (
 	"path"
-	"path/filepath"
 	"strings"
 
 	"github.com/google/blueprint/proptools"
@@ -80,34 +79,16 @@ type archProps struct {
 }
 
 func llvmPrebuiltLibraryStatic(ctx android.LoadHookContext) {
-	// Because of b/38393317, changing clang base dir is not allowed.  Mark
-	// libFuzzer and libomp as disabled if LLVM_PREBUILTS_BASE is used to
-	// specify a different base dir other than
-	// $ANDROID_BUILD_TOP/prebuilts/clang/host (i.e. $CWD/..).  libFuzzer
-	// would be unavailable only for the stage2 of the aosp-llvm build,
-	// where it is not needed.
-	var enableLLVMPrebuilts bool
-	enableLLVMPrebuilts = true
-	if prebuiltsBase := ctx.AConfig().Getenv("LLVM_PREBUILTS_BASE"); prebuiltsBase != "" {
-		prebuiltsBaseAbs, err1 := filepath.Abs(prebuiltsBase)
-		moduleBaseAbs, err2 := filepath.Abs("..")
-		if err1 == nil && err2 == nil && prebuiltsBaseAbs != moduleBaseAbs {
-			enableLLVMPrebuilts = false
-		}
-	}
-
 	libDir := getClangResourceDir(ctx)
 	name := strings.TrimPrefix(ctx.ModuleName(), "prebuilt_") + ".a"
 
 	type props struct {
-		Enabled             *bool
 		Export_include_dirs []string
 		Target              archProps
 	}
 
 	p := &props{}
 
-	p.Enabled = proptools.BoolPtr(enableLLVMPrebuilts)
 	if (name == "libFuzzer.a") {
 		headerDir := path.Join(getClangPrebuiltDir(ctx), "prebuilt_include", "llvm", "lib", "Fuzzer")
 		p.Export_include_dirs = []string{headerDir}

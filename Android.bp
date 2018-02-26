@@ -91,26 +91,62 @@ libclang_rt_prebuilt_library_shared {
 
 libclang_rt_llndk_library {
     name: "libclang_rt.asan-arm-android",
+    enabled: false,
+    arch: {
+        arm: {
+            enabled: true,
+        },
+    },
 }
 
 libclang_rt_llndk_library {
     name: "libclang_rt.asan-aarch64-android",
+    enabled: false,
+    arch: {
+        arm64: {
+            enabled: true,
+        },
+    },
 }
 
 libclang_rt_llndk_library {
     name: "libclang_rt.asan-mips-android",
+    enabled: false,
+    arch: {
+        mips: {
+            enabled: true,
+        },
+    },
 }
 
 libclang_rt_llndk_library {
     name: "libclang_rt.asan-mips64-android",
+    enabled: false,
+    arch: {
+        mips64: {
+            enabled: true,
+        },
+    },
 }
 
 libclang_rt_llndk_library {
     name: "libclang_rt.asan-i686-android",
+    enabled: false,
+    arch: {
+        x86: {
+            enabled: true,
+        },
+    },
 }
 
 libclang_rt_llndk_library {
     name: "libclang_rt.asan-x86_64-android",
+    enabled: false,
+    arch: {
+        x86_64: {
+            enabled: true,
+        },
+    },
 }
 
 libclang_rt_prebuilt_library_shared {
