@@ -54,7 +54,7 @@ Prebuilt Versions
 * [clang-4053586](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-4053586/) - May 2017
 * [clang-4393122](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-4393122/) - October 2017
 * [clang-4639204](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-4639204/) - March 2018
-* [clang-4667116](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-4667116/) - March 2018 (under testing)
+* [clang-4679922](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-4679922/) - March 2018 (under testing)
 
 More Information
 ----------------
