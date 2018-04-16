@@ -8,7 +8,8 @@ LLVM Users
 ----------
 
 * [**Android Platform**](https://android.googlesource.com/platform/)
-  * Currently clang-4639204
+  * Currently clang-4679922
+  * clang-4691093 for Android P release
   * Look for "ClangDefaultVersion" and/or "clang-" in [build/soong/cc/config/global.go](https://android.googlesource.com/platform/build/soong/+/master/cc/config/global.go/).
     * [Internal cs/ link](https://cs.corp.google.com/android/build/soong/cc/config/global.go?q=ClangDefaultVersion)
 
@@ -30,7 +31,7 @@ LLVM Users
   * Internal-only: Look for "clang-" in [vendor/google/proprietary/scripts/envsetup.sh](https://partner-android.git.corp.google.com/trusty/vendor/google/proprietary/+/master/scripts/envsetup.sh).
 
 * [**Android Emulator**](https://developer.android.com/studio/run/emulator.html)
-  * Currently clang-4053586
+  * Currently clang-4679922
   * Look for "clang-" in [external/qemu/android/scripts/utils/aosp_dir.shi](https://android.googlesource.com/platform/external/qemu/+/emu-master-dev/android/scripts/utils/aosp_dir.shi).
     * Note that they work out of the emu-master-dev branch.
     * [Internal cs/ link](https://cs.corp.google.com/android/external/qemu/android/scripts/utils/aosp_dir.shi?q=clang-)
@@ -54,7 +55,8 @@ Prebuilt Versions
 * [clang-4053586](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-4053586/) - May 2017
 * [clang-4393122](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-4393122/) - October 2017
 * [clang-4639204](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-4639204/) - March 2018
-* [clang-4667116](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-4667116/) - March 2018 (under testing)
+* [clang-4679922](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-4679922/) - March 2018
+* [clang-4691093](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-4691093/) - March 2018 (respin of 4639204)
 
 More Information
 ----------------
