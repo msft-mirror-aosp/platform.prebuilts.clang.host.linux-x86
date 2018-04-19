@@ -17,6 +17,7 @@
 package clangprebuilts
 
 import (
+	"fmt"
 	"path"
 	"strings"
 
@@ -27,12 +28,17 @@ import (
 	"android/soong/cc/config"
 )
 
+const libLLVMSoFormat = "libLLVM-%ssvn.so"
+const libclangSoFormat = "libclang.so.%s"
+const libcxxSoName = "libc++.so.1"
+
 // This module is used to generate libfuzzer, libomp static libraries and
 // libclang_rt.* shared libraries. When LLVM_PREBUILTS_VERSION and
 // LLVM_RELEASE_VERSION are set, the library will generated from the given
 // path.
-
 func init() {
+	android.RegisterModuleType("llvm_host_prebuilt_library_shared",
+		llvmHostPrebuiltLibrarySharedFactory)
 	android.RegisterModuleType("llvm_prebuilt_library_static",
 		llvmPrebuiltLibraryStaticFactory)
 	android.RegisterModuleType("libclang_rt_prebuilt_library_shared",
@@ -41,6 +47,8 @@ func init() {
 		libClangRtPrebuiltLibraryStaticFactory)
 	android.RegisterModuleType("libclang_rt_llndk_library",
 		libClangRtLLndkLibraryFactory)
+	android.RegisterModuleType("llvm_darwin_filegroup",
+		llvmDarwinFileGroupFactory)
 }
 
 func getClangPrebuiltDir(ctx android.LoadHookContext) string {
@@ -55,6 +63,66 @@ func getClangResourceDir(ctx android.LoadHookContext) string {
 	releaseVersion := ctx.AConfig().GetenvWithDefault("LLVM_RELEASE_VERSION",
 		config.ClangDefaultShortVersion)
 	return path.Join(clangDir, "lib64", "clang", releaseVersion, "lib", "linux")
+}
+
+func trimVersionNumbers(ver string, retain int) string {
+	sep := "."
+	versions := strings.Split(ver, sep)
+	return strings.Join(versions[0:retain], sep)
+}
+
+func getHostLibrary(ctx android.LoadHookContext) string {
+	releaseVersion := ctx.AConfig().GetenvWithDefault("LLVM_RELEASE_VERSION",
+		config.ClangDefaultShortVersion)
+
+	switch ctx.ModuleName() {
+	case "prebuilt_libLLVM_host":
+		versionStr := trimVersionNumbers(releaseVersion, 2)
+		return fmt.Sprintf(libLLVMSoFormat, versionStr)
+	case "prebuilt_libclang_host":
+		versionStr := trimVersionNumbers(releaseVersion, 1)
+		return fmt.Sprintf(libclangSoFormat, versionStr)
+	case "prebuilt_libc++_host":
+		return libcxxSoName
+	default:
+		ctx.ModuleErrorf("unsupported host LLVM module: " + ctx.ModuleName())
+		return ""
+	}
+}
+
+func llvmHostPrebuiltLibraryShared(ctx android.LoadHookContext) {
+	moduleName := ctx.ModuleName()
+	enabled := ctx.AConfig().IsEnvTrue("LLVM_BUILD_HOST_TOOLS")
+
+	clangDir := getClangPrebuiltDir(ctx)
+
+	headerDir := path.Join(clangDir, "include")
+	if moduleName == "prebuilt_libc++_host" {
+		headerDir = path.Join(headerDir, "c++", "v1")
+	}
+
+	linuxLibrary := path.Join(clangDir, "lib64", getHostLibrary(ctx))
+	darwinFileGroup := strings.Split(moduleName, "_")[1] + "_darwin"
+
+	type props struct {
+		Enabled *bool
+		Export_include_dirs []string
+		Target struct {
+			Linux_glibc_x86_64 struct {
+				Srcs []string
+			}
+			Darwin_x86_64 struct {
+				Srcs []string
+			}
+		}
+	}
+
+	p := &props{}
+	p.Enabled = proptools.BoolPtr(enabled)
+	p.Export_include_dirs = []string{headerDir}
+	p.Target.Linux_glibc_x86_64.Srcs = []string{linuxLibrary}
+	p.Target.Darwin_x86_64.Srcs = []string{":" + darwinFileGroup}
+	ctx.AppendProperties(p)
 }
 
 type archProps struct {
@@ -165,9 +233,32 @@ func libClangRtLLndkLibrary(ctx android.LoadHookContext) {
 	ctx.AppendProperties(p)
 }
 
+func llvmDarwinFileGroup(ctx android.LoadHookContext) {
+	clangDir := getClangPrebuiltDir(ctx)
+	libName := strings.TrimSuffix(ctx.ModuleName(), "_darwin")
+	if libName == "libc++" {
+		libName += ".1"
+	}
+	lib := path.Join(clangDir, "lib64", libName + ".dylib")
+
+	type props struct {
+		Srcs []string
+	}
+
+	p := &props{}
+	p.Srcs = []string{lib}
+	ctx.AppendProperties(p)
+}
+
 func llvmPrebuiltLibraryStaticFactory() android.Module {
 	module, _ := cc.NewPrebuiltStaticLibrary(android.DeviceSupported)
 	android.AddLoadHook(module, llvmPrebuiltLibraryStatic)
+	return module.Init()
+}
+
+func llvmHostPrebuiltLibrarySharedFactory() android.Module {
+	module, _ := cc.NewPrebuiltSharedLibrary(android.HostSupported)
+	android.AddLoadHook(module, llvmHostPrebuiltLibraryShared)
 	return module.Init()
 }
 
@@ -187,4 +278,10 @@ func libClangRtLLndkLibraryFactory() android.Module {
 	module := cc.NewLLndkStubLibrary()
 	android.AddLoadHook(module, libClangRtLLndkLibrary)
 	return module.Init()
+}
+
+func llvmDarwinFileGroupFactory() android.Module {
+	module := android.FileGroupFactory()
+	android.AddLoadHook(module, llvmDarwinFileGroup)
+	return module
 }
