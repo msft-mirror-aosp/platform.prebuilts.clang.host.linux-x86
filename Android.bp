@@ -383,6 +383,40 @@ libclang_rt_prebuilt_library_static {
     },
 }
 
+// -----------------------------------------------------------------------------
+// Export shared libraries for host tools (libLLVM, libclang, libc++).  These
+// are exported only when the LLVM_BUILD_HOST_TOOLS environment variable is set.
+// -----------------------------------------------------------------------------
+
+// Export libLLVM shared library
+llvm_host_prebuilt_library_shared {
+    name: "libLLVM_host",
+    sanitize: {
+        never: true,
+    },
+    compile_multilib: "64",
+    shared_libs: ["libc++_host"],
+}
+
+// Export libclang shared library
+llvm_host_prebuilt_library_shared {
+    name: "libclang_host",
+    sanitize: {
+        never: true,
+    },
+    compile_multilib: "64",
+    shared_libs: ["libc++_host"],
+}
+
+// Export libc++.so for the host LLVM tools
+llvm_host_prebuilt_library_shared {
+    name: "libc++_host",
+    sanitize: {
+        never: true,
+    },
+    compile_multilib: "64",
+}
+
 subdirs = [
     "soong",
 ]
