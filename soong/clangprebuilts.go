@@ -272,7 +272,7 @@ func libClangRtPrebuiltLibrarySharedFactory() android.Module {
 }
 
 func libClangRtPrebuiltLibraryStaticFactory() android.Module {
-	module, _ := cc.NewPrebuiltStaticLibrary(android.DeviceSupported)
+	module, _ := cc.NewPrebuiltStaticLibrary(android.HostAndDeviceSupported)
 	android.AddLoadHook(module, libClangRtPrebuiltLibraryStatic)
 	return module.Init()
 }

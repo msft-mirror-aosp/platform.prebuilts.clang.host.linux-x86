@@ -383,6 +383,28 @@ libclang_rt_prebuilt_library_static {
     },
 }
 
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.profile-x86_64",
+    enabled: false,
+    host_supported: true,
+    target: {
+        linux_glibc_x86_64: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.profile-i386",
+    enabled: false,
+    host_supported: true,
+    target: {
+        linux_glibc_x86: {
+            enabled: true,
+        },
+    },
+}
+
 // -----------------------------------------------------------------------------
 // Export shared libraries for host tools (libLLVM, libclang, libc++).  These
 // are exported only when the LLVM_BUILD_HOST_TOOLS environment variable is set.
