@@ -19,7 +19,7 @@ LLVM Users
     * [Internal cs/ link](https://cs.corp.google.com/android/build/soong/cc/config/global.go?q=RSClangVersion)
 
 * [**Android Linux Kernel**](http://go/android-kernel)
-  * Currently clang-4639204
+  * Currently clang-4679922
   * Look for "clang-" in [4.14 kernel/hikey-linaro/build.config.clang](https://android.googlesource.com/kernel/hikey-linaro/+/android-hikey-linaro-4.14/build.config.clang).
   * Look for "clang-" in [4.9 kernel/hikey-linaro/build.config.clang](https://android.googlesource.com/kernel/hikey-linaro/+/android-hikey-linaro-4.9/build.config.clang).
   * Look for "clang-" in [4.4 kernel/hikey-linaro/build.config.clang](https://android.googlesource.com/kernel/hikey-linaro/+/android-hikey-linaro-4.4/build.config.clang).
