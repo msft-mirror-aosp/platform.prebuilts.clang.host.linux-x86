@@ -132,12 +132,6 @@ type archProps struct {
 	Android_arm64 struct {
 		Srcs []string
 	}
-	Android_mips struct {
-		Srcs []string
-	}
-	Android_mips64 struct {
-		Srcs []string
-	}
 	Android_x86 struct {
 		Srcs []string
 	}
@@ -164,8 +158,6 @@ func llvmPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 
 	p.Target.Android_arm.Srcs = []string{path.Join(libDir, "arm", name)}
 	p.Target.Android_arm64.Srcs = []string{path.Join(libDir, "aarch64", name)}
-	p.Target.Android_mips.Srcs = []string{path.Join(libDir, "mipsel", name)}
-	p.Target.Android_mips64.Srcs = []string{path.Join(libDir, "mips64el", name)}
 	p.Target.Android_x86.Srcs = []string{path.Join(libDir, "i386", name)}
 	p.Target.Android_x86_64.Srcs = []string{path.Join(libDir, "x86_64", name)}
 	ctx.AppendProperties(p)
