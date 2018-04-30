@@ -245,9 +245,12 @@ func llvmDarwinFileGroup(ctx android.LoadHookContext) {
 		Srcs []string
 	}
 
-	p := &props{}
-	p.Srcs = []string{lib}
-	ctx.AppendProperties(p)
+	libPath := android.ExistentPathForSource(ctx, ctx.ModuleDir(), lib)
+	if libPath.Valid() {
+		p := &props{}
+		p.Srcs = []string{lib}
+		ctx.AppendProperties(p)
+	}
 }
 
 func llvmPrebuiltLibraryStaticFactory() android.Module {
@@ -269,7 +272,7 @@ func libClangRtPrebuiltLibrarySharedFactory() android.Module {
 }
 
 func libClangRtPrebuiltLibraryStaticFactory() android.Module {
-	module, _ := cc.NewPrebuiltStaticLibrary(android.DeviceSupported)
+	module, _ := cc.NewPrebuiltStaticLibrary(android.HostAndDeviceSupported)
 	android.AddLoadHook(module, libClangRtPrebuiltLibraryStatic)
 	return module.Init()
 }
