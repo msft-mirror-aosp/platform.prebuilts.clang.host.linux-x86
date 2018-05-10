@@ -8,7 +8,7 @@ LLVM Users
 ----------
 
 * [**Android Platform**](https://android.googlesource.com/platform/)
-  * Currently clang-4679922
+  * Currently clang-r328903
   * clang-4691093 for Android P release
   * Look for "ClangDefaultVersion" and/or "clang-" in [build/soong/cc/config/global.go](https://android.googlesource.com/platform/build/soong/+/master/cc/config/global.go/).
     * [Internal cs/ link](https://cs.corp.google.com/android/build/soong/cc/config/global.go?q=ClangDefaultVersion)
@@ -19,7 +19,7 @@ LLVM Users
     * [Internal cs/ link](https://cs.corp.google.com/android/build/soong/cc/config/global.go?q=RSClangVersion)
 
 * [**Android Linux Kernel**](http://go/android-kernel)
-  * Currently clang-4639204
+  * Currently clang-4679922
   * Look for "clang-" in [4.14 kernel/hikey-linaro/build.config.clang](https://android.googlesource.com/kernel/hikey-linaro/+/android-hikey-linaro-4.14/build.config.clang).
   * Look for "clang-" in [4.9 kernel/hikey-linaro/build.config.clang](https://android.googlesource.com/kernel/hikey-linaro/+/android-hikey-linaro-4.9/build.config.clang).
   * Look for "clang-" in [4.4 kernel/hikey-linaro/build.config.clang](https://android.googlesource.com/kernel/hikey-linaro/+/android-hikey-linaro-4.4/build.config.clang).
@@ -56,6 +56,7 @@ Prebuilt Versions
 * [clang-4639204](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-4639204/) - March 2018
 * [clang-4679922](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-4679922/) - March 2018
 * [clang-4691093](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-4691093/) - March 2018 (respin of 4639204)
+* [clang-r328903](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-r328903/) - May 2018
 
 More Information
 ----------------
