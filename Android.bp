@@ -14,8 +14,16 @@
 // limitations under the License.
 //
 
-libfuzzer_prebuilt_library_static {
+llvm_prebuilt_library_static {
     name: "libFuzzer",
+    sanitize: {
+        never: true,
+    },
+}
+
+llvm_prebuilt_library_static {
+    name: "libomp",
+    vendor_available: true,
     sanitize: {
         never: true,
     },
@@ -36,26 +44,6 @@ libclang_rt_prebuilt_library_shared {
     enabled: false,
     arch: {
         arm64: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.asan-mips-android",
-    enabled: false,
-    arch: {
-        mips: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.asan-mips64-android",
-    enabled: false,
-    arch: {
-        mips64: {
             enabled: true,
         },
     },
@@ -83,26 +71,42 @@ libclang_rt_prebuilt_library_shared {
 
 libclang_rt_llndk_library {
     name: "libclang_rt.asan-arm-android",
+    enabled: false,
+    arch: {
+        arm: {
+            enabled: true,
+        },
+    },
 }
 
 libclang_rt_llndk_library {
     name: "libclang_rt.asan-aarch64-android",
-}
-
-libclang_rt_llndk_library {
-    name: "libclang_rt.asan-mips-android",
-}
-
-libclang_rt_llndk_library {
-    name: "libclang_rt.asan-mips64-android",
+    enabled: false,
+    arch: {
+        arm64: {
+            enabled: true,
+        },
+    },
 }
 
 libclang_rt_llndk_library {
     name: "libclang_rt.asan-i686-android",
+    enabled: false,
+    arch: {
+        x86: {
+            enabled: true,
+        },
+    },
 }
 
 libclang_rt_llndk_library {
     name: "libclang_rt.asan-x86_64-android",
+    enabled: false,
+    arch: {
+        x86_64: {
+            enabled: true,
+        },
+    },
 }
 
 libclang_rt_prebuilt_library_shared {
@@ -128,34 +132,6 @@ libclang_rt_prebuilt_library_shared {
     },
     arch: {
         arm64: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.ubsan_standalone-mips-android",
-    enabled: false,
-    vendor_available: true,
-    vndk: {
-        enabled: true,
-    },
-    arch: {
-        mips: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.ubsan_standalone-mips64-android",
-    enabled: false,
-    vendor_available: true,
-    vndk: {
-        enabled: true,
-    },
-    arch: {
-        mips64: {
             enabled: true,
         },
     },
@@ -190,8 +166,65 @@ libclang_rt_prebuilt_library_shared {
 }
 
 libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.ubsan_minimal-arm-android",
+    enabled: false,
+    vendor_available: true,
+    vndk: {
+        enabled: true,
+    },
+    arch: {
+        arm: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.ubsan_minimal-aarch64-android",
+    enabled: false,
+    vendor_available: true,
+    vndk: {
+        enabled: true,
+    },
+    arch: {
+        arm64: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.ubsan_minimal-i686-android",
+    enabled: false,
+    vendor_available: true,
+    vndk: {
+        enabled: true,
+    },
+    arch: {
+        x86: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.ubsan_minimal-x86_64-android",
+    enabled: false,
+    vendor_available: true,
+    vndk: {
+        enabled: true,
+    },
+    arch: {
+        x86_64: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-arm-android",
     enabled: false,
+    vendor_available: true,
     arch: {
         arm: {
             enabled: true,
@@ -202,6 +235,7 @@ libclang_rt_prebuilt_library_static {
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-aarch64-android",
     enabled: false,
+    vendor_available: true,
     arch: {
         arm64: {
             enabled: true,
@@ -210,28 +244,9 @@ libclang_rt_prebuilt_library_static {
 }
 
 libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.profile-mips-android",
-    enabled: false,
-    arch: {
-        mips: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.profile-mips64-android",
-    enabled: false,
-    arch: {
-        mips64: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-i686-android",
     enabled: false,
+    vendor_available: true,
     arch: {
         x86: {
             enabled: true,
@@ -242,11 +257,68 @@ libclang_rt_prebuilt_library_static {
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-x86_64-android",
     enabled: false,
+    vendor_available: true,
     arch: {
         x86_64: {
             enabled: true,
         },
     },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.profile-x86_64",
+    enabled: false,
+    host_supported: true,
+    target: {
+        linux_glibc_x86_64: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.profile-i386",
+    enabled: false,
+    host_supported: true,
+    target: {
+        linux_glibc_x86: {
+            enabled: true,
+        },
+    },
+}
+
+// -----------------------------------------------------------------------------
+// Export shared libraries for host tools (libLLVM, libclang, libc++).  These
+// are exported only when the LLVM_BUILD_HOST_TOOLS environment variable is set.
+// -----------------------------------------------------------------------------
+
+// Export libLLVM shared library
+llvm_host_prebuilt_library_shared {
+    name: "libLLVM_host",
+    sanitize: {
+        never: true,
+    },
+    compile_multilib: "64",
+    shared_libs: ["libc++_host"],
+}
+
+// Export libclang shared library
+llvm_host_prebuilt_library_shared {
+    name: "libclang_host",
+    sanitize: {
+        never: true,
+    },
+    compile_multilib: "64",
+    shared_libs: ["libc++_host"],
+}
+
+// Export libc++.so for the host LLVM tools
+llvm_host_prebuilt_library_shared {
+    name: "libc++_host",
+    sanitize: {
+        never: true,
+    },
+    compile_multilib: "64",
 }
 
 subdirs = [
