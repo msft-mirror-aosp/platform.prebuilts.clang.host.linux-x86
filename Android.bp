@@ -224,6 +224,7 @@ libclang_rt_prebuilt_library_static {
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-arm-android",
     enabled: false,
+    recovery_available: true,
     vendor_available: true,
     arch: {
         arm: {
@@ -235,6 +236,7 @@ libclang_rt_prebuilt_library_static {
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-aarch64-android",
     enabled: false,
+    recovery_available: true,
     vendor_available: true,
     arch: {
         arm64: {
@@ -246,6 +248,7 @@ libclang_rt_prebuilt_library_static {
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-i686-android",
     enabled: false,
+    recovery_available: true,
     vendor_available: true,
     arch: {
         x86: {
@@ -257,6 +260,7 @@ libclang_rt_prebuilt_library_static {
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-x86_64-android",
     enabled: false,
+    recovery_available: true,
     vendor_available: true,
     arch: {
         x86_64: {
