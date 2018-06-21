@@ -224,6 +224,7 @@ libclang_rt_prebuilt_library_static {
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-arm-android",
     enabled: false,
+    recovery_available: true,
     vendor_available: true,
     arch: {
         arm: {
@@ -235,6 +236,7 @@ libclang_rt_prebuilt_library_static {
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-aarch64-android",
     enabled: false,
+    recovery_available: true,
     vendor_available: true,
     arch: {
         arm64: {
@@ -246,6 +248,7 @@ libclang_rt_prebuilt_library_static {
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-i686-android",
     enabled: false,
+    recovery_available: true,
     vendor_available: true,
     arch: {
         x86: {
@@ -257,6 +260,7 @@ libclang_rt_prebuilt_library_static {
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-x86_64-android",
     enabled: false,
+    recovery_available: true,
     vendor_available: true,
     arch: {
         x86_64: {
@@ -282,6 +286,46 @@ libclang_rt_prebuilt_library_static {
     host_supported: true,
     target: {
         linux_glibc_x86: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_shared {
+    name: "libclang_rt.scudo-arm-android",
+    enabled: false,
+    arch: {
+        arm: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_shared {
+    name: "libclang_rt.scudo-aarch64-android",
+    enabled: false,
+    arch: {
+        arm64: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_shared {
+    name: "libclang_rt.scudo-i686-android",
+    enabled: false,
+    arch: {
+        x86: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_shared {
+    name: "libclang_rt.scudo-x86_64-android",
+    enabled: false,
+    arch: {
+        x86_64: {
             enabled: true,
         },
     },
