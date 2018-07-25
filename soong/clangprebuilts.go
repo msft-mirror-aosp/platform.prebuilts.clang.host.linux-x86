@@ -77,7 +77,7 @@ func getHostLibrary(ctx android.LoadHookContext) string {
 
 	switch ctx.ModuleName() {
 	case "prebuilt_libLLVM_host":
-		versionStr := trimVersionNumbers(releaseVersion, 2)
+		versionStr := trimVersionNumbers(releaseVersion, 1)
 		return fmt.Sprintf(libLLVMSoFormat, versionStr)
 	case "prebuilt_libclang_host":
 		versionStr := trimVersionNumbers(releaseVersion, 1)
@@ -114,7 +114,11 @@ func llvmHostPrebuiltLibraryShared(ctx android.LoadHookContext) {
 			Darwin_x86_64 struct {
 				Srcs []string
 			}
+			Windows struct {
+				Enabled *bool
+			}
 		}
+		Stl *string
 	}
 
 	p := &props{}
@@ -122,6 +126,8 @@ func llvmHostPrebuiltLibraryShared(ctx android.LoadHookContext) {
 	p.Export_include_dirs = []string{headerDir}
 	p.Target.Linux_glibc_x86_64.Srcs = []string{linuxLibrary}
 	p.Target.Darwin_x86_64.Srcs = []string{":" + darwinFileGroup}
+	p.Target.Windows.Enabled = proptools.BoolPtr(false)
+	p.Stl = proptools.StringPtr("none")
 	ctx.AppendProperties(p)
 }
 
@@ -193,8 +199,7 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext) {
 	p.Strip.None = proptools.BoolPtr(true)
 	disable := false
 	p.Pack_relocations = &disable
-	none := "none"
-	p.Stl = &none
+	p.Stl = proptools.StringPtr("none")
 	ctx.AppendProperties(p)
 }
 
