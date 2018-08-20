@@ -336,6 +336,11 @@ libclang_rt_prebuilt_library_shared {
 // are exported only when the LLVM_BUILD_HOST_TOOLS environment variable is set.
 // -----------------------------------------------------------------------------
 
+// Export LLVM_BUILD_HOST_TOOLS
+llvm_host_defaults {
+    name: "llvm-build-host-tools-defaults",
+}
+
 // Export libLLVM shared library
 llvm_host_prebuilt_library_shared {
     name: "libLLVM_host",
