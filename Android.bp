@@ -29,6 +29,70 @@ llvm_prebuilt_library_static {
     },
 }
 
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.builtins-arm-android",
+    sdk_version: "minimum",
+    enabled: false,
+    recovery_available: true,
+    vendor_available: true,
+    sanitize: {
+        never: true,
+    },
+    arch: {
+        arm: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.builtins-aarch64-android",
+    sdk_version: "minimum",
+    enabled: false,
+    recovery_available: true,
+    vendor_available: true,
+    sanitize: {
+        never: true,
+    },
+    arch: {
+        arm64: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.builtins-i686-android",
+    sdk_version: "minimum",
+    enabled: false,
+    recovery_available: true,
+    vendor_available: true,
+    sanitize: {
+        never: true,
+    },
+    arch: {
+        x86: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.builtins-x86_64-android",
+    sdk_version: "minimum",
+    enabled: false,
+    recovery_available: true,
+    vendor_available: true,
+    sanitize: {
+        never: true,
+    },
+    arch: {
+        x86_64: {
+            enabled: true,
+        },
+    },
+}
+
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.asan-arm-android",
     enabled: false,
@@ -335,6 +399,11 @@ libclang_rt_prebuilt_library_shared {
 // Export shared libraries for host tools (libLLVM, libclang, libc++).  These
 // are exported only when the LLVM_BUILD_HOST_TOOLS environment variable is set.
 // -----------------------------------------------------------------------------
+
+// Export LLVM_BUILD_HOST_TOOLS
+llvm_host_defaults {
+    name: "llvm-build-host-tools-defaults",
+}
 
 // Export libLLVM shared library
 llvm_host_prebuilt_library_shared {
