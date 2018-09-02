@@ -29,6 +29,70 @@ llvm_prebuilt_library_static {
     },
 }
 
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.builtins-arm-android",
+    sdk_version: "minimum",
+    enabled: false,
+    recovery_available: true,
+    vendor_available: true,
+    sanitize: {
+        never: true,
+    },
+    arch: {
+        arm: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.builtins-aarch64-android",
+    sdk_version: "minimum",
+    enabled: false,
+    recovery_available: true,
+    vendor_available: true,
+    sanitize: {
+        never: true,
+    },
+    arch: {
+        arm64: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.builtins-i686-android",
+    sdk_version: "minimum",
+    enabled: false,
+    recovery_available: true,
+    vendor_available: true,
+    sanitize: {
+        never: true,
+    },
+    arch: {
+        x86: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.builtins-x86_64-android",
+    sdk_version: "minimum",
+    enabled: false,
+    recovery_available: true,
+    vendor_available: true,
+    sanitize: {
+        never: true,
+    },
+    arch: {
+        x86_64: {
+            enabled: true,
+        },
+    },
+}
+
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.asan-arm-android",
     enabled: false,
