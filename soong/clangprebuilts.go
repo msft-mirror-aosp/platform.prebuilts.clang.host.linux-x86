@@ -29,7 +29,8 @@ import (
 )
 
 const libLLVMSoFormat = "libLLVM-%ssvn.so"
-const libclangSoFormat = "libclang.so.%s"
+const libclangSoFormat = "libclang.so.%ssvn"
+const libclangCxxSoFormat = "libclang_cxx.so.%ssvn"
 const libcxxSoName = "libc++.so.1"
 
 // This module is used to generate libfuzzer, libomp static libraries and
@@ -84,6 +85,9 @@ func getHostLibrary(ctx android.LoadHookContext) string {
 	case "prebuilt_libclang_host":
 		versionStr := trimVersionNumbers(releaseVersion, 1)
 		return fmt.Sprintf(libclangSoFormat, versionStr)
+	case "prebuilt_libclang_cxx_host":
+		versionStr := trimVersionNumbers(releaseVersion, 1)
+		return fmt.Sprintf(libclangCxxSoFormat, versionStr)
 	case "prebuilt_libc++_host":
 		return libcxxSoName
 	default:

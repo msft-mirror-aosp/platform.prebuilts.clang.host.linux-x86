@@ -415,9 +415,9 @@ llvm_host_prebuilt_library_shared {
     shared_libs: ["libc++_host"],
 }
 
-// Export libclang shared library
+// Export libclang_cxx shared library
 llvm_host_prebuilt_library_shared {
-    name: "libclang_host",
+    name: "libclang_cxx_host",
     sanitize: {
         never: true,
     },
