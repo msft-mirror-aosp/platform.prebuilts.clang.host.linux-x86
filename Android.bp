@@ -173,6 +173,16 @@ libclang_rt_llndk_library {
     },
 }
 
+libclang_rt_llndk_library {
+    name: "libclang_rt.hwasan-aarch64-android",
+    enabled: false,
+    arch: {
+        arm64: {
+            enabled: true,
+        },
+    },
+}
+
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.ubsan_standalone-arm-android",
     enabled: false,
@@ -280,6 +290,29 @@ libclang_rt_prebuilt_library_static {
     },
     arch: {
         x86_64: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.hwasan_static-aarch64-android",
+    enabled: false,
+    recovery_available: true,
+    vendor_available: true,
+    arch: {
+        arm64: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_shared {
+    name: "libclang_rt.hwasan-aarch64-android",
+    enabled: false,
+    recovery_available: true,
+    arch: {
+        arm64: {
             enabled: true,
         },
     },
