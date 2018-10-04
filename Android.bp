@@ -43,6 +43,7 @@ libclang_rt_prebuilt_library_static {
             enabled: true,
         },
     },
+    stl: "none",
 }
 
 libclang_rt_prebuilt_library_static {
@@ -59,6 +60,7 @@ libclang_rt_prebuilt_library_static {
             enabled: true,
         },
     },
+    stl: "none",
 }
 
 libclang_rt_prebuilt_library_static {
@@ -75,6 +77,7 @@ libclang_rt_prebuilt_library_static {
             enabled: true,
         },
     },
+    stl: "none",
 }
 
 libclang_rt_prebuilt_library_static {
@@ -91,6 +94,7 @@ libclang_rt_prebuilt_library_static {
             enabled: true,
         },
     },
+    stl: "none",
 }
 
 libclang_rt_prebuilt_library_shared {
