@@ -32,6 +32,7 @@ const libLLVMSoFormat = "libLLVM-%ssvn.so"
 const libclangSoFormat = "libclang.so.%ssvn"
 const libclangCxxSoFormat = "libclang_cxx.so.%ssvn"
 const libcxxSoName = "libc++.so.1"
+const libcxxabiSoName = "libc++abi.so.1"
 
 // This module is used to generate libfuzzer, libomp static libraries and
 // libclang_rt.* shared libraries. When LLVM_PREBUILTS_VERSION and
@@ -90,6 +91,8 @@ func getHostLibrary(ctx android.LoadHookContext) string {
 		return fmt.Sprintf(libclangCxxSoFormat, versionStr)
 	case "prebuilt_libc++_host":
 		return libcxxSoName
+	case "prebuilt_libc++abi_host":
+		return libcxxabiSoName
 	default:
 		ctx.ModuleErrorf("unsupported host LLVM module: " + ctx.ModuleName())
 		return ""
@@ -108,7 +111,8 @@ func llvmHostPrebuiltLibraryShared(ctx android.LoadHookContext) {
 	}
 
 	linuxLibrary := path.Join(clangDir, "lib64", getHostLibrary(ctx))
-	darwinFileGroup := strings.Split(moduleName, "_")[1] + "_darwin"
+	darwinFileGroup := strings.TrimSuffix(strings.TrimPrefix(
+		moduleName, "prebuilt_"), "_host") + "_darwin"
 
 	type props struct {
 		Enabled *bool
@@ -239,7 +243,7 @@ func libClangRtLLndkLibrary(ctx android.LoadHookContext) {
 func llvmDarwinFileGroup(ctx android.LoadHookContext) {
 	clangDir := getClangPrebuiltDir(ctx)
 	libName := strings.TrimSuffix(ctx.ModuleName(), "_darwin")
-	if libName == "libc++" {
+	if libName == "libc++" || libName == "libc++abi" {
 		libName += ".1"
 	}
 	lib := path.Join(clangDir, "lib64", libName + ".dylib")

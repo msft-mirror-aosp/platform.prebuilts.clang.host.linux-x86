@@ -541,6 +541,20 @@ llvm_host_prebuilt_library_shared {
         never: true,
     },
     compile_multilib: "64",
+    target: {
+        darwin: {
+            shared_libs: ["libc++abi_host"],
+        },
+    },
+}
+
+// Export libc++abi.so for the host LLVM tools
+llvm_host_prebuilt_library_shared {
+    name: "libc++abi_host",
+    sanitize: {
+        never: true,
+    },
+    compile_multilib: "64",
 }
 
 subdirs = [
