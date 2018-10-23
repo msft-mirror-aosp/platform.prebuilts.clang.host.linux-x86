@@ -115,9 +115,9 @@ func llvmHostPrebuiltLibraryShared(ctx android.LoadHookContext) {
 		moduleName, "prebuilt_"), "_host") + "_darwin"
 
 	type props struct {
-		Enabled *bool
+		Enabled             *bool
 		Export_include_dirs []string
-		Target struct {
+		Target              struct {
 			Linux_glibc_x86_64 struct {
 				Srcs []string
 			}
@@ -167,7 +167,7 @@ func llvmPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 
 	p := &props{}
 
-	if (name == "libFuzzer.a") {
+	if name == "libFuzzer.a" {
 		headerDir := path.Join(getClangPrebuiltDir(ctx), "prebuilt_include", "llvm", "lib", "Fuzzer")
 		p.Export_include_dirs = []string{headerDir}
 	}
@@ -235,7 +235,7 @@ func libClangRtLLndkLibrary(ctx android.LoadHookContext) {
 	}
 
 	p := &props{}
-	symbol_file := string(path.Join(libDir, strings.TrimSuffix(ctx.ModuleName(), ".llndk") + ".map.txt"))
+	symbol_file := string(path.Join(libDir, strings.TrimSuffix(ctx.ModuleName(), ".llndk")+".map.txt"))
 	p.Symbol_file = proptools.StringPtr(symbol_file)
 	ctx.AppendProperties(p)
 }
@@ -246,7 +246,7 @@ func llvmDarwinFileGroup(ctx android.LoadHookContext) {
 	if libName == "libc++" || libName == "libc++abi" {
 		libName += ".1"
 	}
-	lib := path.Join(clangDir, "lib64", libName + ".dylib")
+	lib := path.Join(clangDir, "lib64", libName+".dylib")
 
 	type props struct {
 		Srcs []string
@@ -273,7 +273,7 @@ func llvmHostPrebuiltLibrarySharedFactory() android.Module {
 }
 
 func libClangRtPrebuiltLibrarySharedFactory() android.Module {
-	module, _ := cc.NewPrebuiltSharedLibrary(android.DeviceSupported)
+	module, _ := cc.NewPrebuiltSharedLibrary(android.HostAndDeviceSupported)
 	android.AddLoadHook(module, libClangRtPrebuiltLibraryShared)
 	return module.Init()
 }
