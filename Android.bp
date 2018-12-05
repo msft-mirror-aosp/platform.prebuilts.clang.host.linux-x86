@@ -564,6 +564,12 @@ llvm_host_prebuilt_library_shared {
     compile_multilib: "64",
 }
 
+clang_builtin_headers {
+    name: "clang_builtin_headers_resources",
+    tool_files: ["soong/generate_clang_builtin_headers_resources.sh"],
+    out: ["clang_builtin_headers_resources.inc"],
+}
+
 subdirs = [
     "soong",
 ]

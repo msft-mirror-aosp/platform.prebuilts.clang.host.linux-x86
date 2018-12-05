@@ -26,6 +26,7 @@ import (
 	"android/soong/android"
 	"android/soong/cc"
 	"android/soong/cc/config"
+	"android/soong/genrule"
 )
 
 const libLLVMSoFormat = "libLLVM-%ssvn.so"
@@ -53,6 +54,8 @@ func init() {
 		libClangRtLLndkLibraryFactory)
 	android.RegisterModuleType("llvm_darwin_filegroup",
 		llvmDarwinFileGroupFactory)
+	android.RegisterModuleType("clang_builtin_headers",
+		clangBuiltinHeadersFactory)
 }
 
 func getClangPrebuiltDir(ctx android.LoadHookContext) string {
@@ -311,5 +314,29 @@ func llvmHostDefaults(ctx android.LoadHookContext) {
 func llvmHostDefaultsFactory() android.Module {
 	module := cc.DefaultsFactory()
 	android.AddLoadHook(module, llvmHostDefaults)
+	return module
+}
+
+func clangBuiltinHeaders(ctx android.LoadHookContext) {
+	type props struct {
+		Cmd  *string
+		Srcs []string
+	}
+
+	p := &props{}
+	builtinHeadersDir := path.Join(
+		getClangPrebuiltDir(ctx), "lib64", "clang",
+		ctx.AConfig().GetenvWithDefault("LLVM_RELEASE_VERSION",
+			config.ClangDefaultShortVersion), "include")
+	s := "$(location) " + path.Join(ctx.ModuleDir(), builtinHeadersDir) + " $(in) >$(out)"
+	p.Cmd = &s
+
+	p.Srcs = []string{path.Join(builtinHeadersDir, "**", "*.h")}
+	ctx.AppendProperties(p)
+}
+
+func clangBuiltinHeadersFactory() android.Module {
+	module := genrule.GenRuleFactory()
+	android.AddLoadHook(module, clangBuiltinHeaders)
 	return module
 }
