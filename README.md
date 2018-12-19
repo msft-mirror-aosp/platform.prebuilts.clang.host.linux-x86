@@ -8,7 +8,7 @@ LLVM Users
 ----------
 
 * [**Android Platform**](https://android.googlesource.com/platform/)
-  * Currently clang-r339409b
+  * Currently clang-r346389b
   * clang-4691093 for Android P release
   * Look for "ClangDefaultVersion" and/or "clang-" in [build/soong/cc/config/global.go](https://android.googlesource.com/platform/build/soong/+/master/cc/config/global.go/).
     * [Internal cs/ link](https://cs.corp.google.com/android/build/soong/cc/config/global.go?q=ClangDefaultVersion)
@@ -19,14 +19,14 @@ LLVM Users
     * [Internal cs/ link](https://cs.corp.google.com/android/build/soong/cc/config/global.go?q=RSClangVersion)
 
 * [**Android Linux Kernel**](http://go/android-kernel)
-  * Currently clang-4679922
-  * Look for "clang-" in [4.14 kernel/hikey-linaro/build.config.clang](https://android.googlesource.com/kernel/hikey-linaro/+/android-hikey-linaro-4.14/build.config.clang).
-  * Look for "clang-" in [4.9 kernel/hikey-linaro/build.config.clang](https://android.googlesource.com/kernel/hikey-linaro/+/android-hikey-linaro-4.9/build.config.clang).
-  * Look for "clang-" in [4.4 kernel/hikey-linaro/build.config.clang](https://android.googlesource.com/kernel/hikey-linaro/+/android-hikey-linaro-4.4/build.config.clang).
+  * Currently clang-r346389b
+  * Look for "clang-" in [4.19 build configs](https://android.googlesource.com/kernel/common/+/android-4.19/build.config.cuttlefish.aarch64).
+  * Look for "clang-" in [4.14 build configs](https://android.googlesource.com/kernel/common/+/android-4.14/build.config.cuttlefish.aarch64).
+  * Look for "clang-" in [4.9 build configs](https://android.googlesource.com/kernel/common/+/android-4.9/build.config.cuttlefish.aarch64).
   * Internal LLVM developers should look in the partner gerrit for more kernel configurations.
 
 * [**Trusty**](https://source.android.com/security/trusty/)
-  * Currently clang-4639204
+  * Currently clang-r328903
   * Look for "clang-" in [vendor/google/aosp/scripts/envsetup.sh](https://android.googlesource.com/trusty/vendor/google/aosp/+/master/scripts/envsetup.sh).
   * Internal-only: Look for "clang-" in [vendor/google/proprietary/scripts/envsetup.sh](https://partner-android.git.corp.google.com/trusty/vendor/google/proprietary/+/master/scripts/envsetup.sh).
 
@@ -37,11 +37,11 @@ LLVM Users
     * [Internal cs/ link](https://cs.corp.google.com/android/external/qemu/android/scripts/utils/aosp_dir.shi?q=clang-)
 
 * [**Context Hub Runtime Environment (CHRE)**](https://android.googlesource.com/platform/system/chre/)
-  * Currently clang-4639204
+  * Currently clang-r339409b
   * Look in [system/chre/build/arch/x86.mk](https://android.googlesource.com/platform/system/chre/+/master/build/arch/x86.mk#12).
 
 * [**Keymaster (system/keymaster) tests**](https://android.googlesource.com/platform/system/keymaster)
-  * Currently clang-4639204
+  * Currently clang-r339409b
   * Look for "clang-" in system/keymaster/Makefile
     * [Outdated AOSP sources](https://android.googlesource.com/platform/system/keymaster/+/master/Makefile)
     * [Internal sources](https://googleplex-android.googlesource.com/platform/system/keymaster/+/master/Makefile)
@@ -52,12 +52,11 @@ Prebuilt Versions
 -----------------
 
 * [clang-3289846](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-3289846/) - September 2016
-* [clang-4053586](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-4053586/) - May 2017
-* [clang-4639204](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-4639204/) - March 2018
 * [clang-4679922](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-4679922/) - March 2018
-* [clang-4691093](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-4691093/) - March 2018 (respin of 4639204)
 * [clang-r328903](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-r328903/) - May 2018
 * [clang-r339409b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-r339409b/) - October 2018
+* [clang-r344140b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-r344140b/) - November 2018
+* [clang-r346389b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-r346389b/) - December 2018
 
 More Information
 ----------------
