@@ -26,11 +26,14 @@ import (
 	"android/soong/android"
 	"android/soong/cc"
 	"android/soong/cc/config"
+	"android/soong/genrule"
 )
 
 const libLLVMSoFormat = "libLLVM-%ssvn.so"
-const libclangSoFormat = "libclang.so.%s"
+const libclangSoFormat = "libclang.so.%ssvn"
+const libclangCxxSoFormat = "libclang_cxx.so.%ssvn"
 const libcxxSoName = "libc++.so.1"
+const libcxxabiSoName = "libc++abi.so.1"
 
 // This module is used to generate libfuzzer, libomp static libraries and
 // libclang_rt.* shared libraries. When LLVM_PREBUILTS_VERSION and
@@ -51,6 +54,8 @@ func init() {
 		libClangRtLLndkLibraryFactory)
 	android.RegisterModuleType("llvm_darwin_filegroup",
 		llvmDarwinFileGroupFactory)
+	android.RegisterModuleType("clang_builtin_headers",
+		clangBuiltinHeadersFactory)
 }
 
 func getClangPrebuiltDir(ctx android.LoadHookContext) string {
@@ -84,8 +89,13 @@ func getHostLibrary(ctx android.LoadHookContext) string {
 	case "prebuilt_libclang_host":
 		versionStr := trimVersionNumbers(releaseVersion, 1)
 		return fmt.Sprintf(libclangSoFormat, versionStr)
+	case "prebuilt_libclang_cxx_host":
+		versionStr := trimVersionNumbers(releaseVersion, 1)
+		return fmt.Sprintf(libclangCxxSoFormat, versionStr)
 	case "prebuilt_libc++_host":
 		return libcxxSoName
+	case "prebuilt_libc++abi_host":
+		return libcxxabiSoName
 	default:
 		ctx.ModuleErrorf("unsupported host LLVM module: " + ctx.ModuleName())
 		return ""
@@ -104,12 +114,13 @@ func llvmHostPrebuiltLibraryShared(ctx android.LoadHookContext) {
 	}
 
 	linuxLibrary := path.Join(clangDir, "lib64", getHostLibrary(ctx))
-	darwinFileGroup := strings.Split(moduleName, "_")[1] + "_darwin"
+	darwinFileGroup := strings.TrimSuffix(strings.TrimPrefix(
+		moduleName, "prebuilt_"), "_host") + "_darwin"
 
 	type props struct {
-		Enabled *bool
+		Enabled             *bool
 		Export_include_dirs []string
-		Target struct {
+		Target              struct {
 			Linux_glibc_x86_64 struct {
 				Srcs []string
 			}
@@ -159,7 +170,7 @@ func llvmPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 
 	p := &props{}
 
-	if (name == "libFuzzer.a") {
+	if name == "libFuzzer.a" {
 		headerDir := path.Join(getClangPrebuiltDir(ctx), "prebuilt_include", "llvm", "lib", "Fuzzer")
 		p.Export_include_dirs = []string{headerDir}
 	}
@@ -189,6 +200,7 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext) {
 		}
 		Pack_relocations *bool
 		Stl              *string
+		Sdk_version      *string
 	}
 
 	p := &props{}
@@ -202,6 +214,10 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext) {
 	disable := false
 	p.Pack_relocations = &disable
 	p.Stl = proptools.StringPtr("none")
+	// TODO(b/121358700): mark correct version number in Android.bp
+	// and verify that the lib is using only the APIs in the specified
+	// version
+	p.Sdk_version = proptools.StringPtr("14")
 	ctx.AppendProperties(p)
 }
 
@@ -210,12 +226,19 @@ func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 
 	type props struct {
 		Srcs []string
+		Stl *string
+		Sdk_version *string
 	}
 
 	name := strings.TrimPrefix(ctx.ModuleName(), "prebuilt_")
 
 	p := &props{}
 	p.Srcs = []string{path.Join(libDir, name+".a")}
+	p.Stl = proptools.StringPtr("none")
+	// TODO(b/121358700): mark correct version number in Android.bp
+	// and verify that the lib is using only the APIs in the specified
+	// version
+	p.Sdk_version = proptools.StringPtr("14")
 	ctx.AppendProperties(p)
 }
 
@@ -227,7 +250,7 @@ func libClangRtLLndkLibrary(ctx android.LoadHookContext) {
 	}
 
 	p := &props{}
-	symbol_file := string(path.Join(libDir, strings.TrimSuffix(ctx.ModuleName(), ".llndk") + ".map.txt"))
+	symbol_file := string(path.Join(libDir, strings.TrimSuffix(ctx.ModuleName(), ".llndk")+".map.txt"))
 	p.Symbol_file = proptools.StringPtr(symbol_file)
 	ctx.AppendProperties(p)
 }
@@ -235,10 +258,10 @@ func libClangRtLLndkLibrary(ctx android.LoadHookContext) {
 func llvmDarwinFileGroup(ctx android.LoadHookContext) {
 	clangDir := getClangPrebuiltDir(ctx)
 	libName := strings.TrimSuffix(ctx.ModuleName(), "_darwin")
-	if libName == "libc++" {
+	if libName == "libc++" || libName == "libc++abi" {
 		libName += ".1"
 	}
-	lib := path.Join(clangDir, "lib64", libName + ".dylib")
+	lib := path.Join(clangDir, "lib64", libName+".dylib")
 
 	type props struct {
 		Srcs []string
@@ -265,7 +288,7 @@ func llvmHostPrebuiltLibrarySharedFactory() android.Module {
 }
 
 func libClangRtPrebuiltLibrarySharedFactory() android.Module {
-	module, _ := cc.NewPrebuiltSharedLibrary(android.DeviceSupported)
+	module, _ := cc.NewPrebuiltSharedLibrary(android.HostAndDeviceSupported)
 	android.AddLoadHook(module, libClangRtPrebuiltLibraryShared)
 	return module.Init()
 }
@@ -303,5 +326,29 @@ func llvmHostDefaults(ctx android.LoadHookContext) {
 func llvmHostDefaultsFactory() android.Module {
 	module := cc.DefaultsFactory()
 	android.AddLoadHook(module, llvmHostDefaults)
+	return module
+}
+
+func clangBuiltinHeaders(ctx android.LoadHookContext) {
+	type props struct {
+		Cmd  *string
+		Srcs []string
+	}
+
+	p := &props{}
+	builtinHeadersDir := path.Join(
+		getClangPrebuiltDir(ctx), "lib64", "clang",
+		ctx.AConfig().GetenvWithDefault("LLVM_RELEASE_VERSION",
+			config.ClangDefaultShortVersion), "include")
+	s := "$(location) " + path.Join(ctx.ModuleDir(), builtinHeadersDir) + " $(in) >$(out)"
+	p.Cmd = &s
+
+	p.Srcs = []string{path.Join(builtinHeadersDir, "**", "*.h")}
+	ctx.AppendProperties(p)
+}
+
+func clangBuiltinHeadersFactory() android.Module {
+	module := genrule.GenRuleFactory()
+	android.AddLoadHook(module, clangBuiltinHeaders)
 	return module
 }

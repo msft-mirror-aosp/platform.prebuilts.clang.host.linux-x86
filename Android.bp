@@ -29,6 +29,75 @@ llvm_prebuilt_library_static {
     },
 }
 
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.builtins-arm-android",
+    sdk_version: "minimum",
+    enabled: false,
+    recovery_available: true,
+    vendor_available: true,
+    sanitize: {
+        never: true,
+    },
+    arch: {
+        arm: {
+            enabled: true,
+        },
+    },
+    stl: "none",
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.builtins-aarch64-android",
+    sdk_version: "minimum",
+    enabled: false,
+    recovery_available: true,
+    vendor_available: true,
+    sanitize: {
+        never: true,
+    },
+    arch: {
+        arm64: {
+            enabled: true,
+        },
+    },
+    stl: "none",
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.builtins-i686-android",
+    sdk_version: "minimum",
+    enabled: false,
+    recovery_available: true,
+    vendor_available: true,
+    sanitize: {
+        never: true,
+    },
+    arch: {
+        x86: {
+            enabled: true,
+        },
+    },
+    stl: "none",
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.builtins-x86_64-android",
+    defaults: ["linux_bionic_supported"],
+    sdk_version: "minimum",
+    enabled: false,
+    recovery_available: true,
+    vendor_available: true,
+    sanitize: {
+        never: true,
+    },
+    arch: {
+        x86_64: {
+            enabled: true,
+        },
+    },
+    stl: "none",
+}
+
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.asan-arm-android",
     enabled: false,
@@ -61,9 +130,15 @@ libclang_rt_prebuilt_library_shared {
 
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.asan-x86_64-android",
+    host_supported: true,
     enabled: false,
     arch: {
         x86_64: {
+            enabled: true,
+        },
+    },
+    target: {
+        linux_bionic: {
             enabled: true,
         },
     },
@@ -104,6 +179,16 @@ libclang_rt_llndk_library {
     enabled: false,
     arch: {
         x86_64: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_llndk_library {
+    name: "libclang_rt.hwasan-aarch64-android",
+    enabled: false,
+    arch: {
+        arm64: {
             enabled: true,
         },
     },
@@ -113,6 +198,7 @@ libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.ubsan_standalone-arm-android",
     enabled: false,
     vendor_available: true,
+    double_loadable: true,
     vndk: {
         enabled: true,
     },
@@ -127,6 +213,7 @@ libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.ubsan_standalone-aarch64-android",
     enabled: false,
     vendor_available: true,
+    double_loadable: true,
     vndk: {
         enabled: true,
     },
@@ -141,6 +228,7 @@ libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.ubsan_standalone-i686-android",
     enabled: false,
     vendor_available: true,
+    double_loadable: true,
     vndk: {
         enabled: true,
     },
@@ -155,6 +243,7 @@ libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.ubsan_standalone-x86_64-android",
     enabled: false,
     vendor_available: true,
+    double_loadable: true,
     vndk: {
         enabled: true,
     },
@@ -216,6 +305,29 @@ libclang_rt_prebuilt_library_static {
     },
     arch: {
         x86_64: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.hwasan_static-aarch64-android",
+    enabled: false,
+    recovery_available: true,
+    vendor_available: true,
+    arch: {
+        arm64: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_shared {
+    name: "libclang_rt.hwasan-aarch64-android",
+    enabled: false,
+    recovery_available: true,
+    arch: {
+        arm64: {
             enabled: true,
         },
     },
@@ -294,6 +406,10 @@ libclang_rt_prebuilt_library_static {
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.scudo-arm-android",
     enabled: false,
+    vendor_available: true,
+    vndk: {
+        enabled: true,
+    },
     arch: {
         arm: {
             enabled: true,
@@ -304,6 +420,10 @@ libclang_rt_prebuilt_library_shared {
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.scudo-aarch64-android",
     enabled: false,
+    vendor_available: true,
+    vndk: {
+        enabled: true,
+    },
     arch: {
         arm64: {
             enabled: true,
@@ -314,6 +434,10 @@ libclang_rt_prebuilt_library_shared {
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.scudo-i686-android",
     enabled: false,
+    vendor_available: true,
+    vndk: {
+        enabled: true,
+    },
     arch: {
         x86: {
             enabled: true,
@@ -324,6 +448,66 @@ libclang_rt_prebuilt_library_shared {
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.scudo-x86_64-android",
     enabled: false,
+    vendor_available: true,
+    vndk: {
+        enabled: true,
+    },
+    arch: {
+        x86_64: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_shared {
+    name: "libclang_rt.scudo_minimal-arm-android",
+    enabled: false,
+    vendor_available: true,
+    vndk: {
+        enabled: true,
+    },
+    arch: {
+        arm: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_shared {
+    name: "libclang_rt.scudo_minimal-aarch64-android",
+    enabled: false,
+    vendor_available: true,
+    vndk: {
+        enabled: true,
+    },
+    arch: {
+        arm64: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_shared {
+    name: "libclang_rt.scudo_minimal-i686-android",
+    enabled: false,
+    vendor_available: true,
+    vndk: {
+        enabled: true,
+    },
+    arch: {
+        x86: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_shared {
+    name: "libclang_rt.scudo_minimal-x86_64-android",
+    enabled: false,
+    vendor_available: true,
+    vndk: {
+        enabled: true,
+    },
     arch: {
         x86_64: {
             enabled: true,
@@ -351,9 +535,9 @@ llvm_host_prebuilt_library_shared {
     shared_libs: ["libc++_host"],
 }
 
-// Export libclang shared library
+// Export libclang_cxx shared library
 llvm_host_prebuilt_library_shared {
-    name: "libclang_host",
+    name: "libclang_cxx_host",
     sanitize: {
         never: true,
     },
@@ -368,6 +552,26 @@ llvm_host_prebuilt_library_shared {
         never: true,
     },
     compile_multilib: "64",
+    target: {
+        darwin: {
+            shared_libs: ["libc++abi_host"],
+        },
+    },
+}
+
+// Export libc++abi.so for the host LLVM tools
+llvm_host_prebuilt_library_shared {
+    name: "libc++abi_host",
+    sanitize: {
+        never: true,
+    },
+    compile_multilib: "64",
+}
+
+clang_builtin_headers {
+    name: "clang_builtin_headers_resources",
+    tool_files: ["soong/generate_clang_builtin_headers_resources.sh"],
+    out: ["clang_builtin_headers_resources.inc"],
 }
 
 subdirs = [
