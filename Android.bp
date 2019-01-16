@@ -198,6 +198,7 @@ libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.ubsan_standalone-arm-android",
     enabled: false,
     vendor_available: true,
+    double_loadable: true,
     vndk: {
         enabled: true,
     },
@@ -212,6 +213,7 @@ libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.ubsan_standalone-aarch64-android",
     enabled: false,
     vendor_available: true,
+    double_loadable: true,
     vndk: {
         enabled: true,
     },
@@ -226,6 +228,7 @@ libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.ubsan_standalone-i686-android",
     enabled: false,
     vendor_available: true,
+    double_loadable: true,
     vndk: {
         enabled: true,
     },
@@ -240,6 +243,7 @@ libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.ubsan_standalone-x86_64-android",
     enabled: false,
     vendor_available: true,
+    double_loadable: true,
     vndk: {
         enabled: true,
     },
