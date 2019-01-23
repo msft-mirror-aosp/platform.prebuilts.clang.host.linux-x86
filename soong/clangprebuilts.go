@@ -192,6 +192,8 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext) {
 	type props struct {
 		Srcs               []string
 		System_shared_libs []string
+		No_libcrt          *bool
+		No_libgcc          *bool
 		Sanitize           struct {
 			Never *bool
 		}
@@ -209,6 +211,8 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext) {
 
 	p.Srcs = []string{path.Join(libDir, name+".so")}
 	p.System_shared_libs = []string{}
+	p.No_libcrt = proptools.BoolPtr(true)
+	p.No_libgcc = proptools.BoolPtr(true)
 	p.Sanitize.Never = proptools.BoolPtr(true)
 	p.Strip.None = proptools.BoolPtr(true)
 	disable := false
@@ -226,6 +230,9 @@ func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 
 	type props struct {
 		Srcs []string
+		System_shared_libs []string
+		No_libcrt *bool
+		No_libgcc *bool
 		Stl *string
 		Sdk_version *string
 	}
@@ -234,6 +241,9 @@ func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 
 	p := &props{}
 	p.Srcs = []string{path.Join(libDir, name+".a")}
+	p.System_shared_libs = []string{}
+	p.No_libcrt = proptools.BoolPtr(true)
+	p.No_libgcc = proptools.BoolPtr(true)
 	p.Stl = proptools.StringPtr("none")
 	// TODO(b/121358700): mark correct version number in Android.bp
 	// and verify that the lib is using only the APIs in the specified
