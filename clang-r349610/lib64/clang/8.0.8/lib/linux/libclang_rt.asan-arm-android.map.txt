@@ -124,6 +124,7 @@ LIBCLANG_RT_ASAN {
     __asan_set_shadow_f3;
     __asan_set_shadow_f5;
     __asan_set_shadow_f8;
+    __asan_shadow;
     __asan_shadow_memory_dynamic_address;
     __asan_stack_free_0;
     __asan_stack_free_1;

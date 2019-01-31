@@ -22,6 +22,7 @@ LIBCLANG_RT_ASAN {
     __hwasan_loadN_noabort;
     __hwasan_print_memory_usage;
     __hwasan_print_shadow;
+    __hwasan_shadow;
     __hwasan_shadow_init;
     __hwasan_shadow_memory_dynamic_address;
     __hwasan_store1;

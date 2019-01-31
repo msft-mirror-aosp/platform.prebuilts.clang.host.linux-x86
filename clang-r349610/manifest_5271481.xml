@@ -1,15 +1,21 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <manifest>
+  <!--
+    This branch is a master side branch and is configured to have all project
+    specific rules. When updating this manifest file, please also update the
+    project rule in google3 to ensure new projects get testing.
+    See go/side-branch-testing for details.
+-->
   <remote fetch=".." name="aosp" review="https://android-review.googlesource.com/" />
   <default remote="aosp" revision="master" sync-j="4" />
   <!-- Core LLVM toolchain components -->
-  <project name="platform/bionic" path="bionic" revision="122ecb1ca8023d32211b61004b1a107d83490b5c" upstream="master" />
+  <project name="platform/bionic" path="bionic" revision="ccc0922653904525147b670f0aa25aa85c0d2022" upstream="master" />
   <project name="toolchain/binutils" path="toolchain/binutils" revision="d42268bd795ae78a45e6a225ee77c5617777223a" upstream="master" />
   <project name="toolchain/llvm" path="toolchain/llvm" revision="ab552995647d484a712bf15f77e6c6f4e8ac532b" upstream="master" />
-  <project name="toolchain/llvm_android" path="toolchain/llvm_android" revision="37b53c233fc7ef425b2b17889432a0595bf7eae0" upstream="master" />
+  <project name="toolchain/llvm_android" path="toolchain/llvm_android" revision="82d9b5ffa6d9e7088a007db97ff24613a70cfdbd" upstream="master" />
   <project name="toolchain/clang" path="toolchain/clang" revision="4dba9ad555eabb40b39dc53c12d09423e9faea7b" upstream="master" />
-  <project name="toolchain/lld" path="toolchain/lld" revision="17c673662a801432dc30a4f42463ecbdc7905514" upstream="master" />
-  <project name="toolchain/compiler-rt" path="toolchain/compiler-rt" revision="4d8fc7974619747756bd6f130d68f95fadafa047" upstream="master" />
+  <project name="toolchain/lld" path="toolchain/lld" revision="0f50d2239d204e2f2026b9db97f30b5d54753f0c" upstream="master" />
+  <project name="toolchain/compiler-rt" path="toolchain/compiler-rt" revision="b43d401b7ce7579d71329ecfa5d1d0ab38d33010" upstream="master" />
   <project name="toolchain/libcxx" path="toolchain/libcxx" revision="b72a4f7643b7139d62491d5aa45f2dc362d6fb7b" upstream="master" />
   <project name="toolchain/libcxxabi" path="toolchain/libcxxabi" revision="d2a172402e3efd3051d7973349bd4ff51947ff65" upstream="master" />
   <project name="toolchain/openmp_llvm" path="toolchain/openmp_llvm" revision="191c55a174f750af708e546c4d769941833e3c0a" upstream="master" />
@@ -33,10 +39,10 @@
   <project name="platform/prebuilts/cmake/darwin-x86" path="prebuilts/cmake/darwin-x86" revision="f3bfe547014d2d751b7547ad7847a51b0ea34dc8" upstream="master" />
   <project name="platform/prebuilts/cmake/linux-x86" path="prebuilts/cmake/linux-x86" revision="da4b9cb08341185e002c8a8c5df73533cdb93b41" upstream="master" />
   <!-- Prebuilts (for ease of updating) -->
-  <project name="platform/prebuilts/clang/host/darwin-x86" path="prebuilts/clang/host/darwin-x86" revision="09413c06cfeb26d9c614eae43cdfd14b037c930c" upstream="master" />
-  <project name="platform/prebuilts/clang/host/linux-x86" path="prebuilts/clang/host/linux-x86" revision="d286f425974ddaa894af2100ef7d921c96f097f2" upstream="master" />
-  <project name="platform/prebuilts/clang/host/windows-x86" path="prebuilts/clang/host/windows-x86" revision="5d2173b033532b4a100f562e97db22bcbeef9fd7" upstream="master" />
-  <project name="platform/prebuilts/clang/host/windows-x86_32" path="prebuilts/clang/host/windows-x86_32" revision="c535dda0b5bebec5773dab9234989bcfd6921522" upstream="master" />
+  <project name="platform/prebuilts/clang/host/darwin-x86" path="prebuilts/clang/host/darwin-x86" revision="e6af9b991e39aeaa113d023e556612e07a72d312" upstream="master" />
+  <project name="platform/prebuilts/clang/host/linux-x86" path="prebuilts/clang/host/linux-x86" revision="70d66e12a35fefd55ca4cf821f35405de6ffbe14" upstream="master" />
+  <project name="platform/prebuilts/clang/host/windows-x86" path="prebuilts/clang/host/windows-x86" revision="3eb88f958cfb22de30fe54103ba0fffbde275a54" upstream="master" />
+  <project name="platform/prebuilts/clang/host/windows-x86_32" path="prebuilts/clang/host/windows-x86_32" revision="081d77daf9e392271132b9c7876cf4e716c7fc77" upstream="master" />
   <!-- NDK headers/libraries -->
   <project name="toolchain/prebuilts/ndk/r16" path="toolchain/prebuilts/ndk/r16" revision="47a7a80b45aab2306ca73203a2df6ea76771393c" upstream="master" />
 </manifest>
