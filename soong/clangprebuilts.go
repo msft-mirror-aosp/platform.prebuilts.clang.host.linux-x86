@@ -202,7 +202,6 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext) {
 		}
 		Pack_relocations *bool
 		Stl              *string
-		Sdk_version      *string
 	}
 
 	p := &props{}
@@ -218,10 +217,6 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext) {
 	disable := false
 	p.Pack_relocations = &disable
 	p.Stl = proptools.StringPtr("none")
-	// TODO(b/121358700): mark correct version number in Android.bp
-	// and verify that the lib is using only the APIs in the specified
-	// version
-	p.Sdk_version = proptools.StringPtr("14")
 	ctx.AppendProperties(p)
 }
 
@@ -234,7 +229,6 @@ func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 		No_libcrt *bool
 		No_libgcc *bool
 		Stl *string
-		Sdk_version *string
 	}
 
 	name := strings.TrimPrefix(ctx.ModuleName(), "prebuilt_")
@@ -245,10 +239,6 @@ func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 	p.No_libcrt = proptools.BoolPtr(true)
 	p.No_libgcc = proptools.BoolPtr(true)
 	p.Stl = proptools.StringPtr("none")
-	// TODO(b/121358700): mark correct version number in Android.bp
-	// and verify that the lib is using only the APIs in the specified
-	// version
-	p.Sdk_version = proptools.StringPtr("14")
 	ctx.AppendProperties(p)
 }
 
