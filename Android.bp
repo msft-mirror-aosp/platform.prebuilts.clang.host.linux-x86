@@ -507,6 +507,62 @@ libclang_rt_prebuilt_library_shared {
     check_elf_files: false,  // Bypass circular dependency between libc++
 }
 
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.scudo-arm-android.static",
+    enabled: false,
+    vendor_available: true,
+    sanitize: {
+        never: true,
+    },
+    arch: {
+        arm: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.scudo-aarch64-android.static",
+    enabled: false,
+    vendor_available: true,
+    sanitize: {
+        never: true,
+    },
+    arch: {
+        arm64: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.scudo-i686-android.static",
+    enabled: false,
+    vendor_available: true,
+    sanitize: {
+        never: true,
+    },
+    arch: {
+        x86: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.scudo-x86_64-android.static",
+    enabled: false,
+    vendor_available: true,
+    sanitize: {
+        never: true,
+    },
+    arch: {
+        x86_64: {
+            enabled: true,
+        },
+    },
+}
+
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.scudo_minimal-arm-android",
     sdk_version: "24",
@@ -569,6 +625,62 @@ libclang_rt_prebuilt_library_shared {
         },
     },
     shared_libs: ["libc", "libdl", "liblog"],
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.scudo_minimal-arm-android.static",
+    enabled: false,
+    vendor_available: true,
+    sanitize: {
+        never: true,
+    },
+    arch: {
+        arm: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.scudo_minimal-aarch64-android.static",
+    enabled: false,
+    vendor_available: true,
+    sanitize: {
+        never: true,
+    },
+    arch: {
+        arm64: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.scudo_minimal-i686-android.static",
+    enabled: false,
+    vendor_available: true,
+    sanitize: {
+        never: true,
+    },
+    arch: {
+        x86: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.scudo_minimal-x86_64-android.static",
+    enabled: false,
+    vendor_available: true,
+    sanitize: {
+        never: true,
+    },
+    arch: {
+        x86_64: {
+            enabled: true,
+        },
+    },
 }
 
 // -----------------------------------------------------------------------------
