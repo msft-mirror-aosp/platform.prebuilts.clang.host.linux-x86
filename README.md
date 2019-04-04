@@ -8,7 +8,7 @@ LLVM Users
 ----------
 
 * [**Android Platform**](https://android.googlesource.com/platform/)
-  * Currently clang-r353983
+  * Currently clang-r353983b
   * clang-4691093 for Android P release
   * Look for "ClangDefaultVersion" and/or "clang-" in [build/soong/cc/config/global.go](https://android.googlesource.com/platform/build/soong/+/master/cc/config/global.go/).
     * [Internal cs/ link](https://cs.corp.google.com/android/build/soong/cc/config/global.go?q=ClangDefaultVersion)
@@ -26,12 +26,11 @@ LLVM Users
   * Internal LLVM developers should look in the partner gerrit for more kernel configurations.
 
 * [**Trusty**](https://source.android.com/security/trusty/)
-  * Currently clang-r349610
+  * Currently clang-r353983b
   * Look for "clang-" in [vendor/google/aosp/scripts/envsetup.sh](https://android.googlesource.com/trusty/vendor/google/aosp/+/master/scripts/envsetup.sh).
-  * Internal-only: Look for "clang-" in [vendor/google/proprietary/scripts/envsetup.sh](https://partner-android.git.corp.google.com/trusty/vendor/google/proprietary/+/master/scripts/envsetup.sh).
 
 * [**Android Emulator**](https://developer.android.com/studio/run/emulator.html)
-  * Currently clang-r346389c
+  * Currently clang-r353983b
   * Look for "clang-" in [external/qemu/android/build/cmake/toolchain.cmake](https://android.googlesource.com/platform/external/qemu/+/emu-master-dev/android/build/cmake/toolchain.cmake#25).
     * Note that they work out of the emu-master-dev branch.
     * [Internal cs/ link](https://cs.corp.google.com/android/external/qemu/android/build/cmake/toolchain.cmake?q=clang-)
@@ -58,7 +57,8 @@ Prebuilt Versions
 * [clang-r346389b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-r346389b/) - December 2018
 * [clang-r346389c](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-r346389c/) - January 2019
 * [clang-r349610](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-r349610/) - February 2019
-* [clang-r353983](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-r353983/) - March 2019
+* [clang-r349610b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-r349610b/) - February 2019
+* [clang-r353983b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/clang-r353983b/) - March 2019
 
 More Information
 ----------------
