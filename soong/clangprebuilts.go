@@ -234,7 +234,11 @@ func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 	name := strings.TrimPrefix(ctx.ModuleName(), "prebuilt_")
 
 	p := &props{}
-	p.Srcs = []string{path.Join(libDir, name+".a")}
+	if strings.HasSuffix(name, ".static") {
+		p.Srcs = []string{path.Join(libDir, strings.TrimSuffix(name, ".static")+".a")}
+	} else {
+		p.Srcs = []string{path.Join(libDir, name+".a")}
+	}
 	p.System_shared_libs = []string{}
 	p.No_libcrt = proptools.BoolPtr(true)
 	p.No_libgcc = proptools.BoolPtr(true)
