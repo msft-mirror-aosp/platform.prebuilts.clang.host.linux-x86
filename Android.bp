@@ -37,6 +37,7 @@ libclang_rt_prebuilt_library_static {
     enabled: false,
     recovery_available: true,
     vendor_available: true,
+    native_bridge_supported: true,
     sanitize: {
         never: true,
     },
@@ -54,6 +55,7 @@ libclang_rt_prebuilt_library_static {
     enabled: false,
     recovery_available: true,
     vendor_available: true,
+    native_bridge_supported: true,
     sanitize: {
         never: true,
     },
@@ -71,6 +73,7 @@ libclang_rt_prebuilt_library_static {
     enabled: false,
     recovery_available: true,
     vendor_available: true,
+    native_bridge_supported: true,
     sanitize: {
         never: true,
     },
@@ -89,6 +92,7 @@ libclang_rt_prebuilt_library_static {
     enabled: false,
     recovery_available: true,
     vendor_available: true,
+    native_bridge_supported: true,
     sanitize: {
         never: true,
     },
@@ -111,6 +115,7 @@ libclang_rt_prebuilt_library_shared {
         },
     },
     check_elf_files: false,  // Bypass circular dependency between libc++
+    has_stubs: true,
 }
 
 libclang_rt_prebuilt_library_shared {
@@ -124,6 +129,7 @@ libclang_rt_prebuilt_library_shared {
         },
     },
     check_elf_files: false,  // Bypass circular dependency between libc++
+    has_stubs: true,
 }
 
 libclang_rt_prebuilt_library_shared {
@@ -137,6 +143,7 @@ libclang_rt_prebuilt_library_shared {
         },
     },
     check_elf_files: false,  // Bypass circular dependency between libc++
+    has_stubs: true,
 }
 
 libclang_rt_prebuilt_library_shared {
@@ -156,6 +163,7 @@ libclang_rt_prebuilt_library_shared {
         },
     },
     check_elf_files: false,  // Bypass circular dependency between libc++
+    has_stubs: true,
 }
 
 libclang_rt_llndk_library {
@@ -364,6 +372,7 @@ libclang_rt_prebuilt_library_shared {
         },
     },
     check_elf_files: false,  // Bypass circular dependency between libc++
+    has_stubs: true,
 }
 
 libclang_rt_prebuilt_library_static {
