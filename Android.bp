@@ -111,6 +111,7 @@ libclang_rt_prebuilt_library_shared {
         },
     },
     check_elf_files: false,  // Bypass circular dependency between libc++
+    has_stubs: true,
 }
 
 libclang_rt_prebuilt_library_shared {
@@ -124,6 +125,7 @@ libclang_rt_prebuilt_library_shared {
         },
     },
     check_elf_files: false,  // Bypass circular dependency between libc++
+    has_stubs: true,
 }
 
 libclang_rt_prebuilt_library_shared {
@@ -137,6 +139,7 @@ libclang_rt_prebuilt_library_shared {
         },
     },
     check_elf_files: false,  // Bypass circular dependency between libc++
+    has_stubs: true,
 }
 
 libclang_rt_prebuilt_library_shared {
@@ -156,6 +159,7 @@ libclang_rt_prebuilt_library_shared {
         },
     },
     check_elf_files: false,  // Bypass circular dependency between libc++
+    has_stubs: true,
 }
 
 libclang_rt_llndk_library {
@@ -364,6 +368,7 @@ libclang_rt_prebuilt_library_shared {
         },
     },
     check_elf_files: false,  // Bypass circular dependency between libc++
+    has_stubs: true,
 }
 
 libclang_rt_prebuilt_library_static {
