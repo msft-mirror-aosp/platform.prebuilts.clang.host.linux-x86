@@ -109,6 +109,7 @@ libclang_rt_prebuilt_library_shared {
     sdk_version: "24",
     enabled: false,
     recovery_available: true,
+    native_bridge_supported: true,
     arch: {
         arm: {
             enabled: true,
@@ -123,6 +124,7 @@ libclang_rt_prebuilt_library_shared {
     sdk_version: "minimum",
     enabled: false,
     recovery_available: true,
+    native_bridge_supported: true,
     arch: {
         arm64: {
             enabled: true,
@@ -137,6 +139,7 @@ libclang_rt_prebuilt_library_shared {
     sdk_version: "minimum",
     enabled: false,
     recovery_available: true,
+    native_bridge_supported: true,
     arch: {
         x86: {
             enabled: true,
@@ -152,6 +155,7 @@ libclang_rt_prebuilt_library_shared {
     host_supported: true,
     enabled: false,
     recovery_available: true,
+    native_bridge_supported: true,
     arch: {
         x86_64: {
             enabled: true,
@@ -168,6 +172,7 @@ libclang_rt_prebuilt_library_shared {
 
 libclang_rt_llndk_library {
     name: "libclang_rt.asan-arm-android",
+    native_bridge_supported: true,
     enabled: false,
     arch: {
         arm: {
@@ -178,6 +183,7 @@ libclang_rt_llndk_library {
 
 libclang_rt_llndk_library {
     name: "libclang_rt.asan-aarch64-android",
+    native_bridge_supported: true,
     enabled: false,
     arch: {
         arm64: {
@@ -188,6 +194,7 @@ libclang_rt_llndk_library {
 
 libclang_rt_llndk_library {
     name: "libclang_rt.asan-i686-android",
+    native_bridge_supported: true,
     enabled: false,
     arch: {
         x86: {
@@ -198,6 +205,7 @@ libclang_rt_llndk_library {
 
 libclang_rt_llndk_library {
     name: "libclang_rt.asan-x86_64-android",
+    native_bridge_supported: true,
     enabled: false,
     arch: {
         x86_64: {
