@@ -202,7 +202,6 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, in *prebuiltLi
 		Srcs               []string
 		System_shared_libs []string
 		No_libcrt          *bool
-		No_libgcc          *bool
 		Sanitize           struct {
 			Never *bool
 		}
@@ -224,7 +223,6 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, in *prebuiltLi
 	p.Srcs = []string{path.Join(libDir, name+".so")}
 	p.System_shared_libs = []string{}
 	p.No_libcrt = proptools.BoolPtr(true)
-	p.No_libgcc = proptools.BoolPtr(true)
 	p.Sanitize.Never = proptools.BoolPtr(true)
 	p.Strip.None = proptools.BoolPtr(true)
 	disable := false
@@ -246,7 +244,6 @@ func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 		Srcs               []string
 		System_shared_libs []string
 		No_libcrt          *bool
-		No_libgcc          *bool
 		Stl                *string
 	}
 
@@ -260,7 +257,6 @@ func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 	}
 	p.System_shared_libs = []string{}
 	p.No_libcrt = proptools.BoolPtr(true)
-	p.No_libgcc = proptools.BoolPtr(true)
 	p.Stl = proptools.StringPtr("none")
 	ctx.AppendProperties(p)
 }
