@@ -1,5 +1,59 @@
 # Release Notes
 
+## clang-r370808
+### Upstream Cherry-picks
+- 1689ad27af5c [builtins] Implement rounding mode support for i386/x86_64
+- 9e7ce07a8866 ARM: Don't emit R_ARM_NONE relocations to compact unwinding decoders in .ARM.exidx on Android.
+- 51adeae1c90c remove redundant LLVM version from version string when setting CLANG_VENDOR
+- 8ea148dc0cbf [Builtins] Fix bug where powerpc builtins specializations didn't remove generic implementations.
+- r370981 [DebugInfo] Emit DW_TAG_enumeration_type for referenced global enumerator.
+- r371003 Revert "Revert "[builtins] Rounding mode support for addxf3/subxf3""
+- r371090 Fix windows-x86-debug compilation with python enabled using multi-target generator
+- r371111 [IfConversion] Fix diamond conversion with unanalyzable branches.
+- r371202 Revert r370635, it caused PR43241.
+- r371215 Revert "Revert r370635, it caused PR43241."
+- r371216 Reland D66717 [ELF] Do not ICF two sections with different output sections (by SECTIONS commands)
+- r371262 [IR] CallBrInst: scan+update arg list when indirect dest list changes
+- r371434 [IfConversion] Correctly handle cases where analyzeBranch fails.
+- r371643 [IRMover] Don't map globals if their types are the same
+- r371804 [ELF] Delete a redundant assignment to SectionBase::assigned. NFC
+- r371957 [ELF] Map the ELF header at imageBase
+- r372047 Fix swig python package path
+- r372194 Cache PYTHON_EXECUTABLE for windows
+- r372364 Revert "Fix swig python package path"
+- r372400 [ELF] Error if the linked-to section of a SHF_LINK_ORDER section is discarded
+- r372482 [LLDB] Fix compilation for MinGW, remove redundant class name on inline member
+- r372493 Use _WIN32 instead of _MSC_VER
+- r372587 [LLDB] Add a missing specification of linking against dbghelp
+- r372734 [ELF] Make MergeInputSection merging aware of output sections
+- r372735 [ELF] Delete SectionBase::assigned
+- r372835 [lldb] [cmake] Fix installing Python modules on systems using /usr/lib
+- r372996 [ELF] Set SectionBase::partition in processSectionCommands
+- r373022 Always rebuild a DeclRefExpr if its FoundDecl would change.
+- r373035 hwasan: Compatibility fixes for short granules.
+- r373255 ELF: Don't merge SHF_LINK_ORDER sections for different output sections in relocatable links.
+- r375166 libhwasan initialisation include kernel syscall ABI relaxation
+- r375298 hwasan: Add missing SANITIZER_INTERFACE_ATTRIBUTE on __hwasan_personality_wrapper.
+### Notes
+New Clang warnings encountered:
+- -Wreorder-init-list
+- -Walloca
+- -Wc99-designator
+- -Wdangling-gsl
+- -Wimplicit-fallthrough
+- -Wimplicit-int-float-conversion
+- -Wincomplete-setjmp-declaration
+- -Wpointer-compare
+- -Wxor-used-as-pow
+
+-Wimplicit fallthrough was previously only checked for C++ code, but Clang can
+now for for C code. `__attribute__((__fallthrough__))` should be used to
+explicitly specify intentional fallthrough to silence the warning.
+
+Lots of cherry picks are fixes for LLDB and HWASAN.
+### Created
+Nov 11 2019
+
 ## clang-r365631c
 ### Upstream Cherry-picks
 - r366130 [LoopUnroll+LoopUnswitch] do not transform loops containing callbr
