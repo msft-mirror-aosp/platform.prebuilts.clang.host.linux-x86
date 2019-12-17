@@ -6,6 +6,7 @@
 - 9e7ce07a8866 ARM: Don't emit R_ARM_NONE relocations to compact unwinding decoders in .ARM.exidx on Android.
 - 51adeae1c90c remove redundant LLVM version from version string when setting CLANG_VENDOR
 - 8ea148dc0cbf [Builtins] Fix bug where powerpc builtins specializations didn't remove generic implementations.
+- 7a2b704bf0cf [Sema][Typo Correction] Fix another infinite loop on ambiguity
 - r370981 [DebugInfo] Emit DW_TAG_enumeration_type for referenced global enumerator.
 - r371003 Revert "Revert "[builtins] Rounding mode support for addxf3/subxf3""
 - r371090 Fix windows-x86-debug compilation with python enabled using multi-target generator
@@ -17,6 +18,7 @@
 - r371434 [IfConversion] Correctly handle cases where analyzeBranch fails.
 - r371643 [IRMover] Don't map globals if their types are the same
 - r371804 [ELF] Delete a redundant assignment to SectionBase::assigned. NFC
+- r371859 [Sema][Typo Correction] Fix potential infite loop on ambiguity checks
 - r371957 [ELF] Map the ELF header at imageBase
 - r372047 Fix swig python package path
 - r372194 Cache PYTHON_EXECUTABLE for windows
@@ -32,6 +34,7 @@
 - r373022 Always rebuild a DeclRefExpr if its FoundDecl would change.
 - r373035 hwasan: Compatibility fixes for short granules.
 - r373255 ELF: Don't merge SHF_LINK_ORDER sections for different output sections in relocatable links.
+- r373929 Fix Calling Convention through aliases
 - r375166 libhwasan initialisation include kernel syscall ABI relaxation
 - r375298 hwasan: Add missing SANITIZER_INTERFACE_ATTRIBUTE on __hwasan_personality_wrapper.
 ### Notes
@@ -51,6 +54,9 @@ now for for C code. `__attribute__((__fallthrough__))` should be used to
 explicitly specify intentional fallthrough to silence the warning.
 
 Lots of cherry picks are fixes for LLDB and HWASAN.
+
+r373035 is slightly different from upstream due to not additionally cherry
+picking r372338.
 ### Created
 Nov 11 2019
 

@@ -804,6 +804,13 @@ llvm_host_prebuilt_library_shared {
     },
     compile_multilib: "64",
     shared_libs: ["libc++_host"],
+    target: {
+        darwin: {
+            strip: {
+                none: true,
+            },
+        },
+    },
 }
 
 // Export libc++.so for the host LLVM tools
