@@ -124,6 +124,36 @@ libclang_rt_prebuilt_library_static {
     ],
 }
 
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.builtins-x86_64",
+    enabled: false,
+    host_supported: true,
+    sanitize: {
+        never: true,
+    },
+    target: {
+        linux_glibc_x86_64: {
+            enabled: true,
+        },
+    },
+    stl: "none",
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.builtins-i386",
+    enabled: false,
+    host_supported: true,
+    sanitize: {
+        never: true,
+    },
+    target: {
+        linux_glibc_x86: {
+            enabled: true,
+        },
+    },
+    stl: "none",
+}
+
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.asan-arm-android",
     sdk_version: "24",
@@ -186,19 +216,14 @@ libclang_rt_prebuilt_library_shared {
 
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.asan-x86_64-android",
+    defaults: ["linux_bionic_supported"],
     sdk_version: "minimum",
-    host_supported: true,
     enabled: false,
     ramdisk_available: true,
     recovery_available: true,
     native_bridge_supported: true,
     arch: {
         x86_64: {
-            enabled: true,
-        },
-    },
-    target: {
-        linux_bionic: {
             enabled: true,
         },
     },
@@ -312,6 +337,7 @@ libclang_rt_prebuilt_library_shared {
 
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.ubsan_standalone-i686-android",
+    defaults: ["linux_bionic_supported"],
     sdk_version: "minimum",
     enabled: false,
     vendor_available: true,
@@ -335,6 +361,7 @@ libclang_rt_prebuilt_library_shared {
 
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.ubsan_standalone-x86_64-android",
+    defaults: ["linux_bionic_supported"],
     sdk_version: "minimum",
     enabled: false,
     vendor_available: true,
@@ -354,6 +381,28 @@ libclang_rt_prebuilt_library_shared {
         "//apex_available:anyapex",
         "//apex_available:platform",
     ],
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.ubsan_standalone-i386",
+    enabled: false,
+    host_supported: true,
+    target: {
+        linux_glibc_x86: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.ubsan_standalone-x86_64",
+    enabled: false,
+    host_supported: true,
+    target: {
+        linux_glibc_x86_64: {
+            enabled: true,
+        },
+    },
 }
 
 libclang_rt_prebuilt_library_static {
@@ -390,6 +439,7 @@ libclang_rt_prebuilt_library_static {
 
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.ubsan_minimal-i686-android",
+    defaults:["linux_bionic_supported"],
     sdk_version: "minimum",
     enabled: false,
     vendor_available: true,
@@ -406,6 +456,7 @@ libclang_rt_prebuilt_library_static {
 
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.ubsan_minimal-x86_64-android",
+    defaults:["linux_bionic_supported"],
     sdk_version: "minimum",
     enabled: false,
     vendor_available: true,
@@ -418,6 +469,28 @@ libclang_rt_prebuilt_library_static {
         "//apex_available:anyapex",
         "//apex_available:platform",
     ],
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.ubsan_minimal-i386",
+    enabled: false,
+    host_supported: true,
+    target: {
+        linux_glibc_x86: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.ubsan_minimal-x86_64",
+    enabled: false,
+    host_supported: true,
+    target: {
+        linux_glibc_x86_64: {
+            enabled: true,
+        },
+    },
 }
 
 libclang_rt_prebuilt_library_static {
