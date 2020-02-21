@@ -1,6 +1,41 @@
 # Release Notes
 
+------
+## clang-r377782b
+
+### Upstream Cherry-picks
+- a3b22da4e0ea [CFG] Fix a flaky crash in CFGBlock::getLastCondition().
+- d32484f40cbe [lldb][CMake] Fix build for the case of custom libedit installation
+- 21f26470e974 Revert 3f91705ca54 ARM-NEON: make type modifiers orthogonal and allow multiple modifiers
+- 90b8bc003caa IRGen: Call SetLLVMFunctionAttributes{,ForDefinition} on __cfi_check_fail
+- acc79aa0e747 Revert "Revert 1689ad27af5"[builtins] Implement rounding mode support for i386/x86_64
+- c5b890e92243 PR44268: Fix crash if __builtin_object_size is applied to a heap allocation.
+- cd40bd0a32e2 hwasan: Move .note.hwasan.globals note to hwasan.module_ctor comdat.
+- 4f38ab250ff4 [LLD][ELF][ARM] Do not insert interworking thunks for non STT_FUNC symbols
+- 6c4a8bc0a9f6 Make llvm::crc32() work also for input sizes larger than 32 bits.
+- f8c9ceb1ce9c [SimplifyLibCalls] Add __strlen_chk.
+
+### Local Changes
+- Revert two changes that break Android builds
+- Add stubs and headers for nl_types APIs
+- Add a new library libclang cxx
+- Do not record function addresses if value profiling is disabled
+
+### Notes
+New Clang warnings encountered:
+- -Wbitwise-conditional-parentheses
+- -Wbool-operation
+- -Wint-in-bool-context
+- -Wsizeof-array-div
+- -Wtautological-bitwise-compare
+- -Wtautological-overlap-compare
+
+### Enabled
+Feb 18 2020
+
+------
 ## clang-r370808
+
 ### Upstream Cherry-picks
 - 1689ad27af5c [builtins] Implement rounding mode support for i386/x86_64
 - 9e7ce07a8866 ARM: Don't emit R_ARM_NONE relocations to compact unwinding decoders in .ARM.exidx on Android.
@@ -37,6 +72,7 @@
 - r373929 Fix Calling Convention through aliases
 - r375166 libhwasan initialisation include kernel syscall ABI relaxation
 - r375298 hwasan: Add missing SANITIZER_INTERFACE_ATTRIBUTE on __hwasan_personality_wrapper.
+
 ### Notes
 New Clang warnings encountered:
 - -Wreorder-init-list
@@ -61,10 +97,13 @@ picking r372338.
 Writes to variables declared const through casts to non-const pointers
 (explicitly undefined behavior) are now removed. The next release of Clang adds
 UBSAN support for catching such mistakes.
+
 ### Created
 Nov 11 2019
 
+-----
 ## clang-r365631c
+
 ### Upstream Cherry-picks
 - r366130 [LoopUnroll+LoopUnswitch] do not transform loops containing callbr
 - r369761 [llvm-objcopy] Strip debug sections when running with --strip-unneeded.
@@ -74,6 +113,7 @@ Nov 11 2019
 - r372364 Revert "Fix swig python package path"
 - r372587 [LLDB] Add a missing specification of linking against dbghelp
 - r372835 [lldb] [cmake] Fix installing Python modules on systems using /usr/lib
+
 ### Notes
 Fixes for:
 - asm goto + LTO in Android Linux kernels
@@ -81,8 +121,10 @@ Fixes for:
 - NDK fixes for:
   - stripping debug sections w/ llvm-objcopy/llvm-strip
   - LLDB
+
 ### Created
 Sep 26 2019
 
+-----
 ## Older Releases
 Release notes not available.
