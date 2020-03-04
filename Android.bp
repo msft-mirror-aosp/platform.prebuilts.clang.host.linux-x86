@@ -383,7 +383,7 @@ libclang_rt_prebuilt_library_shared {
     ],
 }
 
-libclang_rt_prebuilt_library_static {
+libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.ubsan_standalone-i386",
     enabled: false,
     host_supported: true,
@@ -394,7 +394,7 @@ libclang_rt_prebuilt_library_static {
     },
 }
 
-libclang_rt_prebuilt_library_static {
+libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.ubsan_standalone-x86_64",
     enabled: false,
     host_supported: true,
@@ -656,9 +656,8 @@ libclang_rt_prebuilt_library_static {
     ],
 }
 
-libclang_rt_prebuilt_library_static {
+libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.asan-x86_64",
-    sdk_version: "minimum",
     enabled: false,
     host_supported: true,
     target: {
@@ -666,10 +665,17 @@ libclang_rt_prebuilt_library_static {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
+}
+
+libclang_rt_prebuilt_library_shared {
+    name: "libclang_rt.asan-i386",
+    enabled: false,
+    host_supported: true,
+    target: {
+        linux_glibc_x86: {
+            enabled: true,
+        },
+    },
 }
 
 libclang_rt_prebuilt_library_static {

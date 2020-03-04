@@ -29,9 +29,9 @@ import (
 	"android/soong/genrule"
 )
 
-const libLLVMSoFormat = "libLLVM-%ssvn.so"
-const libclangSoFormat = "libclang.so.%ssvn"
-const libclangCxxSoFormat = "libclang_cxx.so.%ssvn"
+const libLLVMSoFormat = "libLLVM-%sgit.so"
+const libclangSoFormat = "libclang.so.%sgit"
+const libclangCxxSoFormat = "libclang_cxx.so.%sgit"
 const libcxxSoName = "libc++.so.1"
 const libcxxabiSoName = "libc++abi.so.1"
 
