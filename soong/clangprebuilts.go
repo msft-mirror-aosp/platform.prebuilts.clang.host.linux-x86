@@ -189,6 +189,8 @@ func llvmPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 
 type prebuiltLibrarySharedProps struct {
 	Has_stubs *bool
+
+	Shared_libs []string
 }
 
 func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, in *prebuiltLibrarySharedProps) {
