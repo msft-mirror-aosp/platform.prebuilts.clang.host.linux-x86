@@ -7,11 +7,8 @@
 - 41206b61e30c [DebugInfo] Re-instate LiveDebugVariables scope trimming
 - 1de10705594c [DAGCombine] Fix alias analysis for unaligned accesses
 
-### Notes
-Switch from python compiler wrapper to go compiler wrapper.
-
 ### Enabled
-Mar 12 2020
+Mar 19 2020
 
 ------
 ## clang-r377782b
