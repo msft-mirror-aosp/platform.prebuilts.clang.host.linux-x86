@@ -297,7 +297,11 @@ libclang_rt_prebuilt_library_shared {
     ramdisk_available: true,
     recovery_available: true,
     double_loadable: true,
-    stl: "c++_shared",
+    target: {
+        android: {
+            shared_libs: ["libc++"],
+        },
+    },
     vndk: {
         enabled: true,
     },
@@ -345,7 +349,11 @@ libclang_rt_prebuilt_library_shared {
     ramdisk_available: true,
     recovery_available: true,
     double_loadable: true,
-    stl: "c++_shared",
+    target: {
+        android: {
+            shared_libs: ["libc++"],
+        },
+    },
     vndk: {
         enabled: true,
     },
