@@ -32,7 +32,7 @@ LLVM Users
   * Look for "clang-" in [ndk/toolchains.py](https://android.googlesource.com/platform/ndk/+/refs/heads/master/ndk/toolchains.py)
 
 * [**Trusty**](https://source.android.com/security/trusty/)
-  * Currently clang-r377782c
+  * Currently clang-r377782d
   * Look for "clang-" in [vendor/google/aosp/scripts/envsetup.sh](https://android.googlesource.com/trusty/vendor/google/aosp/+/master/scripts/envsetup.sh).
 
 * [**Android Emulator**](https://developer.android.com/studio/run/emulator.html)
@@ -57,15 +57,15 @@ LLVM Users
   * Look for "clang-" in [build-openjdk-darwin.sh](https://android.googlesource.com/toolchain/jdk/build/+/refs/heads/master/build-openjdk-darwin.sh)
 
 * [**Clang Tools**](https://android.googlesource.com/platform/prebuilts/clang-tools/)
-  * Currently clang-r377782c
+  * Currently clang-r377782d
   * Look for "clang-r" in [envsetup.sh](https://android.googlesource.com/platform/development/+/refs/heads/master/vndk/tools/header-checker/android/envsetup.sh)
 
 * **Android Rust**
-  * Currently clang-r377782c
+  * Currently clang-r377782d
   * Look for "CLANG_REVISION" in [paths.py](https://android.googlesource.com/toolchain/android_rust/+/refs/heads/master/paths.py)
 
 * **Stage 1 compiler**
-  * Currently clang-r377782c
+  * Currently clang-r377782d
   * Look for "clang-r" in [toolchain/llvm_android/build.py](https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/master/build.py)
   * Note the chicken & egg paradox of a self hosting bootstrapping compiler; this can only be updated AFTER a new prebuilt is checked in.
 
