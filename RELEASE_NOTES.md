@@ -1,5 +1,47 @@
 # Release Notes
 
+## clang-r383902
+
+### Upstream Cherry-picks
+Patches with start_version: 383902 in https://android.googlesource.com/toolchain/llvm_android/+/master/patches/PATCHES.json.
+
+### Local Changes
+Revert 90c31b0f428f [X86] Custom lower ISD::FROUND with SSE4.1 to avoid a libcall.
+
+### Notes
+New Clang warnings encountered:
+- -Wdeprecated-copy
+- -Wrange-loop-construct
+- -Wmisleading-indentation
+- -Wzero-as-null-pointer-constant (not new, but seems to have stricter rule)
+- -Wdeprecated-anon-enum-enum-conversion
+- -Wdeprecated-enum-enum-conversion
+- -Wstring-compare
+- -Wenum-enum-conversion
+- -Wenum-float-conversion
+- -Wpessimizing-move
+
+New Clang-tidy warnings encountered:
+- -bugprone-reserved-identifier*,-cert-dcl51-cpp,-cert-dcl37-c
+- -readability-qualified-auto
+- -bugprone-signed-char-misuse
+- -bugprone-branch-clone
+
+Clang detects new compilation errors for not-instantiated template member functions.
+Switch from python wrapper to go wrapper.
+
+### Enabled
+May 01 2020
+
+------
+## clang-r377782d
+
+### Upstream Cherry-picks
+- 6c732461 [ELF] Fix a null pointer dereference when --emit-relocs and --strip-debug are used together
+
+### Enabled
+Apr 04 2020
+
 ------
 ## clang-r377782c
 
