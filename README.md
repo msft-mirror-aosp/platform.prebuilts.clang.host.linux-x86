@@ -64,6 +64,10 @@ LLVM Users
   * Currently clang-r383902
   * Look for "CLANG_REVISION" in [paths.py](https://android.googlesource.com/toolchain/android_rust/+/refs/heads/master/paths.py)
 
+* [**Android Rust bindgen**](https://android.googlesource.com/platform/external/rust/crates/bindgen/)
+  * Currently clang-r383902c
+  * Look for "CLANG_VERSION" and "CLANG_SO_GIT" in [bindgen.sh](https://android.googlesource.com/platform/external/rust/crates/bindgen/+/refs/heads/master/android/bindgen.sh)
+
 * **Stage 1 compiler**
   * Currently clang-r383902
   * Look for "clang-r" in [toolchain/llvm_android/build.py](https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/master/build.py)
