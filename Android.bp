@@ -31,8 +31,18 @@ llvm_prebuilt_library_static {
     },
 }
 
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.builtins-arm-android",
+cc_defaults {
+    name: "libclang_rt-prebuilt-default",
+    apex_available: [
+        "//apex_available:anyapex",
+        "//apex_available:platform",
+    ],
+}
+
+///////////////////////////////////////////////////////////////////////////////
+cc_defaults {
+    name: "libclang_rt.builtins-android-default",
+    defaults: ["libclang_rt-prebuilt-default"],
     sdk_version: "minimum",
     enabled: false,
     ramdisk_available: true,
@@ -42,199 +52,147 @@ libclang_rt_prebuilt_library_static {
     sanitize: {
         never: true,
     },
+    stl: "none",
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.builtins-arm-android",
+    defaults: ["libclang_rt.builtins-android-default"],
     arch: {
         arm: {
             enabled: true,
         },
     },
-    stl: "none",
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.builtins-aarch64-android",
-    sdk_version: "minimum",
-    enabled: false,
-    ramdisk_available: true,
-    recovery_available: true,
-    vendor_available: true,
-    native_bridge_supported: true,
-    sanitize: {
-        never: true,
-    },
+    defaults: ["libclang_rt.builtins-android-default"],
     arch: {
         arm64: {
             enabled: true,
         },
     },
-    stl: "none",
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.builtins-i686-android",
-    sdk_version: "minimum",
-    enabled: false,
-    ramdisk_available: true,
-    recovery_available: true,
-    vendor_available: true,
-    native_bridge_supported: true,
-    sanitize: {
-        never: true,
-    },
+    defaults: ["libclang_rt.builtins-android-default"],
     arch: {
         x86: {
             enabled: true,
         },
     },
-    stl: "none",
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.builtins-x86_64-android",
-    sdk_version: "minimum",
-    defaults: ["linux_bionic_supported"],
-    enabled: false,
-    ramdisk_available: true,
-    recovery_available: true,
-    vendor_available: true,
-    native_bridge_supported: true,
-    sanitize: {
-        never: true,
-    },
+    defaults: [
+        "linux_bionic_supported",
+        "libclang_rt.builtins-android-default",
+    ],
     arch: {
         x86_64: {
             enabled: true,
         },
     },
-    stl: "none",
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.builtins-x86_64",
+///////////////////////////////////////////////////////////////////////////////
+cc_defaults {
+    name: "libclang_rt.builtins-default",
     enabled: false,
     host_supported: true,
     sanitize: {
         never: true,
     },
+    stl: "none",
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.builtins-x86_64",
+    defaults: ["libclang_rt.builtins-default"],
     target: {
         linux_glibc_x86_64: {
             enabled: true,
         },
     },
-    stl: "none",
 }
 
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.builtins-i386",
-    enabled: false,
-    host_supported: true,
-    sanitize: {
-        never: true,
-    },
+    defaults: ["libclang_rt.builtins-default"],
     target: {
         linux_glibc_x86: {
             enabled: true,
         },
     },
-    stl: "none",
+}
+
+///////////////////////////////////////////////////////////////////////////////
+cc_defaults {
+    name: "libclang_rt.asan-android-default",
+    defaults: ["libclang_rt-prebuilt-default"],
+    sdk_version: "minimum",
+    enabled: false,
+    ramdisk_available: true,
+    recovery_available: true,
+    native_bridge_supported: true,
 }
 
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.asan-arm-android",
+    defaults: ["libclang_rt.asan-android-default"],
     sdk_version: "24",
-    enabled: false,
-    ramdisk_available: true,
-    recovery_available: true,
-    native_bridge_supported: true,
+    check_elf_files: false,  // Bypass circular dependency between libc++
+    has_stubs: true,
     arch: {
         arm: {
             enabled: true,
         },
     },
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    has_stubs: true,
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.asan-aarch64-android",
-    sdk_version: "minimum",
-    enabled: false,
-    ramdisk_available: true,
-    recovery_available: true,
-    native_bridge_supported: true,
+    defaults: ["libclang_rt.asan-android-default"],
+    check_elf_files: false,  // Bypass circular dependency between libc++
+    has_stubs: true,
     arch: {
         arm64: {
             enabled: true,
         },
     },
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    has_stubs: true,
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.asan-i686-android",
-    sdk_version: "minimum",
-    enabled: false,
-    ramdisk_available: true,
-    recovery_available: true,
-    native_bridge_supported: true,
+    defaults: ["libclang_rt.asan-android-default"],
+    check_elf_files: false,  // Bypass circular dependency between libc++
+    has_stubs: true,
     arch: {
         x86: {
             enabled: true,
         },
     },
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    has_stubs: true,
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.asan-x86_64-android",
-    defaults: ["linux_bionic_supported"],
-    sdk_version: "minimum",
-    enabled: false,
-    ramdisk_available: true,
-    recovery_available: true,
-    native_bridge_supported: true,
+    defaults: [
+        "linux_bionic_supported",
+        "libclang_rt.asan-android-default",
+    ],
+    check_elf_files: false,  // Bypass circular dependency between libc++
+    has_stubs: true,
     arch: {
         x86_64: {
             enabled: true,
         },
     },
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    has_stubs: true,
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
+///////////////////////////////////////////////////////////////////////////////
 libclang_rt_llndk_library {
     name: "libclang_rt.asan-arm-android",
     native_bridge_supported: true,
@@ -279,6 +237,7 @@ libclang_rt_llndk_library {
     },
 }
 
+///////////////////////////////////////////////////////////////////////////////
 libclang_rt_llndk_library {
     name: "libclang_rt.hwasan-aarch64-android",
     enabled: false,
@@ -289,9 +248,11 @@ libclang_rt_llndk_library {
     },
 }
 
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.ubsan_standalone-arm-android",
-    sdk_version: "24",
+///////////////////////////////////////////////////////////////////////////////
+cc_defaults {
+    name: "libclang_rt.ubsan_standalone-android-default",
+    defaults: ["libclang_rt-prebuilt-default"],
+    sdk_version: "minimum",
     enabled: false,
     vendor_available: true,
     ramdisk_available: true,
@@ -301,90 +262,60 @@ libclang_rt_prebuilt_library_shared {
     vndk: {
         enabled: true,
     },
+}
+
+libclang_rt_prebuilt_library_shared {
+    name: "libclang_rt.ubsan_standalone-arm-android",
+    defaults: ["libclang_rt.ubsan_standalone-android-default"],
+    sdk_version: "24",
+    check_elf_files: false,  // Bypass circular dependency between libc++
     arch: {
         arm: {
             enabled: true,
         },
     },
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.ubsan_standalone-aarch64-android",
-    sdk_version: "minimum",
-    enabled: false,
-    vendor_available: true,
-    ramdisk_available: true,
-    recovery_available: true,
-    double_loadable: true,
-    vndk: {
-        enabled: true,
-    },
+    defaults: ["libclang_rt.ubsan_standalone-android-default"],
+    check_elf_files: false,  // Bypass circular dependency between libc++
     arch: {
         arm64: {
             enabled: true,
         },
     },
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.ubsan_standalone-i686-android",
-    defaults: ["linux_bionic_supported"],
-    sdk_version: "minimum",
-    enabled: false,
-    vendor_available: true,
-    ramdisk_available: true,
-    recovery_available: true,
-    double_loadable: true,
-    stl: "c++_shared",
-    vndk: {
-        enabled: true,
-    },
+    defaults: [
+        "linux_bionic_supported",
+        "libclang_rt.ubsan_standalone-android-default",
+    ],
+    check_elf_files: false,  // Bypass circular dependency between libc++
     arch: {
         x86: {
             enabled: true,
         },
     },
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.ubsan_standalone-x86_64-android",
-    defaults: ["linux_bionic_supported"],
-    sdk_version: "minimum",
-    enabled: false,
-    vendor_available: true,
-    ramdisk_available: true,
-    recovery_available: true,
-    double_loadable: true,
-    vndk: {
-        enabled: true,
-    },
+    defaults: [
+        "linux_bionic_supported",
+        "libclang_rt.ubsan_standalone-android-default",
+    ],
+    check_elf_files: false,  // Bypass circular dependency between libc++
     arch: {
         x86_64: {
             enabled: true,
         },
     },
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
+///////////////////////////////////////////////////////////////////////////////
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.ubsan_standalone-i386",
     enabled: false,
@@ -407,72 +338,62 @@ libclang_rt_prebuilt_library_shared {
     },
 }
 
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.ubsan_minimal-arm-android",
+///////////////////////////////////////////////////////////////////////////////
+cc_defaults {
+    name: "libclang_rt.ubsan_minimal-android-default",
+    defaults: ["libclang_rt-prebuilt-default"],
     sdk_version: "minimum",
     enabled: false,
     vendor_available: true,
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.ubsan_minimal-arm-android",
+    defaults: ["libclang_rt.ubsan_minimal-android-default"],
     arch: {
         arm: {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.ubsan_minimal-aarch64-android",
-    sdk_version: "minimum",
-    enabled: false,
-    vendor_available: true,
+    defaults: ["libclang_rt.ubsan_minimal-android-default"],
     arch: {
         arm64: {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.ubsan_minimal-i686-android",
-    defaults:["linux_bionic_supported"],
-    sdk_version: "minimum",
-    enabled: false,
-    vendor_available: true,
+    defaults: [
+        "linux_bionic_supported",
+        "libclang_rt.ubsan_minimal-android-default",
+    ],
     arch: {
         x86: {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.ubsan_minimal-x86_64-android",
-    defaults:["linux_bionic_supported"],
-    sdk_version: "minimum",
-    enabled: false,
-    vendor_available: true,
+    defaults: [
+        "linux_bionic_supported",
+        "libclang_rt.ubsan_minimal-android-default",
+    ],
     arch: {
         x86_64: {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
+///////////////////////////////////////////////////////////////////////////////
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.ubsan_minimal-i386",
     enabled: false,
@@ -495,6 +416,7 @@ libclang_rt_prebuilt_library_static {
     },
 }
 
+///////////////////////////////////////////////////////////////////////////////
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.hwasan_static-aarch64-android",
     sdk_version: "minimum",
@@ -507,12 +429,12 @@ libclang_rt_prebuilt_library_static {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
+    defaults: [
+        "libclang_rt-prebuilt-default",
     ],
 }
 
+///////////////////////////////////////////////////////////////////////////////
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.hwasan-aarch64-android",
     sdk_version: "minimum",
@@ -526,84 +448,63 @@ libclang_rt_prebuilt_library_shared {
     },
     check_elf_files: false,  // Bypass circular dependency between libc++
     has_stubs: true,
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
+    defaults: [
+        "libclang_rt-prebuilt-default",
     ],
 }
 
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.profile-arm-android",
+///////////////////////////////////////////////////////////////////////////////
+cc_defaults {
+    name: "libclang_rt.profile-android-default",
+    defaults: ["libclang_rt-prebuilt-default"],
     sdk_version: "minimum",
     enabled: false,
     ramdisk_available: true,
     recovery_available: true,
     vendor_available: true,
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.profile-arm-android",
+    defaults: ["libclang_rt.profile-android-default"],
     arch: {
         arm: {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-aarch64-android",
-    sdk_version: "minimum",
-    enabled: false,
-    ramdisk_available: true,
-    recovery_available: true,
-    vendor_available: true,
+    defaults: ["libclang_rt.profile-android-default"],
     arch: {
         arm64: {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-i686-android",
-    sdk_version: "minimum",
-    enabled: false,
-    ramdisk_available: true,
-    recovery_available: true,
-    vendor_available: true,
+    defaults: ["libclang_rt.profile-android-default"],
     arch: {
         x86: {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-x86_64-android",
-    sdk_version: "minimum",
-    enabled: false,
-    ramdisk_available: true,
-    recovery_available: true,
-    vendor_available: true,
+    defaults: ["libclang_rt.profile-android-default"],
     arch: {
         x86_64: {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
+///////////////////////////////////////////////////////////////////////////////
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-x86_64",
     sdk_version: "minimum",
@@ -614,50 +515,44 @@ libclang_rt_prebuilt_library_static {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
+    defaults: [
+        "libclang_rt-prebuilt-default",
     ],
 }
 
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.fuzzer-x86_64",
+///////////////////////////////////////////////////////////////////////////////
+cc_defaults {
+    name: "libclang_rt.fuzzer-default",
+    defaults: ["libclang_rt-prebuilt-default"],
     sdk_version: "minimum",
     enabled: false,
     host_supported: true,
     sanitize: {
         never: true,
     },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.fuzzer-x86_64",
+    defaults: ["libclang_rt.fuzzer-default"],
     target: {
         linux_glibc_x86_64: {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.fuzzer-i386",
-    sdk_version: "minimum",
-    enabled: false,
-    host_supported: true,
-    sanitize: {
-        never: true,
-    },
+    defaults: ["libclang_rt.fuzzer-default"],
     target: {
         linux_glibc_x86: {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
+///////////////////////////////////////////////////////////////////////////////
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.asan-x86_64",
     enabled: false,
@@ -680,8 +575,10 @@ libclang_rt_prebuilt_library_shared {
     },
 }
 
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.fuzzer-arm-android",
+///////////////////////////////////////////////////////////////////////////////
+cc_defaults {
+    name: "libclang_rt.fuzzer-android-default",
+    defaults: ["libclang_rt-prebuilt-default"],
     sdk_version: "minimum",
     enabled: false,
     ramdisk_available: true,
@@ -690,80 +587,49 @@ libclang_rt_prebuilt_library_static {
     sanitize: {
         never: true,
     },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.fuzzer-arm-android",
+    defaults: ["libclang_rt.fuzzer-android-default"],
     arch: {
         arm: {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.fuzzer-aarch64-android",
-    sdk_version: "minimum",
-    enabled: false,
-    ramdisk_available: true,
-    recovery_available: true,
-    vendor_available: true,
-    sanitize: {
-        never: true,
-    },
+    defaults: ["libclang_rt.fuzzer-android-default"],
     arch: {
         arm64: {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.fuzzer-i686-android",
-    sdk_version: "minimum",
-    enabled: false,
-    ramdisk_available: true,
-    recovery_available: true,
-    vendor_available: true,
-    sanitize: {
-        never: true,
-    },
+    defaults: ["libclang_rt.fuzzer-android-default"],
     arch: {
         x86: {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.fuzzer-x86_64-android",
-    sdk_version: "minimum",
-    enabled: false,
-    ramdisk_available: true,
-    recovery_available: true,
-    vendor_available: true,
-    sanitize: {
-        never: true,
-    },
+    defaults: ["libclang_rt.fuzzer-android-default"],
     arch: {
         x86_64: {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
+///////////////////////////////////////////////////////////////////////////////
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-i386",
     sdk_version: "minimum",
@@ -775,314 +641,222 @@ libclang_rt_prebuilt_library_static {
         },
     },
     check_elf_files: false,  // Bypass circular dependency between libc++
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
+    defaults: [
+        "libclang_rt-prebuilt-default",
     ],
+}
+
+///////////////////////////////////////////////////////////////////////////////
+cc_defaults {
+    name: "libclang_rt.scudo-android-default",
+    defaults: ["libclang_rt-prebuilt-default"],
+    sdk_version: "minimum",
+    enabled: false,
+    vendor_available: true,
+    vndk: {
+        enabled: true,
+    },
 }
 
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.scudo-arm-android",
+    defaults: ["libclang_rt.scudo-android-default"],
     sdk_version: "24",
-    enabled: false,
-    vendor_available: true,
-    vndk: {
-        enabled: true,
-    },
+    check_elf_files: false,  // Bypass circular dependency between libc++
     arch: {
         arm: {
             enabled: true,
         },
     },
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.scudo-aarch64-android",
-    sdk_version: "minimum",
-    enabled: false,
-    vendor_available: true,
-    vndk: {
-        enabled: true,
-    },
+    defaults: ["libclang_rt.scudo-android-default"],
+    check_elf_files: false,  // Bypass circular dependency between libc++
     arch: {
         arm64: {
             enabled: true,
         },
     },
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.scudo-i686-android",
-    sdk_version: "minimum",
-    enabled: false,
-    vendor_available: true,
-    vndk: {
-        enabled: true,
-    },
+    defaults: ["libclang_rt.scudo-android-default"],
+    check_elf_files: false,  // Bypass circular dependency between libc++
     arch: {
         x86: {
             enabled: true,
         },
     },
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.scudo-x86_64-android",
-    sdk_version: "minimum",
-    enabled: false,
-    vendor_available: true,
-    vndk: {
-        enabled: true,
-    },
+    defaults: ["libclang_rt.scudo-android-default"],
+    check_elf_files: false,  // Bypass circular dependency between libc++
     arch: {
         x86_64: {
             enabled: true,
         },
     },
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
+}
+
+///////////////////////////////////////////////////////////////////////////////
+cc_defaults {
+    name: "libclang_rt.scudo-android.static-default",
+    defaults: ["libclang_rt-prebuilt-default"],
+    enabled: false,
+    vendor_available: true,
+    sanitize: {
+        never: true,
+    },
 }
 
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.scudo-arm-android.static",
-    enabled: false,
-    vendor_available: true,
-    sanitize: {
-        never: true,
-    },
+    defaults: ["libclang_rt.scudo-android.static-default"],
     arch: {
         arm: {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.scudo-aarch64-android.static",
-    enabled: false,
-    vendor_available: true,
-    sanitize: {
-        never: true,
-    },
+    defaults: ["libclang_rt.scudo-android.static-default"],
     arch: {
         arm64: {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.scudo-i686-android.static",
-    enabled: false,
-    vendor_available: true,
-    sanitize: {
-        never: true,
-    },
+    defaults: ["libclang_rt.scudo-android.static-default"],
     arch: {
         x86: {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.scudo-x86_64-android.static",
-    enabled: false,
-    vendor_available: true,
-    sanitize: {
-        never: true,
-    },
+    defaults: ["libclang_rt.scudo-android.static-default"],
     arch: {
         x86_64: {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
+}
+
+///////////////////////////////////////////////////////////////////////////////
+cc_defaults {
+    name: "libclang_rt.scudo_minimal-android-default",
+    defaults: ["libclang_rt-prebuilt-default"],
+    sdk_version: "23",
+    enabled: false,
+    vendor_available: true,
+    vndk: {
+        enabled: true,
+    },
+    shared_libs: ["libc", "libdl", "liblog"],
 }
 
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.scudo_minimal-arm-android",
+    defaults: ["libclang_rt.scudo_minimal-android-default"],
     sdk_version: "24",
-    enabled: false,
-    vendor_available: true,
-    vndk: {
-        enabled: true,
-    },
     arch: {
         arm: {
             enabled: true,
         },
     },
-    shared_libs: ["libc", "libdl", "liblog"],
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.scudo_minimal-aarch64-android",
-    sdk_version: "23",
-    enabled: false,
-    vendor_available: true,
-    vndk: {
-        enabled: true,
-    },
+    defaults: ["libclang_rt.scudo_minimal-android-default"],
     arch: {
         arm64: {
             enabled: true,
         },
     },
-    shared_libs: ["libc", "libdl", "liblog"],
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.scudo_minimal-i686-android",
-    sdk_version: "23",
-    enabled: false,
-    vendor_available: true,
-    vndk: {
-        enabled: true,
-    },
+    defaults: ["libclang_rt.scudo_minimal-android-default"],
     arch: {
         x86: {
             enabled: true,
         },
     },
-    shared_libs: ["libc", "libdl", "liblog"],
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.scudo_minimal-x86_64-android",
-    sdk_version: "23",
-    enabled: false,
-    vendor_available: true,
-    vndk: {
-        enabled: true,
-    },
+    defaults: ["libclang_rt.scudo_minimal-android-default"],
     arch: {
         x86_64: {
             enabled: true,
         },
     },
-    shared_libs: ["libc", "libdl", "liblog"],
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.scudo_minimal-arm-android.static",
+///////////////////////////////////////////////////////////////////////////////
+cc_defaults {
+    name: "libclang_rt.scudo_minimal-android.static-default",
+    defaults: ["libclang_rt-prebuilt-default"],
     enabled: false,
     vendor_available: true,
     sanitize: {
         never: true,
     },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.scudo_minimal-arm-android.static",
+    defaults: ["libclang_rt.scudo_minimal-android.static-default"],
     arch: {
         arm: {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.scudo_minimal-aarch64-android.static",
-    enabled: false,
-    vendor_available: true,
-    sanitize: {
-        never: true,
-    },
+    defaults: ["libclang_rt.scudo_minimal-android.static-default"],
     arch: {
         arm64: {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.scudo_minimal-i686-android.static",
-    enabled: false,
-    vendor_available: true,
-    sanitize: {
-        never: true,
-    },
+    defaults: ["libclang_rt.scudo_minimal-android.static-default"],
     arch: {
         x86: {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.scudo_minimal-x86_64-android.static",
-    enabled: false,
-    vendor_available: true,
-    sanitize: {
-        never: true,
-    },
+    defaults: ["libclang_rt.scudo_minimal-android.static-default"],
     arch: {
         x86_64: {
             enabled: true,
         },
     },
-    apex_available: [
-        "//apex_available:anyapex",
-        "//apex_available:platform",
-    ],
 }
 
 // -----------------------------------------------------------------------------
