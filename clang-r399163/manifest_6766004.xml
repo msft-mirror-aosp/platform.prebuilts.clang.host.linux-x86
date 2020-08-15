@@ -12,7 +12,7 @@
   <project name="platform/bionic" path="bionic" revision="3936985e75eace1adeeb8d64d4c98e737318d284" upstream="master" />
   <project name="toolchain/binutils" path="toolchain/binutils" revision="c19795e958ed532462948fd14b1bdfd4f6e96e03" upstream="master" />
   <project name="toolchain/llvm-project" path="toolchain/llvm-project" revision="87f1315dfbea7c137aa2e6d362dbb457e388158d" upstream="master-legacy" />
-  <project name="toolchain/llvm_android" path="toolchain/llvm_android" revision="04a34ae07b488d129ad37c112ea22e431a7e2a52" upstream="master" />
+  <project name="toolchain/llvm_android" path="toolchain/llvm_android" revision="fe0b1e08ebae8a89ee8ca5eb7c9aa1926b4a22e0" upstream="master" />
   <!-- Android/ChromeOS shared toolchain-utils -->
   <project name="platform/external/toolchain-utils" path="external/toolchain-utils" revision="b8e15db27661a92ec12ae2af66bc6987929c87f8" upstream="master" />
   <!-- Binutils/gcc toolchains -->
@@ -44,9 +44,9 @@
   <project clone-depth="1" name="platform/prebuilts/python/darwin-x86" path="prebuilts/python/darwin-x86" revision="baf1adea8e432473a643da3a03e6269089773fa3" upstream="llvm-toolchain" />
   <project clone-depth="1" name="platform/prebuilts/python/windows-x86" path="prebuilts/python/windows-x86" revision="158a218bd1252ec7d23836b0dd2eb222a1078841" upstream="llvm-toolchain" />
   <!-- Prebuilts (for ease of updating) -->
-  <project clone-depth="1" name="platform/prebuilts/clang/host/darwin-x86" path="prebuilts/clang/host/darwin-x86" revision="8f2db671acc5fa99c0aa8c75c14d93f7a5e2878f" upstream="master" />
-  <project clone-depth="1" name="platform/prebuilts/clang/host/linux-x86" path="prebuilts/clang/host/linux-x86" revision="0e9e7035bf8ad42437c6156e5950eab13655b26c" upstream="master" />
-  <project clone-depth="1" name="platform/prebuilts/clang/host/windows-x86" path="prebuilts/clang/host/windows-x86" revision="5eb892361c74c6c363e033a44aad4c7c18c42cdc" upstream="master" />
+  <project clone-depth="1" name="platform/prebuilts/clang/host/darwin-x86" path="prebuilts/clang/host/darwin-x86" revision="30485b3f8266dcff7c0571d6d5dbaa9397f24179" upstream="master" />
+  <project clone-depth="1" name="platform/prebuilts/clang/host/linux-x86" path="prebuilts/clang/host/linux-x86" revision="274abf7b3d784ae5090f491312033471df6ed5ec" upstream="master" />
+  <project clone-depth="1" name="platform/prebuilts/clang/host/windows-x86" path="prebuilts/clang/host/windows-x86" revision="d2f3bd6075dcefb3bc3df25d650ed11ef4ff160a" upstream="master" />
   <!-- NDK headers/libraries -->
   <project name="toolchain/prebuilts/ndk/r20" path="toolchain/prebuilts/ndk/r20" revision="090bbcaa361eb158e8bfc5e6950081cb9679e350" upstream="master" />
 </manifest>
