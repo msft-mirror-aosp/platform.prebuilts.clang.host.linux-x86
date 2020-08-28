@@ -68,6 +68,7 @@ libclang_rt_prebuilt_library_static {
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.builtins-aarch64-android",
     defaults: ["libclang_rt.builtins-android-default"],
+    host_supported: true,
     arch: {
         arm64: {
             enabled: true,
@@ -158,6 +159,7 @@ libclang_rt_prebuilt_library_shared {
     defaults: ["libclang_rt.asan-android-default"],
     check_elf_files: false,  // Bypass circular dependency between libc++
     has_stubs: true,
+    host_supported: true,
     arch: {
         arm64: {
             enabled: true,
@@ -280,6 +282,7 @@ libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.ubsan_standalone-aarch64-android",
     defaults: ["libclang_rt.ubsan_standalone-android-default"],
     check_elf_files: false,  // Bypass circular dependency between libc++
+    host_supported: true,
     arch: {
         arm64: {
             enabled: true,
@@ -360,6 +363,7 @@ libclang_rt_prebuilt_library_static {
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.ubsan_minimal-aarch64-android",
     defaults: ["libclang_rt.ubsan_minimal-android-default"],
+    host_supported: true,
     arch: {
         arm64: {
             enabled: true,
@@ -424,6 +428,7 @@ libclang_rt_prebuilt_library_static {
     ramdisk_available: true,
     recovery_available: true,
     vendor_available: true,
+    host_supported: true,
     arch: {
         arm64: {
             enabled: true,
@@ -441,6 +446,7 @@ libclang_rt_prebuilt_library_shared {
     enabled: false,
     ramdisk_available: true,
     recovery_available: true,
+    host_supported: true,
     arch: {
         arm64: {
             enabled: true,
@@ -477,6 +483,7 @@ libclang_rt_prebuilt_library_static {
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.profile-aarch64-android",
     defaults: ["libclang_rt.profile-android-default"],
+    host_supported: true,
     arch: {
         arm64: {
             enabled: true,
@@ -602,6 +609,7 @@ libclang_rt_prebuilt_library_static {
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.fuzzer-aarch64-android",
     defaults: ["libclang_rt.fuzzer-android-default"],
+    host_supported: true,
     arch: {
         arm64: {
             enabled: true,
@@ -674,6 +682,7 @@ libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.scudo-aarch64-android",
     defaults: ["libclang_rt.scudo-android-default"],
     check_elf_files: false,  // Bypass circular dependency between libc++
+    host_supported: true,
     arch: {
         arm64: {
             enabled: true,
@@ -727,6 +736,7 @@ libclang_rt_prebuilt_library_static {
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.scudo-aarch64-android.static",
     defaults: ["libclang_rt.scudo-android.static-default"],
+    host_supported: true,
     arch: {
         arm64: {
             enabled: true,
@@ -781,6 +791,7 @@ libclang_rt_prebuilt_library_shared {
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.scudo_minimal-aarch64-android",
     defaults: ["libclang_rt.scudo_minimal-android-default"],
+    host_supported: true,
     arch: {
         arm64: {
             enabled: true,
@@ -832,6 +843,7 @@ libclang_rt_prebuilt_library_static {
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.scudo_minimal-aarch64-android.static",
     defaults: ["libclang_rt.scudo_minimal-android.static-default"],
+    host_supported: true,
     arch: {
         arm64: {
             enabled: true,
