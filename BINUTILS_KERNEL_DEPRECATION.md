@@ -27,6 +27,7 @@ The plan for S is:
 4. Create a branch of
    https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/
    that only contains the GNU as (assembler) binary.
+   (https://android.googlesource.com/platform/prebuilts/gas/linux-x86/)
 5. Update repo manifests for kernels to use the branch from 4, and ensure
    kernels build cleanly.
 
@@ -34,6 +35,7 @@ The plan for S is:
 backport or certain configs are broken that haven't been tested upstream.
 
 A stretch goal, assuming we get LLVM_IAS=1 in shape:
+
 6. Wire up support in Android common kernel's build/build.sh to forward
    `LLVM_IAS=1` to `make` from a supplied config. `LLVM_IAS=1` needs to be
    specified for all invocations of `make`. Alternatively, we can just modify
