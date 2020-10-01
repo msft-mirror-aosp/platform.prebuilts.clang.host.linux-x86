@@ -8,12 +8,16 @@ LLVM Users
 ----------
 
 * [**Android Platform**](https://android.googlesource.com/platform/)
-  * Currently clang-r383902
+  * Currently clang-r383902b
   * clang-r353983c1 for Android Q-QPR2 release
   * clang-r353983c for Android Q release
   * clang-4691093 for Android P release
   * Look for "ClangDefaultVersion" and/or "clang-" in [build/soong/cc/config/global.go](https://android.googlesource.com/platform/build/soong/+/master/cc/config/global.go/).
     * [Internal cs/ link](https://cs.corp.google.com/android/build/soong/cc/config/global.go?q=ClangDefaultVersion)
+
+* [**Android Platform LLVM binutils**](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/llvm-binutils-stable/)
+  * Currently clang-r383902b
+  * These can be updated by running [update-binutils.py](https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/master/update-binutils.py).
 
 * [**RenderScript**](https://developer.android.com/guide/topics/renderscript/index.html)
   * Currently clang-3289846
@@ -42,7 +46,7 @@ LLVM Users
     * [Internal cs/ link](https://cs.corp.google.com/android/external/qemu/android/build/cmake/toolchain.cmake?q=clang-)
 
 * [**Context Hub Runtime Environment (CHRE)**](https://android.googlesource.com/platform/system/chre/)
-  * Currently clang-r370808
+  * Currently clang-r383902c
   * Look in [system/chre/build/arch/x86.mk](https://android.googlesource.com/platform/system/chre/+/master/build/arch/x86.mk#12).
 
 * [**Keymaster (system/keymaster) tests**](https://android.googlesource.com/platform/system/keymaster)
@@ -73,10 +77,6 @@ LLVM Users
   * Look for "clang-r" in [toolchain/llvm_android/build.py](https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/master/build.py)
   * Note the chicken & egg paradox of a self hosting bootstrapping compiler; this can only be updated AFTER a new prebuilt is checked in.
 
-* **Beagle-x15 HOSTCC**
-  * Currently clang-r370808
-  * Look for "clang-r" in symlink of cc in [device/ti/beagle-x15/hostcc/cc](https://android.googlesource.com/device/ti/beagle-x15/+/refs/heads/master/hostcc/)
-
 
 Prebuilt Versions
 -----------------
@@ -101,6 +101,8 @@ Prebuilt Versions
 * [clang-r377782c](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r377782c) - March 2020
 * [clang-r377782d](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r377782d) - April 2020
 * [clang-r383902](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r383902) - May 2020
+* [clang-r383902b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r383902b) - June 2020
+* [clang-r383902c](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r383902c) - June 2020
 
 
 More Information
