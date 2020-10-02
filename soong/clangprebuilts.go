@@ -232,7 +232,7 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, in *prebuiltLi
 	p.Stl = proptools.StringPtr("none")
 
 	if proptools.Bool(in.Has_stubs) {
-		p.Stubs.Versions = []string{"10000"}
+		p.Stubs.Versions = []string{"29", "10000"}
 		p.Stubs.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx))
 	}
 
