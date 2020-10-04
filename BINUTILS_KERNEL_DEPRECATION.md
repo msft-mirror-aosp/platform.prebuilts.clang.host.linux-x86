@@ -30,23 +30,25 @@ The plan for S is:
    (https://android.googlesource.com/platform/prebuilts/gas/linux-x86/)
 5. Update repo manifests for kernels to use the branch from 4, and ensure
    kernels build cleanly.
+6. Remove GNU binutils from Android kernel manifests.
 
 5 is potentially a lot of work, depending on whether we have a lot of fixes to
 backport or certain configs are broken that haven't been tested upstream.
 
 A stretch goal, assuming we get LLVM_IAS=1 in shape:
 
-6. Wire up support in Android common kernel's build/build.sh to forward
+7. Wire up support in Android common kernel's build/build.sh to forward
    `LLVM_IAS=1` to `make` from a supplied config. `LLVM_IAS=1` needs to be
    specified for all invocations of `make`. Alternatively, we can just modify
    the top level Makefile to do what LLVM_IAS=1 would do anyways, though having
    flexibility of turning it off quickly should it regress in mainline is
    probably a safer bet.
-7. Update kernel configs to use `LLVM_IAS=1`, unless we simply modified the top
-   level Makefile in 6.
-8. Remove GNU binutils from Android kernel manifests.
+8. Update kernel configs to use `LLVM_IAS=1`, unless we simply modified the top
+   level Makefile in 6.  At this point we will be using Clang's integrated
+   assembler.
+9. Remove prebuilts/gas/linux-x86 (from step 4) from Android kernel manifests.
 
-I think we can get all 8 done for S, but 6,7,8 are a risk, and aren't critical
+I think we can get all 9 done for S, but 7,8,9 are a risk, and aren't critical
 to solve for S. Luckily, our comrades over at CrOS LLVM are helping whip
 Clang's integrated assembler into shape. In fact, they may end up beating us to
 the punch.
@@ -58,3 +60,29 @@ https://github.com/ClangBuiltLinux/linux/issues?q=is%3Aissue+is%3Aopen+label%3A%
 The version of GNU binutils distributed by AOSP is version 2.27.0.20170315 (ToT
 GNU binutils is 2.35) plus cherry picks. The 5.9-rc1 linux kernel currently
 requires binutils 2.23 or newer.
+
+## Contingency Plans
+
+Let's say a kernel change doesn't work with Clang's integrated assembler. The
+immediate question is "does this change need to land now, or can we bear a
+revert until Clang's integrated assembler is fixed?"
+
+With the answer to the above question being "Yes, revert now please" then the
+contingency plan is:
+1. file a bug, or at least email android-llvm@googlegroups.com and
+   ndesaulniers@google.com.
+2. revert step 9 above.
+3. revert step 8 above.
+4. Wait for toolchain feature or bug to be fixed in upstream LLVM.
+5. Wait for AOSP LLVM release containing fix.
+6. Move kernel builds to newer toolchains.
+7. Reapply step 8 above.
+8. Reapply step 9 above.
+
+With the answer to the above question being "No, we can wait for assembler
+support" then the contingency plan is:
+1. file a bug, or at least email android-llvm@googlegroups.com and
+   ndesaulniers@google.com.
+2. Wait for toolchain feature or bug to be fixed in upstream LLVM.
+3. Wait for AOSP LLVM release containing fix.
+4. Move kernel builds to newer toolchains.
