@@ -34,6 +34,7 @@ const libclangSoFormat = "libclang.so.%sgit"
 const libclangCxxSoFormat = "libclang_cxx.so.%sgit"
 const libcxxSoName = "libc++.so.1"
 const libcxxabiSoName = "libc++abi.so.1"
+const libxml2SoName = "libxml2.so.2.9.10"
 
 // This module is used to generate libfuzzer, libomp static libraries and
 // libclang_rt.* shared libraries. When LLVM_PREBUILTS_VERSION and
@@ -101,6 +102,8 @@ func getHostLibrary(ctx android.LoadHookContext) string {
 		return libcxxSoName
 	case "prebuilt_libc++abi_host":
 		return libcxxabiSoName
+	case "prebuilt_libxml2_host":
+		return libxml2SoName
 	default:
 		ctx.ModuleErrorf("unsupported host LLVM module: " + ctx.ModuleName())
 		return ""
@@ -278,6 +281,8 @@ func llvmDarwinFileGroup(ctx android.LoadHookContext) {
 	libName := strings.TrimSuffix(ctx.ModuleName(), "_darwin")
 	if libName == "libc++" || libName == "libc++abi" {
 		libName += ".1"
+	} else if libName == "libxml2" {
+		libName += ".2.9.10"
 	}
 	lib := path.Join(clangDir, "lib64", libName+".dylib")
 
