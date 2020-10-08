@@ -888,7 +888,18 @@ llvm_host_prebuilt_library_shared {
         never: true,
     },
     compile_multilib: "64",
-    shared_libs: ["libc++_host"],
+    shared_libs: [
+        "libc++_host",
+        "libxml2_host",
+    ],
+}
+
+llvm_host_prebuilt_library_shared {
+    name: "libxml2_host",
+    compile_multilib: "64",
+    sanitize: {
+        never: true,
+    },
 }
 
 // Export libclang_cxx shared library
