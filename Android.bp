@@ -33,6 +33,8 @@ llvm_prebuilt_library_static {
 
 cc_defaults {
     name: "libclang_rt-prebuilt-default",
+    ramdisk_available: true,
+    vendor_ramdisk_available: true,
     apex_available: [
         "//apex_available:anyapex",
         "//apex_available:platform",
@@ -45,7 +47,6 @@ cc_defaults {
     defaults: ["libclang_rt-prebuilt-default"],
     sdk_version: "minimum",
     enabled: false,
-    ramdisk_available: true,
     recovery_available: true,
     vendor_available: true,
     native_bridge_supported: true,
@@ -136,7 +137,6 @@ cc_defaults {
     defaults: ["libclang_rt-prebuilt-default"],
     sdk_version: "minimum",
     enabled: false,
-    ramdisk_available: true,
     recovery_available: true,
     native_bridge_supported: true,
 }
@@ -257,7 +257,6 @@ cc_defaults {
     sdk_version: "minimum",
     enabled: false,
     vendor_available: true,
-    ramdisk_available: true,
     recovery_available: true,
     double_loadable: true,
     stl: "c++_shared",
@@ -348,6 +347,8 @@ cc_defaults {
     sdk_version: "minimum",
     enabled: false,
     vendor_available: true,
+    ramdisk_available: false,
+    vendor_ramdisk_available: false,
 }
 
 libclang_rt_prebuilt_library_static {
@@ -425,7 +426,6 @@ libclang_rt_prebuilt_library_static {
     name: "libclang_rt.hwasan_static-aarch64-android",
     sdk_version: "minimum",
     enabled: false,
-    ramdisk_available: true,
     recovery_available: true,
     vendor_available: true,
     host_supported: true,
@@ -444,7 +444,6 @@ libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.hwasan-aarch64-android",
     sdk_version: "minimum",
     enabled: false,
-    ramdisk_available: true,
     recovery_available: true,
     host_supported: true,
     arch: {
@@ -465,7 +464,6 @@ cc_defaults {
     defaults: ["libclang_rt-prebuilt-default"],
     sdk_version: "minimum",
     enabled: false,
-    ramdisk_available: true,
     recovery_available: true,
     vendor_available: true,
 }
@@ -517,6 +515,8 @@ libclang_rt_prebuilt_library_static {
     sdk_version: "minimum",
     enabled: false,
     host_supported: true,
+    ramdisk_available: false,
+    vendor_ramdisk_available: false,
     target: {
         linux_glibc_x86_64: {
             enabled: true,
@@ -534,6 +534,8 @@ cc_defaults {
     sdk_version: "minimum",
     enabled: false,
     host_supported: true,
+    ramdisk_available: false,
+    vendor_ramdisk_available: false,
     sanitize: {
         never: true,
     },
@@ -588,7 +590,6 @@ cc_defaults {
     defaults: ["libclang_rt-prebuilt-default"],
     sdk_version: "minimum",
     enabled: false,
-    ramdisk_available: true,
     recovery_available: true,
     vendor_available: true,
     sanitize: {
@@ -643,6 +644,8 @@ libclang_rt_prebuilt_library_static {
     sdk_version: "minimum",
     enabled: false,
     host_supported: true,
+    ramdisk_available: false,
+    vendor_ramdisk_available: false,
     target: {
         linux_glibc_x86: {
             enabled: true,
@@ -661,6 +664,8 @@ cc_defaults {
     sdk_version: "minimum",
     enabled: false,
     vendor_available: true,
+    ramdisk_available: false,
+    vendor_ramdisk_available: false,
     vndk: {
         enabled: true,
     },
@@ -718,6 +723,8 @@ cc_defaults {
     defaults: ["libclang_rt-prebuilt-default"],
     enabled: false,
     vendor_available: true,
+    ramdisk_available: false,
+    vendor_ramdisk_available: false,
     sanitize: {
         never: true,
     },
@@ -771,6 +778,8 @@ cc_defaults {
     sdk_version: "23",
     enabled: false,
     vendor_available: true,
+    ramdisk_available: false,
+    vendor_ramdisk_available: false,
     vndk: {
         enabled: true,
     },
@@ -825,6 +834,8 @@ cc_defaults {
     defaults: ["libclang_rt-prebuilt-default"],
     enabled: false,
     vendor_available: true,
+    ramdisk_available: false,
+    vendor_ramdisk_available: false,
     sanitize: {
         never: true,
     },
