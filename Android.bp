@@ -26,6 +26,7 @@ llvm_prebuilt_library_static {
     name: "libomp",
     sdk_version: "minimum",
     vendor_available: true,
+    product_available: true,
     sanitize: {
         never: true,
     },
@@ -49,6 +50,7 @@ cc_defaults {
     enabled: false,
     recovery_available: true,
     vendor_available: true,
+    product_available: true,
     native_bridge_supported: true,
     sanitize: {
         never: true,
@@ -257,6 +259,7 @@ cc_defaults {
     sdk_version: "minimum",
     enabled: false,
     vendor_available: true,
+    product_available: true,
     recovery_available: true,
     double_loadable: true,
     stl: "c++_shared",
@@ -347,6 +350,7 @@ cc_defaults {
     sdk_version: "minimum",
     enabled: false,
     vendor_available: true,
+    product_available: true,
     ramdisk_available: false,
     vendor_ramdisk_available: false,
 }
@@ -428,6 +432,7 @@ libclang_rt_prebuilt_library_static {
     enabled: false,
     recovery_available: true,
     vendor_available: true,
+    product_available: true,
     host_supported: true,
     arch: {
         arm64: {
@@ -466,6 +471,7 @@ cc_defaults {
     enabled: false,
     recovery_available: true,
     vendor_available: true,
+    product_available: true,
 }
 
 libclang_rt_prebuilt_library_static {
@@ -592,6 +598,7 @@ cc_defaults {
     enabled: false,
     recovery_available: true,
     vendor_available: true,
+    product_available: true,
     sanitize: {
         never: true,
     },
@@ -664,6 +671,7 @@ cc_defaults {
     sdk_version: "minimum",
     enabled: false,
     vendor_available: true,
+    product_available: true,
     ramdisk_available: false,
     vendor_ramdisk_available: false,
     vndk: {
@@ -723,6 +731,7 @@ cc_defaults {
     defaults: ["libclang_rt-prebuilt-default"],
     enabled: false,
     vendor_available: true,
+    product_available: true,
     ramdisk_available: false,
     vendor_ramdisk_available: false,
     sanitize: {
@@ -778,6 +787,7 @@ cc_defaults {
     sdk_version: "23",
     enabled: false,
     vendor_available: true,
+    product_available: true,
     ramdisk_available: false,
     vendor_ramdisk_available: false,
     vndk: {
@@ -834,6 +844,7 @@ cc_defaults {
     defaults: ["libclang_rt-prebuilt-default"],
     enabled: false,
     vendor_available: true,
+    product_available: true,
     ramdisk_available: false,
     vendor_ramdisk_available: false,
     sanitize: {
