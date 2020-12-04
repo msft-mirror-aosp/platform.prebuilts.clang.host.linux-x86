@@ -10,4 +10,5 @@ ld64.lld
 ld.lld
 ../lib64/clang/11.0.5/share
 ../lib64/clang/11.0.5/lib/linux
+../lib64/clang/11.0.5/include
 ../lib64/libxml2.so.2.9.10
