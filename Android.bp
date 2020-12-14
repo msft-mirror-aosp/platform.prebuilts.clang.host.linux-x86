@@ -26,6 +26,7 @@ llvm_prebuilt_library_static {
     name: "libomp",
     sdk_version: "minimum",
     vendor_available: true,
+    product_available: true,
     sanitize: {
         never: true,
     },
@@ -33,6 +34,8 @@ llvm_prebuilt_library_static {
 
 cc_defaults {
     name: "libclang_rt-prebuilt-default",
+    ramdisk_available: true,
+    vendor_ramdisk_available: true,
     apex_available: [
         "//apex_available:anyapex",
         "//apex_available:platform",
@@ -45,9 +48,9 @@ cc_defaults {
     defaults: ["libclang_rt-prebuilt-default"],
     sdk_version: "minimum",
     enabled: false,
-    ramdisk_available: true,
     recovery_available: true,
     vendor_available: true,
+    product_available: true,
     native_bridge_supported: true,
     sanitize: {
         never: true,
@@ -136,7 +139,6 @@ cc_defaults {
     defaults: ["libclang_rt-prebuilt-default"],
     sdk_version: "minimum",
     enabled: false,
-    ramdisk_available: true,
     recovery_available: true,
     native_bridge_supported: true,
 }
@@ -146,7 +148,7 @@ libclang_rt_prebuilt_library_shared {
     defaults: ["libclang_rt.asan-android-default"],
     sdk_version: "24",
     check_elf_files: false,  // Bypass circular dependency between libc++
-    has_stubs: true,
+    llndk_stubs: "libclang_rt.asan-arm-android.llndk",
     arch: {
         arm: {
             enabled: true,
@@ -158,7 +160,7 @@ libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.asan-aarch64-android",
     defaults: ["libclang_rt.asan-android-default"],
     check_elf_files: false,  // Bypass circular dependency between libc++
-    has_stubs: true,
+    llndk_stubs: "libclang_rt.asan-aarch64-android.llndk",
     host_supported: true,
     arch: {
         arm64: {
@@ -171,7 +173,7 @@ libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.asan-i686-android",
     defaults: ["libclang_rt.asan-android-default"],
     check_elf_files: false,  // Bypass circular dependency between libc++
-    has_stubs: true,
+    llndk_stubs: "libclang_rt.asan-i686-android.llndk",
     arch: {
         x86: {
             enabled: true,
@@ -186,7 +188,7 @@ libclang_rt_prebuilt_library_shared {
         "libclang_rt.asan-android-default",
     ],
     check_elf_files: false,  // Bypass circular dependency between libc++
-    has_stubs: true,
+    llndk_stubs: "libclang_rt.asan-x86_64-android.llndk",
     arch: {
         x86_64: {
             enabled: true,
@@ -196,7 +198,7 @@ libclang_rt_prebuilt_library_shared {
 
 ///////////////////////////////////////////////////////////////////////////////
 libclang_rt_llndk_library {
-    name: "libclang_rt.asan-arm-android",
+    name: "libclang_rt.asan-arm-android.llndk",
     native_bridge_supported: true,
     enabled: false,
     arch: {
@@ -207,7 +209,7 @@ libclang_rt_llndk_library {
 }
 
 libclang_rt_llndk_library {
-    name: "libclang_rt.asan-aarch64-android",
+    name: "libclang_rt.asan-aarch64-android.llndk",
     native_bridge_supported: true,
     enabled: false,
     arch: {
@@ -218,7 +220,7 @@ libclang_rt_llndk_library {
 }
 
 libclang_rt_llndk_library {
-    name: "libclang_rt.asan-i686-android",
+    name: "libclang_rt.asan-i686-android.llndk",
     native_bridge_supported: true,
     enabled: false,
     arch: {
@@ -229,7 +231,7 @@ libclang_rt_llndk_library {
 }
 
 libclang_rt_llndk_library {
-    name: "libclang_rt.asan-x86_64-android",
+    name: "libclang_rt.asan-x86_64-android.llndk",
     native_bridge_supported: true,
     enabled: false,
     arch: {
@@ -241,7 +243,7 @@ libclang_rt_llndk_library {
 
 ///////////////////////////////////////////////////////////////////////////////
 libclang_rt_llndk_library {
-    name: "libclang_rt.hwasan-aarch64-android",
+    name: "libclang_rt.hwasan-aarch64-android.llndk",
     enabled: false,
     arch: {
         arm64: {
@@ -257,7 +259,7 @@ cc_defaults {
     sdk_version: "minimum",
     enabled: false,
     vendor_available: true,
-    ramdisk_available: true,
+    product_available: true,
     recovery_available: true,
     double_loadable: true,
     stl: "c++_shared",
@@ -348,6 +350,9 @@ cc_defaults {
     sdk_version: "minimum",
     enabled: false,
     vendor_available: true,
+    product_available: true,
+    ramdisk_available: false,
+    vendor_ramdisk_available: false,
 }
 
 libclang_rt_prebuilt_library_static {
@@ -425,9 +430,9 @@ libclang_rt_prebuilt_library_static {
     name: "libclang_rt.hwasan_static-aarch64-android",
     sdk_version: "minimum",
     enabled: false,
-    ramdisk_available: true,
     recovery_available: true,
     vendor_available: true,
+    product_available: true,
     host_supported: true,
     arch: {
         arm64: {
@@ -444,7 +449,6 @@ libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.hwasan-aarch64-android",
     sdk_version: "minimum",
     enabled: false,
-    ramdisk_available: true,
     recovery_available: true,
     host_supported: true,
     arch: {
@@ -453,7 +457,7 @@ libclang_rt_prebuilt_library_shared {
         },
     },
     check_elf_files: false,  // Bypass circular dependency between libc++
-    has_stubs: true,
+    llndk_stubs: "libclang_rt.hwasan-aarch64-android.llndk",
     defaults: [
         "libclang_rt-prebuilt-default",
     ],
@@ -465,9 +469,9 @@ cc_defaults {
     defaults: ["libclang_rt-prebuilt-default"],
     sdk_version: "minimum",
     enabled: false,
-    ramdisk_available: true,
     recovery_available: true,
     vendor_available: true,
+    product_available: true,
 }
 
 libclang_rt_prebuilt_library_static {
@@ -517,6 +521,8 @@ libclang_rt_prebuilt_library_static {
     sdk_version: "minimum",
     enabled: false,
     host_supported: true,
+    ramdisk_available: false,
+    vendor_ramdisk_available: false,
     target: {
         linux_glibc_x86_64: {
             enabled: true,
@@ -534,6 +540,8 @@ cc_defaults {
     sdk_version: "minimum",
     enabled: false,
     host_supported: true,
+    ramdisk_available: false,
+    vendor_ramdisk_available: false,
     sanitize: {
         never: true,
     },
@@ -588,9 +596,9 @@ cc_defaults {
     defaults: ["libclang_rt-prebuilt-default"],
     sdk_version: "minimum",
     enabled: false,
-    ramdisk_available: true,
     recovery_available: true,
     vendor_available: true,
+    product_available: true,
     sanitize: {
         never: true,
     },
@@ -643,6 +651,8 @@ libclang_rt_prebuilt_library_static {
     sdk_version: "minimum",
     enabled: false,
     host_supported: true,
+    ramdisk_available: false,
+    vendor_ramdisk_available: false,
     target: {
         linux_glibc_x86: {
             enabled: true,
@@ -661,6 +671,9 @@ cc_defaults {
     sdk_version: "minimum",
     enabled: false,
     vendor_available: true,
+    product_available: true,
+    ramdisk_available: false,
+    vendor_ramdisk_available: false,
     vndk: {
         enabled: true,
     },
@@ -718,6 +731,9 @@ cc_defaults {
     defaults: ["libclang_rt-prebuilt-default"],
     enabled: false,
     vendor_available: true,
+    product_available: true,
+    ramdisk_available: false,
+    vendor_ramdisk_available: false,
     sanitize: {
         never: true,
     },
@@ -771,6 +787,9 @@ cc_defaults {
     sdk_version: "23",
     enabled: false,
     vendor_available: true,
+    product_available: true,
+    ramdisk_available: false,
+    vendor_ramdisk_available: false,
     vndk: {
         enabled: true,
     },
@@ -825,6 +844,9 @@ cc_defaults {
     defaults: ["libclang_rt-prebuilt-default"],
     enabled: false,
     vendor_available: true,
+    product_available: true,
+    ramdisk_available: false,
+    vendor_ramdisk_available: false,
     sanitize: {
         never: true,
     },

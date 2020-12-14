@@ -191,7 +191,7 @@ func llvmPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 }
 
 type prebuiltLibrarySharedProps struct {
-	Has_stubs *bool
+	Llndk_stubs *string
 
 	Shared_libs []string
 }
@@ -234,7 +234,7 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, in *prebuiltLi
 	p.Pack_relocations = &disable
 	p.Stl = proptools.StringPtr("none")
 
-	if proptools.Bool(in.Has_stubs) {
+	if proptools.String(in.Llndk_stubs) != "" {
 		p.Stubs.Versions = []string{"29", "10000"}
 		p.Stubs.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx))
 	}
