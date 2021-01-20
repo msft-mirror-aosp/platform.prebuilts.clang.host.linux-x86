@@ -893,6 +893,38 @@ libclang_rt_prebuilt_library_static {
     },
 }
 
+///////////////////////////////////////////////////////////////////////////////
+cc_defaults {
+    name: "libunwind-android-default",
+    defaults: [
+        "libclang_rt-prebuilt-default",
+        "linux_bionic_supported",
+    ],
+    sdk_version: "minimum",
+    recovery_available: true,
+    vendor_available: true,
+    product_available: true,
+    native_bridge_supported: true,
+    sanitize: {
+        never: true,
+    },
+    stl: "none",
+    // The unwinder needs functions from libc (and libdl), but libc.so links
+    // against libunwind*.a. Clear the system_shared_libs property so that Soong
+    // doesn't complain about the cyclic dependency.
+    system_shared_libs: [],
+}
+
+llvm_prebuilt_library_static {
+    name: "libunwind",
+    defaults: ["libunwind-android-default"],
+}
+
+llvm_prebuilt_library_static {
+    name: "libunwind-exported",
+    defaults: ["libunwind-android-default"],
+}
+
 // -----------------------------------------------------------------------------
 // Export shared libraries for host tools (libLLVM, libclang, libc++).  These
 // are exported only when the LLVM_BUILD_HOST_TOOLS environment variable is set.
