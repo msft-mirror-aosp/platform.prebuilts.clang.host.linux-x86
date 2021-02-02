@@ -69,6 +69,24 @@ libclang_rt_prebuilt_library_static {
 }
 
 libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.builtins-arm-android-exported",
+    defaults: ["libclang_rt.builtins-android-default"],
+    arch: {
+        arm: {
+            enabled: true,
+        },
+    },
+
+    // This exported variant of the builtins library is only intended for use in
+    // libc.so and libm.so, which exports some builtins symbols for backwards
+    // compatibility.
+    visibility: [
+        "//bionic:__subpackages__",
+        "//frameworks/libs/native_bridge_support/libc:__subpackages__",
+    ],
+}
+
+libclang_rt_prebuilt_library_static {
     name: "libclang_rt.builtins-aarch64-android",
     defaults: ["libclang_rt.builtins-android-default"],
     host_supported: true,
@@ -87,6 +105,23 @@ libclang_rt_prebuilt_library_static {
             enabled: true,
         },
     },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.builtins-i686-android-exported",
+    defaults: ["libclang_rt.builtins-android-default"],
+    arch: {
+        x86: {
+            enabled: true,
+        },
+    },
+
+    // This exported variant of the builtins library is only intended for use in
+    // libc.so, which exports some builtins symbols for backwards compatibility.
+    visibility: [
+        "//bionic:__subpackages__",
+        "//frameworks/libs/native_bridge_support/libc:__subpackages__",
+    ],
 }
 
 libclang_rt_prebuilt_library_static {
@@ -923,6 +958,13 @@ llvm_prebuilt_library_static {
 llvm_prebuilt_library_static {
     name: "libunwind-exported",
     defaults: ["libunwind-android-default"],
+
+    // The libunwind-exported.a library is only intended for use with libc.so,
+    // which needs to export the unwinder API.
+    visibility: [
+        "//bionic:__subpackages__",
+        "//frameworks/libs/native_bridge_support/libc:__subpackages__",
+    ],
 }
 
 // -----------------------------------------------------------------------------
