@@ -579,7 +579,10 @@ def android_cc_toolchain(
 
     native.filegroup(
         name = "%s_linker_binaries" % name,
-        srcs = [
+        srcs = native.glob([
+            # Linking shared libraries uses clang.
+            clang_version_directory + "/bin/clang*",
+        ]) + [
             clang_version_directory + "/bin/lld",
             clang_version_directory + "/bin/ld.lld",
         ],
