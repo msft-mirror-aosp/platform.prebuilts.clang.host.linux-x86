@@ -8,7 +8,7 @@ LLVM Users
 ----------
 
 * [**Android Platform**](https://android.googlesource.com/platform/)
-  * Currently clang-r407598b
+  * Currently clang-r412851
   * clang-r383902b1 for Android R-QPR2 release
   * clang-r383902b for Android R release
   * clang-r353983c1 for Android Q-QPR2 release
@@ -107,6 +107,8 @@ Prebuilt Versions
 * [clang-r399163b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r399163b) - October 2020
 * [clang-r407598](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r407598) - January 2021
 * [clang-r407598b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r407598b) - January 2021
+
+* [clang-r412851](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r412851) - February 2021
 
 
 More Information
