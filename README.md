@@ -17,7 +17,7 @@ LLVM Users
     * [Internal cs/ link](https://cs.corp.google.com/android/build/soong/cc/config/global.go?q=ClangDefaultVersion)
 
 * [**Android Platform LLVM binutils**](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/llvm-binutils-stable/)
-  * Currently clang-r407598b
+  * Currently clang-r412851
   * These can be updated by running [update-binutils.py](https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/master/update-binutils.py).
 
 * [**RenderScript**](https://developer.android.com/guide/topics/renderscript/index.html)
@@ -66,6 +66,7 @@ LLVM Users
 * [**Clang Tools**](https://android.googlesource.com/platform/prebuilts/clang-tools/)
   * Currently clang-r407598b
   * Look for "clang-r" in [envsetup.sh](https://android.googlesource.com/platform/development/+/refs/heads/master/vndk/tools/header-checker/android/envsetup.sh)
+  * Check out branch clang-tools and run test: OUT_DIR=out prebuilts/clang-tools/build-prebuilts.sh
 
 * **Android Rust**
   * Currently clang-r407598b
@@ -107,7 +108,6 @@ Prebuilt Versions
 * [clang-r399163b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r399163b) - October 2020
 * [clang-r407598](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r407598) - January 2021
 * [clang-r407598b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r407598b) - January 2021
-
 * [clang-r412851](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r412851) - February 2021
 
 
