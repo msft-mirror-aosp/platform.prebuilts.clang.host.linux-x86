@@ -55,6 +55,21 @@ toolchain(
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 )
 
+# TODO(b/181803350): Fix linux toolchain flag set, as the current flags are for android.
+toolchain(
+    name = "cc_toolchain_x86_64_linux_def",
+    exec_compatible_with = [
+        "@bazel_tools//platforms:x86_64",
+        "@bazel_tools//platforms:linux",
+    ],
+    target_compatible_with = [
+        "@bazel_tools//platforms:x86_64",
+        "@bazel_tools//platforms:linux",
+    ],
+    toolchain = ":cc_toolchain_x86_64",
+    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
+)
+
 # x86_32 toolchain definition.
 android_cc_toolchain(
     name = "cc_toolchain_x86_32",
