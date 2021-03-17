@@ -520,7 +520,7 @@ def _cc_toolchain_config_impl(ctx):
         )
     else:
         system_libraries_feature = None
-    features = compiler_flag_features + _rpath_features() + [linker_target_flag_feature, toolchain_include_directories_feature, system_libraries_feature]
+    features = compiler_flag_features + _rpath_features() + [linker_target_flag_feature, linker_flag_feature, toolchain_include_directories_feature, system_libraries_feature]
     features = [feature for feature in features if feature != None]
     return cc_common.create_cc_toolchain_config_info(
         ctx = ctx,
