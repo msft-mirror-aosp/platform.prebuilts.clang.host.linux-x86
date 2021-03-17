@@ -390,11 +390,11 @@ def _rpath_features():
     )
     return [runtime_library_search_directories_feature, disable_rpath_feature]
 
-def _linker_flag_feature(flags = [], additional_static_flags = [], additional_dynamic_flags = []):
+def _linker_flag_feature(name, flags = [], additional_static_flags = [], additional_dynamic_flags = []):
     if not flags:
         return None
     return feature(
-        name = "linker_flags",
+        name = name,
         enabled = True,
         flag_sets = [
             flag_set(
@@ -501,8 +501,13 @@ def _cc_toolchain_config_impl(ctx):
         c_only_flags = C_COMPILER_FLAGS,
         non_external_flags = NON_EXTERNAL_DEFINES,
     )
+    linker_target_flag_feature = _linker_flag_feature(
+        "linker_target_flags",
+        flags = ctx.attr.target_flags,
+    )
     linker_flag_feature = _linker_flag_feature(
-        flags = LINKER_FLAGS + ctx.attr.target_flags + ctx.attr.linker_flags,
+        "linker_flags",
+        flags = LINKER_FLAGS + ctx.attr.linker_flags,
         additional_static_flags = STATIC_LINKER_FLAGS,
         additional_dynamic_flags = DYNAMIC_LINKER_FLAGS,
     )
@@ -515,7 +520,7 @@ def _cc_toolchain_config_impl(ctx):
         )
     else:
         system_libraries_feature = None
-    features = compiler_flag_features + _rpath_features() + [linker_flag_feature, toolchain_include_directories_feature, system_libraries_feature]
+    features = compiler_flag_features + _rpath_features() + [linker_target_flag_feature, toolchain_include_directories_feature, system_libraries_feature]
     features = [feature for feature in features if feature != None]
     return cc_common.create_cc_toolchain_config_info(
         ctx = ctx,
