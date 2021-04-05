@@ -44,12 +44,12 @@ android_cc_toolchain(
 toolchain(
     name = "cc_toolchain_x86_64_def",
     exec_compatible_with = [
-        "@bazel_tools//platforms:x86_64",
-        "@bazel_tools//platforms:linux",
+        "//build/bazel/platforms/arch:x86_64",
+        "//build/bazel/platforms/os:linux",
     ],
     target_compatible_with = [
-        "@bazel_tools//platforms:x86_64",
-        "@bazel_tools//platforms:android",
+        "//build/bazel/platforms/arch:x86_64",
+        "//build/bazel/platforms/os:android",
     ],
     toolchain = ":cc_toolchain_x86_64",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
@@ -59,20 +59,20 @@ toolchain(
 toolchain(
     name = "cc_toolchain_x86_64_linux_def",
     exec_compatible_with = [
-        "@bazel_tools//platforms:x86_64",
-        "@bazel_tools//platforms:linux",
+        "//build/bazel/platforms/arch:x86_64",
+        "//build/bazel/platforms/os:linux",
     ],
     target_compatible_with = [
-        "@bazel_tools//platforms:x86_64",
-        "@bazel_tools//platforms:linux",
+        "//build/bazel/platforms/arch:x86_64",
+        "//build/bazel/platforms/os:linux",
     ],
     toolchain = ":cc_toolchain_x86_64",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 )
 
-# x86_32 toolchain definition.
+# x86 toolchain definition.
 android_cc_toolchain(
-    name = "cc_toolchain_x86_32",
+    name = "cc_toolchain_x86",
     clang_version = ":clang",
     clang_version_directory = DEFAULT_VERSION,
     linker_flags = [
@@ -85,20 +85,20 @@ android_cc_toolchain(
         "-msse3",
         "-mstackrealign",
     ],
-    toolchain_identifier = "x86_32-toolchain",
+    toolchain_identifier = "x86-toolchain",
 )
 
 toolchain(
-    name = "cc_toolchain_x86_32_def",
+    name = "cc_toolchain_x86_def",
     exec_compatible_with = [
-        "@bazel_tools//platforms:x86_64",
-        "@bazel_tools//platforms:linux",
+        "//build/bazel/platforms/arch:x86_64",
+        "//build/bazel/platforms/os:linux",
     ],
     target_compatible_with = [
-        "@bazel_tools//platforms:x86_32",
-        "@bazel_tools//platforms:android",
+        "//build/bazel/platforms/arch:x86",
+        "//build/bazel/platforms/os:android",
     ],
-    toolchain = ":cc_toolchain_x86_32",
+    toolchain = ":cc_toolchain_x86",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 )
 
@@ -124,12 +124,12 @@ android_cc_toolchain(
 toolchain(
     name = "cc_toolchain_arm64_def",
     exec_compatible_with = [
-        "@bazel_tools//platforms:x86_64",
-        "@bazel_tools//platforms:linux",
+        "//build/bazel/platforms/arch:x86_64",
+        "//build/bazel/platforms/os:linux",
     ],
     target_compatible_with = [
-        "@bazel_tools//platforms:aarch64",
-        "@bazel_tools//platforms:android",
+        "//build/bazel/platforms/arch:arm64",
+        "//build/bazel/platforms/os:android",
     ],
     toolchain = ":cc_toolchain_arm64",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
@@ -158,12 +158,12 @@ android_cc_toolchain(
 toolchain(
     name = "cc_toolchain_arm32_def",
     exec_compatible_with = [
-        "@bazel_tools//platforms:x86_64",
-        "@bazel_tools//platforms:linux",
+        "//build/bazel/platforms/arch:x86_64",
+        "//build/bazel/platforms/os:linux",
     ],
     target_compatible_with = [
-        "@bazel_tools//platforms:arm",
-        "@bazel_tools//platforms:android",
+        "//build/bazel/platforms/arch:arm",
+        "//build/bazel/platforms/os:android",
     ],
     toolchain = ":cc_toolchain_arm32",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
@@ -173,7 +173,7 @@ cc_toolchain_suite(
     name = "android_toolchain_suite",
     toolchains = {
         "x86_64": "cc_toolchain_x86_64",
-        "x86_32": "cc_toolchain_x86_32",
+        "x86": "cc_toolchain_x86",
         "arm64": "cc_toolchain_arm64",
         "arm32": "cc_toolchain_arm32",
     },
@@ -184,10 +184,10 @@ _LIBCLANG_RT_PREFIX = "%s/lib64/clang/%s/lib/linux" % (DEFAULT_VERSION, DEFAULT_
 cc_import(
     name = "libclang_rt",
     static_library = select({
-        "//build/bazel/platforms:config_arm": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-arm-android.a",
-        "//build/bazel/platforms:config_arm64": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-aarch64-android.a",
-        "//build/bazel/platforms:config_x86": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-i386.a",
-        "//build/bazel/platforms:config_x86_64": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-x86_64-android.a",
+        "//build/bazel/platforms/arch:arm": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-arm-android.a",
+        "//build/bazel/platforms/arch:arm64": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-aarch64-android.a",
+        "//build/bazel/platforms/arch:x86": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-i386.a",
+        "//build/bazel/platforms/arch:x86_64": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-x86_64-android.a",
     }),
 )
 
