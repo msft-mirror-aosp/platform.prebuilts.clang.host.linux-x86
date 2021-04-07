@@ -415,6 +415,94 @@ libclang_rt_prebuilt_library_shared {
 
 ///////////////////////////////////////////////////////////////////////////////
 cc_defaults {
+    name: "libclang_rt.ubsan_standalone-android.static-default",
+    defaults: ["libclang_rt-prebuilt-default"],
+    sdk_version: "minimum",
+    enabled: false,
+    vendor_available: true,
+    product_available: true,
+    recovery_available: true,
+    double_loadable: true,
+    stl: "c++_static",
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.ubsan_standalone-arm-android.static",
+    defaults: ["libclang_rt.ubsan_standalone-android.static-default"],
+    sdk_version: "24",
+    check_elf_files: false,  // Bypass circular dependency between libc++
+    arch: {
+        arm: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.ubsan_standalone-aarch64-android.static",
+    defaults: ["libclang_rt.ubsan_standalone-android.static-default"],
+    check_elf_files: false,  // Bypass circular dependency between libc++
+    host_supported: true,
+    arch: {
+        arm64: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.ubsan_standalone-i686-android.static",
+    defaults: [
+        "linux_bionic_supported",
+        "libclang_rt.ubsan_standalone-android.static-default",
+    ],
+    check_elf_files: false,  // Bypass circular dependency between libc++
+    arch: {
+        x86: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.ubsan_standalone-x86_64-android.static",
+    defaults: [
+        "linux_bionic_supported",
+        "libclang_rt.ubsan_standalone-android.static-default",
+    ],
+    check_elf_files: false,  // Bypass circular dependency between libc++
+    arch: {
+        x86_64: {
+            enabled: true,
+        },
+    },
+}
+
+///////////////////////////////////////////////////////////////////////////////
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.ubsan_standalone-i386.static",
+    enabled: false,
+    host_supported: true,
+    target: {
+        linux_glibc_x86: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.ubsan_standalone-x86_64.static",
+    enabled: false,
+    host_supported: true,
+    target: {
+        linux_glibc_x86_64: {
+            enabled: true,
+        },
+    },
+}
+
+///////////////////////////////////////////////////////////////////////////////
+cc_defaults {
     name: "libclang_rt.ubsan_minimal-android-default",
     defaults: ["libclang_rt-prebuilt-default"],
     sdk_version: "minimum",
