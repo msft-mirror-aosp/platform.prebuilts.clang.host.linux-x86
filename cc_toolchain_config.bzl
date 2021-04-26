@@ -611,10 +611,12 @@ def android_cc_toolchain(
     )
 
     # Create the actual cc_toolchain.
+    # The dependency on //:empty is intentional; it's necessary so that Bazel
+    # can parse .d files correctly (see the comment in $TOP/BUILD)
     native.cc_toolchain(
         name = name,
         all_files = "%s_all_files" % name,
-        as_files = "//:empty",
+        as_files = "//:empty",  # Note the "//" prefix, see comment above
         ar_files = "%s_ar_files" % name,
         compiler_files = "%s_compiler_files" % name,
         dwp_files = ":empty",
