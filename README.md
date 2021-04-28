@@ -45,13 +45,13 @@ LLVM Users
   * Look for "clang-" in [vendor/google/aosp/scripts/envsetup.sh](https://android.googlesource.com/trusty/vendor/google/aosp/+/master/scripts/envsetup.sh).
 
 * [**Android Emulator**](https://developer.android.com/studio/run/emulator.html)
-  * Currently clang-r383902b
+  * Currently clang-r416183b
   * Look for "clang-" in [external/qemu/android/build/cmake/toolchain.cmake](https://android.googlesource.com/platform/external/qemu/+/emu-master-dev/android/build/cmake/toolchain.cmake#25).
     * Note that they work out of the emu-master-dev branch.
     * [Internal cs/ link](https://cs.corp.google.com/android/external/qemu/android/build/cmake/toolchain.cmake?q=clang-)
 
 * [**Context Hub Runtime Environment (CHRE)**](https://android.googlesource.com/platform/system/chre/)
-  * Currently clang-r383902c
+  * Currently clang-r416183b
   * Look in [system/chre/build/arch/x86.mk](https://android.googlesource.com/platform/system/chre/+/master/build/arch/x86.mk#12).
 
 * [**OpenJDK (jdk/build)**](https://android.googlesource.com/toolchain/jdk/build/)
