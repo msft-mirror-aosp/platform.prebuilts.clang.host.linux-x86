@@ -40,6 +40,10 @@ LLVM Users
   * Currently clang-r416183b
   * Look for "clang-" in [ndk/toolchains.py](https://android.googlesource.com/platform/ndk/+/refs/heads/master/ndk/toolchains.py)
 
+* [**Bazel**](https://opensource.googleblog.com/2020/11/welcome-android-open-source-project.html)
+  * Currently clang-r416183b
+  * Look for "clang-" in [prebuilts/clang/host/linux-x86/clang_version.bzl](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang_version.bzl)
+
 * [**Trusty**](https://source.android.com/security/trusty/)
   * Currently clang-r383902
   * Look for "clang-" in [vendor/google/aosp/scripts/envsetup.sh](https://android.googlesource.com/trusty/vendor/google/aosp/+/master/scripts/envsetup.sh).
@@ -107,7 +111,7 @@ Prebuilt Versions
 * [clang-r407598b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r407598b) - January 2021
 * [clang-r412851](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r412851) - February 2021
 * [clang-r416183](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r416183) - March 2021
-* [clang-r416183b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r416183) - April 2021
+* [clang-r416183b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r416183b) - April 2021
 
 
 More Information
