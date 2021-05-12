@@ -51,8 +51,6 @@ func init() {
 		libClangRtPrebuiltLibrarySharedFactory)
 	android.RegisterModuleType("libclang_rt_prebuilt_library_static",
 		libClangRtPrebuiltLibraryStaticFactory)
-	android.RegisterModuleType("libclang_rt_llndk_library",
-		libClangRtLLndkLibraryFactory)
 	android.RegisterModuleType("llvm_darwin_filegroup",
 		llvmDarwinFileGroupFactory)
 	android.RegisterModuleType("clang_builtin_headers",
@@ -199,7 +197,7 @@ func llvmPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 }
 
 type prebuiltLibrarySharedProps struct {
-	Llndk_stubs *string
+	Is_llndk *bool
 
 	Shared_libs []string
 }
@@ -227,6 +225,9 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, in *prebuiltLi
 			Symbol_file *string
 			Versions    []string
 		}
+		Llndk struct {
+			Symbol_file *string
+		}
 	}
 
 	p := &props{}
@@ -242,9 +243,10 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, in *prebuiltLi
 	p.Pack_relocations = &disable
 	p.Stl = proptools.StringPtr("none")
 
-	if proptools.String(in.Llndk_stubs) != "" {
+	if proptools.Bool(in.Is_llndk) {
 		p.Stubs.Versions = []string{"29", "10000"}
 		p.Stubs.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx))
+		p.Llndk.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx))
 	}
 
 	ctx.AppendProperties(p)
@@ -271,16 +273,6 @@ func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 	p.System_shared_libs = []string{}
 	p.No_libcrt = proptools.BoolPtr(true)
 	p.Stl = proptools.StringPtr("none")
-	ctx.AppendProperties(p)
-}
-
-func libClangRtLLndkLibrary(ctx android.LoadHookContext) {
-	type props struct {
-		Symbol_file *string
-	}
-
-	p := &props{}
-	p.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx))
 	ctx.AppendProperties(p)
 }
 
@@ -331,12 +323,6 @@ func libClangRtPrebuiltLibrarySharedFactory() android.Module {
 func libClangRtPrebuiltLibraryStaticFactory() android.Module {
 	module, _ := cc.NewPrebuiltStaticLibrary(android.HostAndDeviceSupported)
 	android.AddLoadHook(module, libClangRtPrebuiltLibraryStatic)
-	return module.Init()
-}
-
-func libClangRtLLndkLibraryFactory() android.Module {
-	module := cc.NewLLndkStubLibrary()
-	android.AddLoadHook(module, libClangRtLLndkLibrary)
 	return module.Init()
 }
 

@@ -230,7 +230,7 @@ libclang_rt_prebuilt_library_shared {
     defaults: ["libclang_rt.asan-android-default"],
     sdk_version: "24",
     check_elf_files: false,  // Bypass circular dependency between libc++
-    llndk_stubs: "libclang_rt.asan-arm-android.llndk",
+    is_llndk: true,
     arch: {
         arm: {
             enabled: true,
@@ -242,7 +242,7 @@ libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.asan-aarch64-android",
     defaults: ["libclang_rt.asan-android-default"],
     check_elf_files: false,  // Bypass circular dependency between libc++
-    llndk_stubs: "libclang_rt.asan-aarch64-android.llndk",
+    is_llndk: true,
     host_supported: true,
     arch: {
         arm64: {
@@ -255,7 +255,7 @@ libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.asan-i686-android",
     defaults: ["libclang_rt.asan-android-default"],
     check_elf_files: false,  // Bypass circular dependency between libc++
-    llndk_stubs: "libclang_rt.asan-i686-android.llndk",
+    is_llndk: true,
     arch: {
         x86: {
             enabled: true,
@@ -270,65 +270,9 @@ libclang_rt_prebuilt_library_shared {
         "libclang_rt.asan-android-default",
     ],
     check_elf_files: false,  // Bypass circular dependency between libc++
-    llndk_stubs: "libclang_rt.asan-x86_64-android.llndk",
+    is_llndk: true,
     arch: {
         x86_64: {
-            enabled: true,
-        },
-    },
-}
-
-///////////////////////////////////////////////////////////////////////////////
-libclang_rt_llndk_library {
-    name: "libclang_rt.asan-arm-android.llndk",
-    native_bridge_supported: true,
-    enabled: false,
-    arch: {
-        arm: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_llndk_library {
-    name: "libclang_rt.asan-aarch64-android.llndk",
-    native_bridge_supported: true,
-    enabled: false,
-    arch: {
-        arm64: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_llndk_library {
-    name: "libclang_rt.asan-i686-android.llndk",
-    native_bridge_supported: true,
-    enabled: false,
-    arch: {
-        x86: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_llndk_library {
-    name: "libclang_rt.asan-x86_64-android.llndk",
-    native_bridge_supported: true,
-    enabled: false,
-    arch: {
-        x86_64: {
-            enabled: true,
-        },
-    },
-}
-
-///////////////////////////////////////////////////////////////////////////////
-libclang_rt_llndk_library {
-    name: "libclang_rt.hwasan-aarch64-android.llndk",
-    enabled: false,
-    arch: {
-        arm64: {
             enabled: true,
         },
     },
@@ -627,7 +571,7 @@ libclang_rt_prebuilt_library_shared {
         },
     },
     check_elf_files: false,  // Bypass circular dependency between libc++
-    llndk_stubs: "libclang_rt.hwasan-aarch64-android.llndk",
+    is_llndk: true,
     defaults: [
         "libclang_rt-prebuilt-default",
     ],
