@@ -460,12 +460,12 @@ def _cc_toolchain_config_impl(ctx):
     os_is_device = is_target_os_device(ctx)
 
     builtin_include_dirs = []
-
     # This is so that Bazel doesn't validate .d files against the set of headers
     # declared in BUILD files (Blueprint files don't contain that data)
     builtin_include_dirs.extend(["/"])
-
     builtin_include_dirs.extend(clang_version_info.includes)
+    # b/186035856: Do not add anything to this list.
+    builtin_include_dirs.extend(constants.CommonGlobalIncludes)
 
     # Compiler action features
     compiler_flag_features = _compiler_flag_features(ctx.attr.target_flags, os_is_device)
