@@ -311,6 +311,45 @@ def _compiler_flag_features(flags = [], os_is_device = False):
 
     return features
 
+def _rtti_features():
+    rtti_flag_feature = feature(
+        name = "rtti_flag",
+        flag_sets = [
+            flag_set(
+                actions = [
+                    ACTION_NAMES.cpp_compile,
+                ],
+                flag_groups = [
+                    flag_group(
+                        flags = ["-frtti"],
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(features = ["rtti"]),
+                ],
+            ),
+            flag_set(
+                actions = [
+                    ACTION_NAMES.cpp_compile,
+                ],
+                flag_groups = [
+                    flag_group(
+                        flags = ["-fno-rtti"],
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(not_features = ["rtti"]),
+                ],
+            ),
+        ],
+        enabled = True,
+    )
+    rtti_feature  = feature(
+        name = "rtti",
+        enabled = False,
+    )
+    return [rtti_flag_feature, rtti_feature]
+
 def _rpath_features():
     runtime_library_search_directories_feature = feature(
         name = "runtime_library_search_directories",
@@ -497,7 +536,7 @@ def _cc_toolchain_config_impl(ctx):
 
     # Aggregate all features
     features = compiler_flag_features + \
-        _rpath_features() + \
+        _rpath_features() + _rtti_features() + \
         [
             linker_target_flag_feature,
             linker_flag_feature,
