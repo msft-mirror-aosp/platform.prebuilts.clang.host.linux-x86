@@ -1,6 +1,5 @@
 load("@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl", "feature", "flag_group", "flag_set", "tool_path", "with_feature_set")
 load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
-
 load("@soong_injection//cc_toolchain:constants.bzl", "constants")
 
 # Clang-specific configuration.
@@ -64,6 +63,28 @@ STATIC_LINKER_FLAGS = [
 ]
 DYNAMIC_LINKER_FLAGS = [
     "-shared",
+]
+
+# The set of C and C++ actions used in the Android build. There are other types
+# of compile actions available in ACTION_NAMES, but those are not used in
+# Android yet.
+ALL_COMPILE_ACTIONS = [
+    ACTION_NAMES.c_compile,
+    ACTION_NAMES.cpp_compile,
+    ACTION_NAMES.assemble,
+    ACTION_NAMES.preprocess_assemble,
+]
+
+# Assembler actions for .s and .S files.
+ALL_ASSEMBLE_ACTIONS = [
+    ACTION_NAMES.assemble,
+    ACTION_NAMES.preprocess_assemble,
+]
+
+ALL_LINK_ACTIONS = [
+    ACTION_NAMES.cpp_link_executable,
+    ACTION_NAMES.cpp_link_dynamic_library,
+    ACTION_NAMES.cpp_link_nodeps_dynamic_library,
 ]
 
 def _tool_paths(clang_version_info):
@@ -139,12 +160,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.c_compile,
-                    ACTION_NAMES.cpp_compile,
-                    ACTION_NAMES.assemble,
-                    ACTION_NAMES.preprocess_assemble,
-                ],
+                actions = ALL_COMPILE_ACTIONS,
                 flag_groups = [
                     flag_group(
                         flags = non_external_flags,
@@ -158,12 +174,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.c_compile,
-                    ACTION_NAMES.cpp_compile,
-                    ACTION_NAMES.assemble,
-                    ACTION_NAMES.preprocess_assemble,
-                ],
+                actions = ALL_COMPILE_ACTIONS,
                 flag_groups = [
                     flag_group(
                         flags = flags,
@@ -177,10 +188,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.assemble,
-                    ACTION_NAMES.preprocess_assemble,
-                ],
+                actions = ALL_ASSEMBLE_ACTIONS,
                 flag_groups = [
                     flag_group(
                         flags = asm_only_flags,
@@ -194,11 +202,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.cpp_compile,
-                    ACTION_NAMES.assemble,
-                    ACTION_NAMES.preprocess_assemble,
-                ],
+                actions = [ACTION_NAMES.cpp_compile] + ALL_ASSEMBLE_ACTIONS,
                 flag_groups = [
                     flag_group(
                         flags = cpp_only_flags,
@@ -212,11 +216,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.c_compile,
-                    ACTION_NAMES.assemble,
-                    ACTION_NAMES.preprocess_assemble,
-                ],
+                actions = [ACTION_NAMES.c_compile] + ALL_ASSEMBLE_ACTIONS,
                 flag_groups = [
                     flag_group(
                         flags = c_only_flags,
@@ -270,12 +270,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.c_compile,
-                    ACTION_NAMES.cpp_compile,
-                    ACTION_NAMES.assemble,
-                    ACTION_NAMES.preprocess_assemble,
-                ],
+                actions = ALL_COMPILE_ACTIONS,
                 flag_groups = [
                     flag_group(
                         expand_if_available = "user_compile_flags",
@@ -293,12 +288,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.c_compile,
-                    ACTION_NAMES.cpp_compile,
-                    ACTION_NAMES.assemble,
-                    ACTION_NAMES.preprocess_assemble,
-                ],
+                actions = ALL_COMPILE_ACTIONS,
                 flag_groups = [
                     flag_group(
                         flags = constants.NoOverrideClangGlobalCflags,
@@ -355,14 +345,7 @@ def _rpath_features():
         name = "runtime_library_search_directories",
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.cpp_link_executable,
-                    ACTION_NAMES.cpp_link_dynamic_library,
-                    ACTION_NAMES.cpp_link_nodeps_dynamic_library,
-                    ACTION_NAMES.lto_index_for_executable,
-                    ACTION_NAMES.lto_index_for_dynamic_library,
-                    ACTION_NAMES.lto_index_for_nodeps_dynamic_library,
-                ],
+                actions = ALL_LINK_ACTIONS,
                 flag_groups = [
                     flag_group(
                         iterate_over = "runtime_library_search_directories",
@@ -389,14 +372,7 @@ def _rpath_features():
                 ],
             ),
             flag_set(
-                actions = [
-                    ACTION_NAMES.cpp_link_executable,
-                    ACTION_NAMES.cpp_link_dynamic_library,
-                    ACTION_NAMES.cpp_link_nodeps_dynamic_library,
-                    ACTION_NAMES.lto_index_for_executable,
-                    ACTION_NAMES.lto_index_for_dynamic_library,
-                    ACTION_NAMES.lto_index_for_nodeps_dynamic_library,
-                ],
+                actions = ALL_LINK_ACTIONS,
                 flag_groups = [
                     flag_group(
                         iterate_over = "runtime_library_search_directories",
@@ -467,18 +443,7 @@ def _toolchain_include_feature(system_includes = []):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.assemble,
-                    ACTION_NAMES.preprocess_assemble,
-                    ACTION_NAMES.linkstamp_compile,
-                    ACTION_NAMES.c_compile,
-                    ACTION_NAMES.cpp_compile,
-                    ACTION_NAMES.cpp_header_parsing,
-                    ACTION_NAMES.cpp_module_compile,
-                    ACTION_NAMES.cpp_module_codegen,
-                    ACTION_NAMES.lto_backend,
-                    ACTION_NAMES.clif_match,
-                ],
+                actions = ALL_COMPILE_ACTIONS,
                 flag_groups = [
                     flag_group(
                         flags = flags,
@@ -568,8 +533,6 @@ _cc_toolchain_config = rule(
         "clang_version": attr.label(mandatory = True, providers = [_ClangVersionInfo]),
         "target_flags": attr.string_list(default = []),
         "linker_flags": attr.string_list(default = []),
-        '_android_os_constraint': attr.label(default = "//build/bazel/platforms/os:android"),
-        '_linux_os_constraint': attr.label(default = "//build/bazel/platforms/os:linux"),
     },
     provides = [CcToolchainConfigInfo],
 )
