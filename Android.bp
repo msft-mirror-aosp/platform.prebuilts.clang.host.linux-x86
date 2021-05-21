@@ -1123,6 +1123,17 @@ clang_builtin_headers {
     out: ["clang_builtin_headers_resources.inc"],
 }
 
+// TODO(b/187231324) do not hard-code prebuilt version number below
+filegroup {
+    name: "llvm-tools",
+    visibility: ["//development/scripts:__subpackages__"],
+    srcs: [
+        "clang-r416183b/bin/llvm-symbolizer",
+        "clang-r416183b/bin/llvm-cxxfilt",
+        "clang-r416183b/lib64/libc++.so.1",
+    ],
+}
+
 subdirs = [
     "soong",
 ]
