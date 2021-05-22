@@ -13,6 +13,7 @@ filegroup(name = "empty")
 
 load(":cc_toolchain_config.bzl", "android_cc_toolchain", "clang_version")
 load(":clang_version.bzl", "DEFAULT_SHORT_VERSION", "DEFAULT_VERSION")
+load("@soong_injection//cc_toolchain:constants.bzl", "constants")
 
 # Different clang versions are configured here.
 clang_version(
@@ -169,18 +170,12 @@ android_cc_toolchain(
     name = "cc_toolchain_arm32",
     clang_version = ":clang",
     clang_version_directory = DEFAULT_VERSION,
-    linker_flags = [
-        "-Wl,-dynamic-linker,/system/bin/linker",
-    ],
-    target_flags = [
-        "--target=armv7a-linux-androideabi10000",
-        "-march=armv7-a",
-        "-mfpu=neon",
-        "-msoft-float",
-        "-mfloat-abi=softfp",
-        "-mthumb",
-        "-fomit-frame-pointer",
-    ],
+    linker_flags = ["-Wl,-dynamic-linker,/system/bin/linker"] + constants.ArmLldflags,
+    target_flags = ["--target=" + constants.ArmClangTriple + "10000"] +
+        constants.ArmToolchainClangCflags +
+        constants.ArmClangArmv7ANeonCflags +
+        constants.ArmClangThumbCflags +
+        constants.ArmClangCflags,
     toolchain_identifier = "arm-toolchain",
 )
 
