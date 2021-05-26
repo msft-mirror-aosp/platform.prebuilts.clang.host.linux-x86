@@ -114,6 +114,9 @@ libclang_rt_prebuilt_library_static {
             enabled: true,
         },
     },
+    bazel_module: {
+        label: "//prebuilts/clang/host/linux-x86:libclang_rt",
+    },
 
     // This exported variant of the builtins library is only intended for use in
     // libc.so and libm.so, which exports some builtins symbols for backwards
@@ -158,6 +161,9 @@ libclang_rt_prebuilt_library_static {
         x86: {
             enabled: true,
         },
+    },
+    bazel_module: {
+        label: "//prebuilts/clang/host/linux-x86:libclang_rt",
     },
 
     // This exported variant of the builtins library is only intended for use in
