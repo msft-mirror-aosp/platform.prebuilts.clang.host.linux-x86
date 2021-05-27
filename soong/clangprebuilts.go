@@ -24,6 +24,7 @@ import (
 	"github.com/google/blueprint/proptools"
 
 	"android/soong/android"
+	"android/soong/bazel"
 	"android/soong/cc"
 	"android/soong/cc/config"
 	"android/soong/genrule"
@@ -55,6 +56,8 @@ func init() {
 		llvmDarwinFileGroupFactory)
 	android.RegisterModuleType("clang_builtin_headers",
 		clangBuiltinHeadersFactory)
+
+	android.RegisterBp2BuildMutator("llvm_prebuilt_library_static", LlvmPrebuiltLibraryStaticBp2Build)
 }
 
 func getClangPrebuiltDir(ctx android.LoadHookContext) string {
@@ -373,3 +376,60 @@ func clangBuiltinHeadersFactory() android.Module {
 	android.AddLoadHook(module, clangBuiltinHeaders)
 	return module
 }
+
+type bazelLlvmPrebuiltLibraryStaticAttributes struct {
+	Static_library bazel.LabelAttribute
+	Includes       bazel.StringListAttribute
+}
+
+type bazelLlvmPrebuiltLibraryStatic struct {
+	android.BazelTargetModuleBase
+	bazelLlvmPrebuiltLibraryStaticAttributes
+}
+
+func BazelLlvmPrebuiltLibraryStaticFactory() android.Module {
+	module := &bazelLlvmPrebuiltLibraryStatic{}
+	module.AddProperties(&module.bazelLlvmPrebuiltLibraryStaticAttributes)
+	android.InitBazelTargetModule(module)
+	return module
+}
+
+func LlvmPrebuiltLibraryStaticBp2Build(ctx android.TopDownMutatorContext) {
+	module, ok := ctx.Module().(*cc.Module)
+	if !ok {
+		// Not a cc module
+		return
+	}
+	if !module.ConvertWithBp2build(ctx) {
+		return
+	}
+	if ctx.ModuleType() != "llvm_prebuilt_library_static" {
+		return
+	}
+
+	llvmPrebuiltLibraryStaticBp2BuildInternal(ctx, module)
+}
+
+func llvmPrebuiltLibraryStaticBp2BuildInternal(ctx android.TopDownMutatorContext, module *cc.Module) {
+	prebuiltAttrs := cc.Bp2BuildParsePrebuiltLibraryProps(ctx, module)
+	exportedIncludes := cc.Bp2BuildParseExportedIncludesForPrebuiltLibrary(ctx, module)
+
+	attrs := &bazelLlvmPrebuiltLibraryStaticAttributes{
+		Static_library: prebuiltAttrs.Src,
+		Includes:       exportedIncludes,
+	}
+
+	props := bazel.BazelTargetModuleProperties{
+		Rule_class:        "llvm_prebuilt_library_static",
+		Bzl_load_location: "//build/bazel/rules:llvm_prebuilt_library_static.bzl",
+	}
+
+	name := android.RemoveOptionalPrebuiltPrefix(module.Name())
+	ctx.CreateBazelTargetModule(BazelLlvmPrebuiltLibraryStaticFactory, name, props, attrs)
+}
+
+func (m *bazelLlvmPrebuiltLibraryStatic) Name() string {
+	return m.BaseModuleName()
+}
+
+func (m *bazelLlvmPrebuiltLibraryStatic) GenerateAndroidBuildActions(ctx android.ModuleContext) {}
