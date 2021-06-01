@@ -13,6 +13,7 @@ filegroup(name = "empty")
 
 load(":cc_toolchain_config.bzl", "android_cc_toolchain", "clang_version")
 load(":clang_version.bzl", "DEFAULT_SHORT_VERSION", "DEFAULT_VERSION")
+load("@soong_injection//cc_toolchain:constants.bzl", "constants")
 
 # Different clang versions are configured here.
 clang_version(
@@ -55,9 +56,38 @@ toolchain(
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 )
 
+# Toolchain to compile for the linux host.
+# TODO(b/186628704): automatically generate from Soong.
+android_cc_toolchain(
+    name = "cc_toolchain_x86_64_linux_host",
+    clang_version = ":clang",
+    clang_version_directory = DEFAULT_VERSION,
+    target_flags = [
+        "-m64",
+        "-fdiagnostics-color",
+        "-Wa,--noexecstack",
+        "-fPIC",
+        "-U_FORTIFY_SOURCE",
+        "-D_FORTIFY_SOURCE=2",
+        "-fstack-protector",
+        # Workaround differences in inttypes.h between host and target.
+        # See bug 12708004.
+        "-D__STDC_FORMAT_MACROS",
+        "-D__STDC_CONSTANT_MACROS",
+    ],
+    linker_flags = [
+        "-m64",
+        "-Wl,-z,noexecstack",
+        "-Wl,-z,relro",
+        "-Wl,-z,now",
+        "-Wl,--no-undefined-version",
+    ],
+    toolchain_identifier = "x86_64-toolchain",
+)
+
 # TODO(b/181803350): Fix linux toolchain flag set, as the current flags are for android.
 toolchain(
-    name = "cc_toolchain_x86_64_linux_def",
+    name = "cc_toolchain_x86_64_linux_host_def",
     exec_compatible_with = [
         "//build/bazel/platforms/arch:x86_64",
         "//build/bazel/platforms/os:linux",
@@ -66,7 +96,7 @@ toolchain(
         "//build/bazel/platforms/arch:x86_64",
         "//build/bazel/platforms/os:linux",
     ],
-    toolchain = ":cc_toolchain_x86_64",
+    toolchain = ":cc_toolchain_x86_64_linux_host",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 )
 
@@ -140,18 +170,12 @@ android_cc_toolchain(
     name = "cc_toolchain_arm32",
     clang_version = ":clang",
     clang_version_directory = DEFAULT_VERSION,
-    linker_flags = [
-        "-Wl,-dynamic-linker,/system/bin/linker",
-    ],
-    target_flags = [
-        "--target=armv7a-linux-androideabi10000",
-        "-march=armv7-a",
-        "-mfpu=neon",
-        "-msoft-float",
-        "-mfloat-abi=softfp",
-        "-mthumb",
-        "-fomit-frame-pointer",
-    ],
+    linker_flags = ["-Wl,-dynamic-linker,/system/bin/linker"] + constants.ArmLldflags,
+    target_flags = ["--target=" + constants.ArmClangTriple + "10000"] +
+        constants.ArmToolchainClangCflags +
+        constants.ArmClangArmv7ANeonCflags +
+        constants.ArmClangThumbCflags +
+        constants.ArmClangCflags,
     toolchain_identifier = "arm-toolchain",
 )
 
