@@ -220,3 +220,13 @@ alias(
     actual = DEFAULT_VERSION + "/bin/llvm-ar",
     visibility = ["//visibility:public"],
 )
+
+# Test tools used by Bazel tests.
+filegroup(
+    name = "test_tools",
+    srcs = [
+        DEFAULT_VERSION + "/bin/llvm-readelf",
+        DEFAULT_VERSION + "/bin/llvm-nm",
+    ],
+    visibility = ["//build/bazel/tests:__subpackages__"]
+)
