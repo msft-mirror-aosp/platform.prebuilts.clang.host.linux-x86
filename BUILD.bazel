@@ -193,16 +193,6 @@ toolchain(
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 )
 
-cc_toolchain_suite(
-    name = "android_toolchain_suite",
-    toolchains = {
-        "x86_64": "cc_toolchain_x86_64",
-        "x86": "cc_toolchain_x86",
-        "arm64": "cc_toolchain_arm64",
-        "arm32": "cc_toolchain_arm32",
-    },
-)
-
 _LIBCLANG_RT_PREFIX = "%s/lib64/clang/%s/lib/linux" % (DEFAULT_VERSION, DEFAULT_SHORT_VERSION)
 
 cc_import(
@@ -219,4 +209,14 @@ alias(
     name = "llvm-ar",
     actual = DEFAULT_VERSION + "/bin/llvm-ar",
     visibility = ["//visibility:public"],
+)
+
+# Test tools used by Bazel tests.
+filegroup(
+    name = "test_tools",
+    srcs = [
+        DEFAULT_VERSION + "/bin/llvm-readelf",
+        DEFAULT_VERSION + "/bin/llvm-nm",
+    ],
+    visibility = ["//build/bazel/tests:__subpackages__"]
 )
