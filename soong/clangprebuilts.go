@@ -37,6 +37,15 @@ const libcxxSoName = "libc++.so.1"
 const libcxxabiSoName = "libc++abi.so.1"
 const libxml2SoName = "libxml2.so.2.9.10"
 
+var (
+	// Files included in the llvm-tools filegroup in ../Android.bp
+	llvmToolsFiles = []string{
+		"bin/llvm-symbolizer",
+		"bin/llvm-cxxfilt",
+		"lib64/libc++.so.1",
+	}
+)
+
 // This module is used to generate libfuzzer, libomp static libraries and
 // libclang_rt.* shared libraries. When LLVM_PREBUILTS_VERSION and
 // LLVM_RELEASE_VERSION are set, the library will generated from the given
@@ -56,6 +65,8 @@ func init() {
 		llvmDarwinFileGroupFactory)
 	android.RegisterModuleType("clang_builtin_headers",
 		clangBuiltinHeadersFactory)
+	android.RegisterModuleType("llvm_tools_filegroup",
+		llvmToolsFilegroupFactory)
 
 	android.RegisterBp2BuildMutator("llvm_prebuilt_library_static", LlvmPrebuiltLibraryStaticBp2Build)
 	android.RegisterBp2BuildMutator("libclang_rt_prebuilt_library_static", LibclangRtPrebuiltLibraryStaticBp2Build)
@@ -375,6 +386,25 @@ func clangBuiltinHeaders(ctx android.LoadHookContext) {
 func clangBuiltinHeadersFactory() android.Module {
 	module := genrule.GenRuleFactory()
 	android.AddLoadHook(module, clangBuiltinHeaders)
+	return module
+}
+
+func llvmToolsFileGroup(ctx android.LoadHookContext) {
+	type props struct {
+		Srcs []string
+	}
+
+	p := &props{}
+	prebuiltDir := path.Join(getClangPrebuiltDir(ctx))
+	for _, src := range llvmToolsFiles {
+		p.Srcs = append(p.Srcs, path.Join(prebuiltDir, src))
+	}
+	ctx.AppendProperties(p)
+}
+
+func llvmToolsFilegroupFactory() android.Module {
+	module := android.FileGroupFactory()
+	android.AddLoadHook(module, llvmToolsFileGroup)
 	return module
 }
 
