@@ -401,6 +401,27 @@ def _rpath_features():
     )
     return [runtime_library_search_directories_feature, disable_rpath_feature]
 
+def _use_libcrt_feature(path):
+    if not path:
+        return None
+    return feature(
+        name = "use_libcrt",
+        enabled = True,
+        flag_sets = [
+            # TODO(b/190383809): binaries need to be linked with late static libs grouped
+            flag_set(
+                actions = [
+                    ACTION_NAMES.cpp_link_dynamic_library,
+                ],
+                flag_groups = [
+                    flag_group(
+                        flags = [path.path],
+                    ),
+                ],
+            ),
+        ],
+    )
+
 def _linker_flag_feature(name, flags = [], additional_static_flags = [], additional_dynamic_flags = []):
     if not flags:
         return None
@@ -503,9 +524,10 @@ def _cc_toolchain_config_impl(ctx):
     features = compiler_flag_features + \
         _rpath_features() + _rtti_features() + \
         [
+            _use_libcrt_feature(ctx.file.libclang_rt_builtin),
             linker_target_flag_feature,
             linker_flag_feature,
-            toolchain_include_directories_feature
+            toolchain_include_directories_feature,
         ]
     features = [feature for feature in features if feature != None]
 
@@ -533,6 +555,7 @@ _cc_toolchain_config = rule(
         "clang_version": attr.label(mandatory = True, providers = [_ClangVersionInfo]),
         "target_flags": attr.string_list(default = []),
         "linker_flags": attr.string_list(default = []),
+        "libclang_rt_builtin": attr.label(allow_single_file=True),
     },
     provides = [CcToolchainConfigInfo],
 )
@@ -544,13 +567,21 @@ def android_cc_toolchain(
         # This should come from the clang_version provider.
         # Instead, it's hard-coded because this is a macro, not a rule.
         clang_version_directory = None,
+        libclang_rt_builtin = None,
         target_flags = [],
         linker_flags = [],
         toolchain_identifier = None):
+    extra_linker_paths = []
+    libclang_rt_path = None
+    if libclang_rt_builtin:
+        libclang_rt_path = libclang_rt_builtin
+        extra_linker_paths.append(":"+libclang_rt_path)
+
     # Write the toolchain config.
     _cc_toolchain_config(
         name = "%s_config" % name,
         clang_version = clang_version,
+        libclang_rt_builtin= libclang_rt_path,
         target_flags = target_flags,
         linker_flags = linker_flags,
         toolchain_identifier = toolchain_identifier,
@@ -597,7 +628,7 @@ def android_cc_toolchain(
         name = "%s_linker_files" % name,
         srcs = [
             "%s_linker_binaries" % name,
-        ],
+        ] + extra_linker_paths,
     )
     native.filegroup(
         name = "%s_all_files" % name,
