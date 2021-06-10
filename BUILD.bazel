@@ -215,11 +215,11 @@ cc_import(
     static_library = select(_LIBCLANG_RT_PREBUILT_MAP),
 )
 
-alias(
-    name = "llvm-ar",
-    actual = DEFAULT_VERSION + "/bin/llvm-ar",
+[alias(
+    name = "llvm-%s" % tool,
+    actual = DEFAULT_VERSION + "/bin/llvm-%s" % tool,
     visibility = ["//visibility:public"],
-)
+) for tool in ["ar", "readelf", "objcopy", "strip"]]
 
 # Test tools used by Bazel tests.
 filegroup(
