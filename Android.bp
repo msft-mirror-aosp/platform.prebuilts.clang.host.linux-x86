@@ -101,6 +101,9 @@ libclang_rt_prebuilt_library_static {
             enabled: true,
         },
     },
+    bazel_module: {
+        label: "//prebuilts/clang/host/linux-x86:libclang_rt",
+    },
 }
 
 libclang_rt_prebuilt_library_static {
@@ -130,6 +133,9 @@ libclang_rt_prebuilt_library_static {
             enabled: true,
         },
     },
+    bazel_module: {
+        label: "//prebuilts/clang/host/linux-x86:libclang_rt",
+    },
 }
 
 libclang_rt_prebuilt_library_static {
@@ -139,6 +145,9 @@ libclang_rt_prebuilt_library_static {
         x86: {
             enabled: true,
         },
+    },
+    bazel_module: {
+        label: "//prebuilts/clang/host/linux-x86:libclang_rt",
     },
 }
 
@@ -169,6 +178,9 @@ libclang_rt_prebuilt_library_static {
         x86_64: {
             enabled: true,
         },
+    },
+    bazel_module: {
+        label: "//prebuilts/clang/host/linux-x86:libclang_rt",
     },
 }
 
@@ -218,7 +230,7 @@ libclang_rt_prebuilt_library_shared {
     defaults: ["libclang_rt.asan-android-default"],
     sdk_version: "24",
     check_elf_files: false,  // Bypass circular dependency between libc++
-    llndk_stubs: "libclang_rt.asan-arm-android.llndk",
+    is_llndk: true,
     arch: {
         arm: {
             enabled: true,
@@ -230,7 +242,7 @@ libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.asan-aarch64-android",
     defaults: ["libclang_rt.asan-android-default"],
     check_elf_files: false,  // Bypass circular dependency between libc++
-    llndk_stubs: "libclang_rt.asan-aarch64-android.llndk",
+    is_llndk: true,
     host_supported: true,
     arch: {
         arm64: {
@@ -243,7 +255,7 @@ libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.asan-i686-android",
     defaults: ["libclang_rt.asan-android-default"],
     check_elf_files: false,  // Bypass circular dependency between libc++
-    llndk_stubs: "libclang_rt.asan-i686-android.llndk",
+    is_llndk: true,
     arch: {
         x86: {
             enabled: true,
@@ -258,65 +270,9 @@ libclang_rt_prebuilt_library_shared {
         "libclang_rt.asan-android-default",
     ],
     check_elf_files: false,  // Bypass circular dependency between libc++
-    llndk_stubs: "libclang_rt.asan-x86_64-android.llndk",
+    is_llndk: true,
     arch: {
         x86_64: {
-            enabled: true,
-        },
-    },
-}
-
-///////////////////////////////////////////////////////////////////////////////
-libclang_rt_llndk_library {
-    name: "libclang_rt.asan-arm-android.llndk",
-    native_bridge_supported: true,
-    enabled: false,
-    arch: {
-        arm: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_llndk_library {
-    name: "libclang_rt.asan-aarch64-android.llndk",
-    native_bridge_supported: true,
-    enabled: false,
-    arch: {
-        arm64: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_llndk_library {
-    name: "libclang_rt.asan-i686-android.llndk",
-    native_bridge_supported: true,
-    enabled: false,
-    arch: {
-        x86: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_llndk_library {
-    name: "libclang_rt.asan-x86_64-android.llndk",
-    native_bridge_supported: true,
-    enabled: false,
-    arch: {
-        x86_64: {
-            enabled: true,
-        },
-    },
-}
-
-///////////////////////////////////////////////////////////////////////////////
-libclang_rt_llndk_library {
-    name: "libclang_rt.hwasan-aarch64-android.llndk",
-    enabled: false,
-    arch: {
-        arm64: {
             enabled: true,
         },
     },
@@ -404,6 +360,94 @@ libclang_rt_prebuilt_library_shared {
 
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.ubsan_standalone-x86_64",
+    enabled: false,
+    host_supported: true,
+    target: {
+        linux_glibc_x86_64: {
+            enabled: true,
+        },
+    },
+}
+
+///////////////////////////////////////////////////////////////////////////////
+cc_defaults {
+    name: "libclang_rt.ubsan_standalone-android.static-default",
+    defaults: ["libclang_rt-prebuilt-default"],
+    sdk_version: "minimum",
+    enabled: false,
+    vendor_available: true,
+    product_available: true,
+    recovery_available: true,
+    double_loadable: true,
+    stl: "c++_static",
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.ubsan_standalone-arm-android.static",
+    defaults: ["libclang_rt.ubsan_standalone-android.static-default"],
+    sdk_version: "24",
+    check_elf_files: false,  // Bypass circular dependency between libc++
+    arch: {
+        arm: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.ubsan_standalone-aarch64-android.static",
+    defaults: ["libclang_rt.ubsan_standalone-android.static-default"],
+    check_elf_files: false,  // Bypass circular dependency between libc++
+    host_supported: true,
+    arch: {
+        arm64: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.ubsan_standalone-i686-android.static",
+    defaults: [
+        "linux_bionic_supported",
+        "libclang_rt.ubsan_standalone-android.static-default",
+    ],
+    check_elf_files: false,  // Bypass circular dependency between libc++
+    arch: {
+        x86: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.ubsan_standalone-x86_64-android.static",
+    defaults: [
+        "linux_bionic_supported",
+        "libclang_rt.ubsan_standalone-android.static-default",
+    ],
+    check_elf_files: false,  // Bypass circular dependency between libc++
+    arch: {
+        x86_64: {
+            enabled: true,
+        },
+    },
+}
+
+///////////////////////////////////////////////////////////////////////////////
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.ubsan_standalone-i386.static",
+    enabled: false,
+    host_supported: true,
+    target: {
+        linux_glibc_x86: {
+            enabled: true,
+        },
+    },
+}
+
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.ubsan_standalone-x86_64.static",
     enabled: false,
     host_supported: true,
     target: {
@@ -527,7 +571,7 @@ libclang_rt_prebuilt_library_shared {
         },
     },
     check_elf_files: false,  // Bypass circular dependency between libc++
-    llndk_stubs: "libclang_rt.hwasan-aarch64-android.llndk",
+    is_llndk: true,
     defaults: [
         "libclang_rt-prebuilt-default",
     ],
@@ -1077,6 +1121,15 @@ clang_builtin_headers {
     name: "clang_builtin_headers_resources",
     tool_files: ["soong/generate_clang_builtin_headers_resources.sh"],
     out: ["clang_builtin_headers_resources.inc"],
+}
+
+// Export llvm tools as a filegroup which is packaged and available for CI
+// tests.
+llvm_tools_filegroup {
+    name: "llvm-tools",
+    visibility: ["//development/scripts:__subpackages__"],
+    // The tools and libs in the filegroup are in
+    // ./soong/clangprebuilts.go:llvmToolsFiles
 }
 
 subdirs = [
