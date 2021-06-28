@@ -37,6 +37,15 @@ const libcxxSoName = "libc++.so.1"
 const libcxxabiSoName = "libc++abi.so.1"
 const libxml2SoName = "libxml2.so.2.9.10"
 
+var (
+	// Files included in the llvm-tools filegroup in ../Android.bp
+	llvmToolsFiles = []string{
+		"bin/llvm-symbolizer",
+		"bin/llvm-cxxfilt",
+		"lib64/libc++.so.1",
+	}
+)
+
 // This module is used to generate libfuzzer, libomp static libraries and
 // libclang_rt.* shared libraries. When LLVM_PREBUILTS_VERSION and
 // LLVM_RELEASE_VERSION are set, the library will generated from the given
@@ -56,8 +65,11 @@ func init() {
 		llvmDarwinFileGroupFactory)
 	android.RegisterModuleType("clang_builtin_headers",
 		clangBuiltinHeadersFactory)
+	android.RegisterModuleType("llvm_tools_filegroup",
+		llvmToolsFilegroupFactory)
 
 	android.RegisterBp2BuildMutator("llvm_prebuilt_library_static", LlvmPrebuiltLibraryStaticBp2Build)
+	android.RegisterBp2BuildMutator("libclang_rt_prebuilt_library_static", LibclangRtPrebuiltLibraryStaticBp2Build)
 }
 
 func getClangPrebuiltDir(ctx android.LoadHookContext) string {
@@ -377,6 +389,25 @@ func clangBuiltinHeadersFactory() android.Module {
 	return module
 }
 
+func llvmToolsFileGroup(ctx android.LoadHookContext) {
+	type props struct {
+		Srcs []string
+	}
+
+	p := &props{}
+	prebuiltDir := path.Join(getClangPrebuiltDir(ctx))
+	for _, src := range llvmToolsFiles {
+		p.Srcs = append(p.Srcs, path.Join(prebuiltDir, src))
+	}
+	ctx.AppendProperties(p)
+}
+
+func llvmToolsFilegroupFactory() android.Module {
+	module := android.FileGroupFactory()
+	android.AddLoadHook(module, llvmToolsFileGroup)
+	return module
+}
+
 type bazelLlvmPrebuiltLibraryStaticAttributes struct {
 	Static_library bazel.LabelAttribute
 	Includes       bazel.StringListAttribute
@@ -407,10 +438,43 @@ func LlvmPrebuiltLibraryStaticBp2Build(ctx android.TopDownMutatorContext) {
 		return
 	}
 
-	llvmPrebuiltLibraryStaticBp2BuildInternal(ctx, module)
+	prebuiltLibraryStaticBp2BuildInternal(ctx, module)
 }
 
-func llvmPrebuiltLibraryStaticBp2BuildInternal(ctx android.TopDownMutatorContext, module *cc.Module) {
+type bazelLibclangRtPrebuiltLibraryStaticAttributes struct {
+	Static_library bazel.LabelAttribute
+	Includes       bazel.StringListAttribute
+}
+
+type bazelLibclangRtPrebuiltLibraryStatic struct {
+	android.BazelTargetModuleBase
+	bazelLibclangRtPrebuiltLibraryStaticAttributes
+}
+
+func BazelLibclangRtPrebuiltLibraryStaticFactory() android.Module {
+	module := &bazelLibclangRtPrebuiltLibraryStatic{}
+	module.AddProperties(&module.bazelLibclangRtPrebuiltLibraryStaticAttributes)
+	android.InitBazelTargetModule(module)
+	return module
+}
+
+func LibclangRtPrebuiltLibraryStaticBp2Build(ctx android.TopDownMutatorContext) {
+	module, ok := ctx.Module().(*cc.Module)
+	if !ok {
+		// Not a cc module
+		return
+	}
+	if !module.ConvertWithBp2build(ctx) {
+		return
+	}
+	if ctx.ModuleType() != "libclang_rt_prebuilt_library_static" {
+		return
+	}
+
+	prebuiltLibraryStaticBp2BuildInternal(ctx, module)
+}
+
+func prebuiltLibraryStaticBp2BuildInternal(ctx android.TopDownMutatorContext, module *cc.Module) {
 	prebuiltAttrs := cc.Bp2BuildParsePrebuiltLibraryProps(ctx, module)
 	exportedIncludes := cc.Bp2BuildParseExportedIncludesForPrebuiltLibrary(ctx, module)
 
@@ -420,8 +484,8 @@ func llvmPrebuiltLibraryStaticBp2BuildInternal(ctx android.TopDownMutatorContext
 	}
 
 	props := bazel.BazelTargetModuleProperties{
-		Rule_class:        "llvm_prebuilt_library_static",
-		Bzl_load_location: "//build/bazel/rules:llvm_prebuilt_library_static.bzl",
+		Rule_class:        "prebuilt_library_static",
+		Bzl_load_location: "//build/bazel/rules:prebuilt_library_static.bzl",
 	}
 
 	name := android.RemoveOptionalPrebuiltPrefix(module.Name())
@@ -433,3 +497,10 @@ func (m *bazelLlvmPrebuiltLibraryStatic) Name() string {
 }
 
 func (m *bazelLlvmPrebuiltLibraryStatic) GenerateAndroidBuildActions(ctx android.ModuleContext) {}
+
+func (m *bazelLibclangRtPrebuiltLibraryStatic) Name() string {
+	return m.BaseModuleName()
+}
+
+func (m *bazelLibclangRtPrebuiltLibraryStatic) GenerateAndroidBuildActions(ctx android.ModuleContext) {
+}
