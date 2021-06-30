@@ -8,7 +8,8 @@ LLVM Users
 ----------
 
 * [**Android Platform**](https://android.googlesource.com/platform/)
-  * Currently clang-r416183b
+  * Currently clang-r416183b1
+  * clang-r416183b1 for Android S release
   * clang-r383902b1 for Android R-QPR2 release
   * clang-r383902b for Android R release
   * clang-r353983c1 for Android Q-QPR2 release
@@ -17,7 +18,7 @@ LLVM Users
     * [Internal cs/ link](https://cs.corp.google.com/android/build/soong/cc/config/global.go?q=ClangDefaultVersion)
 
 * [**Android Platform LLVM binutils**](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/llvm-binutils-stable/)
-  * Currently clang-r416183b
+  * Currently clang-r416183c
   * These can be updated by running [update-binutils.py](https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/master/update-binutils.py).
 
 * [**RenderScript**](https://developer.android.com/guide/topics/renderscript/index.html)
@@ -41,7 +42,7 @@ LLVM Users
   * Look for "clang-" in [ndk/toolchains.py](https://android.googlesource.com/platform/ndk/+/refs/heads/master/ndk/toolchains.py)
 
 * [**Bazel**](https://opensource.googleblog.com/2020/11/welcome-android-open-source-project.html)
-  * Currently clang-r416183b
+  * Currently clang-r416183b1
   * Look for "clang-" in [prebuilts/clang/host/linux-x86/clang_version.bzl](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang_version.bzl)
 
 * [**Trusty**](https://source.android.com/security/trusty/)
@@ -113,6 +114,7 @@ Prebuilt Versions
 * [clang-r416183](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r416183) - March 2021
 * [clang-r416183b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r416183b) - April 2021
 * [clang-r416183c](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r416183b) - June 2021
+* [clang-r416183b1](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r416183b) - June 2021
 
 
 More Information
