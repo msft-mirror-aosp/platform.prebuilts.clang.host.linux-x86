@@ -1008,6 +1008,19 @@ libclang_rt_prebuilt_library_static {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+libclang_rt_prebuilt_object {
+    name: "clang_rt.crtbegin",
+    host_supported: true,
+    defaults: ["libclang_rt-prebuilt-default"],
+}
+
+libclang_rt_prebuilt_object {
+    name: "clang_rt.crtend",
+    host_supported: true,
+    defaults: ["libclang_rt-prebuilt-default"],
+}
+
+///////////////////////////////////////////////////////////////////////////////
 cc_defaults {
     name: "libunwind-android-default",
     defaults: [

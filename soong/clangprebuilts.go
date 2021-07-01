@@ -61,6 +61,8 @@ func init() {
 		libClangRtPrebuiltLibrarySharedFactory)
 	android.RegisterModuleType("libclang_rt_prebuilt_library_static",
 		libClangRtPrebuiltLibraryStaticFactory)
+	android.RegisterModuleType("libclang_rt_prebuilt_object",
+		libClangRtPrebuiltObjectFactory)
 	android.RegisterModuleType("llvm_darwin_filegroup",
 		llvmDarwinFileGroupFactory)
 	android.RegisterModuleType("clang_builtin_headers",
@@ -225,10 +227,10 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, in *prebuiltLi
 	libDir := getClangResourceDir(ctx)
 
 	type props struct {
-		Srcs               []string
-		System_shared_libs []string
-		No_libcrt          *bool
-		Sanitize           struct {
+		Srcs                []string
+		Default_shared_libs []string
+		No_libcrt           *bool
+		Sanitize            struct {
 			Never *bool
 		}
 		Strip struct {
@@ -250,7 +252,7 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, in *prebuiltLi
 	name := strings.TrimPrefix(ctx.ModuleName(), "prebuilt_")
 
 	p.Srcs = []string{path.Join(libDir, name+".so")}
-	p.System_shared_libs = []string{}
+	p.Default_shared_libs = []string{}
 	p.No_libcrt = proptools.BoolPtr(true)
 	p.Sanitize.Never = proptools.BoolPtr(true)
 	p.Strip.None = proptools.BoolPtr(true)
@@ -271,10 +273,10 @@ func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 	libDir := getClangResourceDir(ctx)
 
 	type props struct {
-		Srcs               []string
-		System_shared_libs []string
-		No_libcrt          *bool
-		Stl                *string
+		Srcs                []string
+		Default_shared_libs []string
+		No_libcrt           *bool
+		Stl                 *string
 	}
 
 	name := strings.TrimPrefix(ctx.ModuleName(), "prebuilt_")
@@ -285,8 +287,34 @@ func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 	} else {
 		p.Srcs = []string{path.Join(libDir, name+".a")}
 	}
-	p.System_shared_libs = []string{}
+	p.Default_shared_libs = []string{}
 	p.No_libcrt = proptools.BoolPtr(true)
+	p.Stl = proptools.StringPtr("none")
+	ctx.AppendProperties(p)
+}
+
+func libClangRtPrebuiltObject(ctx android.LoadHookContext) {
+	libDir := getClangResourceDir(ctx)
+
+	type props struct {
+		Arch struct {
+			X86 struct {
+				Srcs []string
+			}
+			X86_64 struct {
+				Srcs []string
+			}
+		}
+		Default_shared_libs []string
+		Stl                 *string
+	}
+
+	name := strings.TrimPrefix(ctx.ModuleName(), "prebuilt_")
+
+	p := &props{}
+	p.Arch.X86.Srcs = []string{path.Join(libDir, name+"-i386.o")}
+	p.Arch.X86_64.Srcs = []string{path.Join(libDir, name+"-x86_64.o")}
+	p.Default_shared_libs = []string{}
 	p.Stl = proptools.StringPtr("none")
 	ctx.AppendProperties(p)
 }
@@ -338,6 +366,12 @@ func libClangRtPrebuiltLibrarySharedFactory() android.Module {
 func libClangRtPrebuiltLibraryStaticFactory() android.Module {
 	module, _ := cc.NewPrebuiltStaticLibrary(android.HostAndDeviceSupported)
 	android.AddLoadHook(module, libClangRtPrebuiltLibraryStatic)
+	return module.Init()
+}
+
+func libClangRtPrebuiltObjectFactory() android.Module {
+	module := cc.NewPrebuiltObject(android.HostAndDeviceSupported)
+	android.AddLoadHook(module, libClangRtPrebuiltObject)
 	return module.Init()
 }
 
