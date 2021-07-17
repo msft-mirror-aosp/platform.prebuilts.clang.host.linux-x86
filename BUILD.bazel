@@ -189,10 +189,10 @@ android_cc_toolchain(
     libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_arm"],
     linker_flags = ["-Wl,-dynamic-linker,/system/bin/linker"] + constants.ArmLldflags,
     target_flags = ["--target=" + constants.ArmClangTriple + "10000"] +
-        constants.ArmToolchainClangCflags +
-        constants.ArmClangArmv7ANeonCflags +
-        constants.ArmClangThumbCflags +
-        constants.ArmClangCflags,
+        constants.ArmToolchainCflags +
+        constants.ArmArmv7ANeonCflags +
+        constants.ArmThumbCflags +
+        constants.ArmCflags,
     toolchain_identifier = "arm-toolchain",
 )
 
