@@ -227,10 +227,10 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, in *prebuiltLi
 	libDir := getClangResourceDir(ctx)
 
 	type props struct {
-		Srcs                []string
-		Default_shared_libs []string
-		No_libcrt           *bool
-		Sanitize            struct {
+		Srcs               []string
+		System_shared_libs []string
+		No_libcrt          *bool
+		Sanitize           struct {
 			Never *bool
 		}
 		Strip struct {
@@ -252,7 +252,7 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, in *prebuiltLi
 	name := strings.TrimPrefix(ctx.ModuleName(), "prebuilt_")
 
 	p.Srcs = []string{path.Join(libDir, name+".so")}
-	p.Default_shared_libs = []string{}
+	p.System_shared_libs = []string{}
 	p.No_libcrt = proptools.BoolPtr(true)
 	p.Sanitize.Never = proptools.BoolPtr(true)
 	p.Strip.None = proptools.BoolPtr(true)
@@ -273,10 +273,10 @@ func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 	libDir := getClangResourceDir(ctx)
 
 	type props struct {
-		Srcs                []string
-		Default_shared_libs []string
-		No_libcrt           *bool
-		Stl                 *string
+		Srcs               []string
+		System_shared_libs []string
+		No_libcrt          *bool
+		Stl                *string
 	}
 
 	name := strings.TrimPrefix(ctx.ModuleName(), "prebuilt_")
@@ -287,7 +287,7 @@ func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 	} else {
 		p.Srcs = []string{path.Join(libDir, name+".a")}
 	}
-	p.Default_shared_libs = []string{}
+	p.System_shared_libs = []string{}
 	p.No_libcrt = proptools.BoolPtr(true)
 	p.Stl = proptools.StringPtr("none")
 	ctx.AppendProperties(p)
@@ -305,8 +305,8 @@ func libClangRtPrebuiltObject(ctx android.LoadHookContext) {
 				Srcs []string
 			}
 		}
-		Default_shared_libs []string
-		Stl                 *string
+		System_shared_libs []string
+		Stl                *string
 	}
 
 	name := strings.TrimPrefix(ctx.ModuleName(), "prebuilt_")
@@ -314,7 +314,7 @@ func libClangRtPrebuiltObject(ctx android.LoadHookContext) {
 	p := &props{}
 	p.Arch.X86.Srcs = []string{path.Join(libDir, name+"-i386.o")}
 	p.Arch.X86_64.Srcs = []string{path.Join(libDir, name+"-x86_64.o")}
-	p.Default_shared_libs = []string{}
+	p.System_shared_libs = []string{}
 	p.Stl = proptools.StringPtr("none")
 	ctx.AppendProperties(p)
 }
