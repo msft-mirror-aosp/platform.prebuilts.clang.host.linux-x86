@@ -560,6 +560,16 @@ _cc_toolchain_config = rule(
     provides = [CcToolchainConfigInfo],
 )
 
+# macro to expand feature flags for a toolchain
+# we do not pass these directly to the toolchain so the order can
+# be specified per toolchain
+def expand_feature_flags(enabled_features = [], flag_map = {}):
+  flags = []
+  for feature in enabled_features:
+    flags.extend(flag_map.get(feature, []))
+  return flags
+
+
 # Macro to set up both the toolchain and the config.
 def android_cc_toolchain(
         name,
