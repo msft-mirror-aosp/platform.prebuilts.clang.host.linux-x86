@@ -11,7 +11,7 @@ package(default_visibility = ["//visibility:public"])
 # Toolchain config
 filegroup(name = "empty")
 
-load(":cc_toolchain_config.bzl", "android_cc_toolchain", "clang_version")
+load(":cc_toolchain_config.bzl", "android_cc_toolchain", "clang_version", "expand_feature_flags")
 load(":clang_version.bzl", "DEFAULT_SHORT_VERSION", "DEFAULT_VERSION")
 load("@soong_injection//cc_toolchain:constants.bzl", "constants")
 
@@ -25,6 +25,7 @@ clang_version(
 )
 
 _LIBCLANG_RT_PREFIX = "%s/lib64/clang/%s/lib/linux" % (DEFAULT_VERSION, DEFAULT_SHORT_VERSION)
+
 _LIBCLANG_RT_PREBUILT_MAP = {
     "//build/bazel/platforms/os_arch:android_arm": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-arm-android.a",
     "//build/bazel/platforms/os_arch:android_arm64": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-aarch64-android.a",
@@ -42,16 +43,15 @@ android_cc_toolchain(
     clang_version = ":clang",
     clang_version_directory = DEFAULT_VERSION,
     libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_x86_64"],
+    linker_flags = constants.X86_64ToolchainLdflags + constants.X86_64Lldflags,
     target_flags = [
-        "-m64",
-        "-march=x86-64",
-        "--target=x86_64-linux-android10000",
-        "-mssse3",
-        "-msse4",
-        "-msse4.1",
-        "-msse4.2",
-        "-mpopcnt",
-    ],
+                       "--target=x86_64-linux-android10000",
+                   ] + constants.X86_64ToolchainCflags +
+                   constants.X86_64ArchVariantCflags[""] +
+                   expand_feature_flags(
+                       constants.X86_64DefaultArchVariantFeatures,
+                       constants.X86_64ArchFeatureCflags,
+                   ) + constants.X86_64Cflags,
     toolchain_identifier = "x86_64-toolchain",
 )
 
@@ -76,6 +76,13 @@ android_cc_toolchain(
     clang_version = ":clang",
     clang_version_directory = DEFAULT_VERSION,
     libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:linux_glibc_x86_64"],
+    linker_flags = [
+        "-m64",
+        "-Wl,-z,noexecstack",
+        "-Wl,-z,relro",
+        "-Wl,-z,now",
+        "-Wl,--no-undefined-version",
+    ],
     target_flags = [
         "-m64",
         "-fdiagnostics-color",
@@ -88,13 +95,6 @@ android_cc_toolchain(
         # See bug 12708004.
         "-D__STDC_FORMAT_MACROS",
         "-D__STDC_CONSTANT_MACROS",
-    ],
-    linker_flags = [
-        "-m64",
-        "-Wl,-z,noexecstack",
-        "-Wl,-z,relro",
-        "-Wl,-z,now",
-        "-Wl,--no-undefined-version",
     ],
     toolchain_identifier = "x86_64-toolchain",
 )
@@ -120,16 +120,15 @@ android_cc_toolchain(
     clang_version = ":clang",
     clang_version_directory = DEFAULT_VERSION,
     libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_x86"],
-    linker_flags = [
-        "-Wl,-dynamic-linker,/system/bin/linker",
-    ],
+    linker_flags = constants.X86ToolchainLdflags + constants.X86Lldflags,
     target_flags = [
-        "--target=i686-linux-android10000",
-        "-m32",
-        "-march=prescott",
-        "-msse3",
-        "-mstackrealign",
-    ],
+                       "--target=i686-linux-android10000",
+                   ] + constants.X86ToolchainCflags +
+                   constants.X86ArchVariantCflags[""] +
+                   expand_feature_flags(
+                       constants.X86_64DefaultArchVariantFeatures,
+                       constants.X86ArchFeatureCflags,
+                   ) + constants.X86Cflags,
     toolchain_identifier = "x86-toolchain",
 )
 
@@ -153,17 +152,14 @@ android_cc_toolchain(
     clang_version = ":clang",
     clang_version_directory = DEFAULT_VERSION,
     libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_arm64"],
-    linker_flags = [
-        # Obtained from build/soong/rust/config/arm64_device.go
-        "-Wl,--icf=safe",
-        "-Wl,-z,max-page-size=4096",
-        "-Wl,--execute-only",
-        "-Wl,-z,separate-code",
-    ],
+    linker_flags = constants.Arm64Lldflags,
     target_flags = [
-        "--target=aarch64-linux-android10000",
-        "-march=armv8-a",
-    ],
+                       "--target=aarch64-linux-android10000",
+                   ] + constants.Arm64ArchVariantCflags["armv8-a"] +
+                   constants.Arm64CpuVariantCflags.get(
+                       "",
+                       default = [],
+                   ) + constants.Arm64Cflags,
     toolchain_identifier = "arm64-toolchain",
 )
 
@@ -187,12 +183,12 @@ android_cc_toolchain(
     clang_version = ":clang",
     clang_version_directory = DEFAULT_VERSION,
     libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_arm"],
-    linker_flags = ["-Wl,-dynamic-linker,/system/bin/linker"] + constants.ArmLldflags,
+    linker_flags = constants.ArmLldflags,
     target_flags = ["--target=" + constants.ArmClangTriple + "10000"] +
-        constants.ArmToolchainCflags +
-        constants.ArmArmv7ANeonCflags +
-        constants.ArmThumbCflags +
-        constants.ArmCflags,
+                   constants.ArmToolchainCflags +
+                   constants.ArmArchVariantCflags["armv7-a-neon"] +
+                   constants.ArmCpuVariantCflags.get("", []) +
+                   constants.ArmCflags,
     toolchain_identifier = "arm-toolchain",
 )
 
@@ -219,7 +215,12 @@ cc_import(
     name = "llvm-%s" % tool,
     actual = DEFAULT_VERSION + "/bin/llvm-%s" % tool,
     visibility = ["//visibility:public"],
-) for tool in ["ar", "readelf", "objcopy", "strip"]]
+) for tool in [
+    "ar",
+    "readelf",
+    "objcopy",
+    "strip",
+]]
 
 # Test tools used by Bazel tests.
 filegroup(
@@ -228,5 +229,5 @@ filegroup(
         DEFAULT_VERSION + "/bin/llvm-readelf",
         DEFAULT_VERSION + "/bin/llvm-nm",
     ],
-    visibility = ["//build/bazel/tests:__subpackages__"]
+    visibility = ["//build/bazel/tests:__subpackages__"],
 )
