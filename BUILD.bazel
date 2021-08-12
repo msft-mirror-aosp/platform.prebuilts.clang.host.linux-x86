@@ -12,19 +12,21 @@ package(default_visibility = ["//visibility:public"])
 filegroup(name = "empty")
 
 load(":cc_toolchain_config.bzl", "android_cc_toolchain", "clang_version", "expand_feature_flags")
-load(":clang_version.bzl", "DEFAULT_SHORT_VERSION", "DEFAULT_VERSION")
 load("@soong_injection//cc_toolchain:constants.bzl", "constants")
 
 # Different clang versions are configured here.
 clang_version(
     name = "clang",
-    directory = DEFAULT_VERSION,
+    directory = constants.CLANG_DEFAULT_VERSION,
     includes = [
-        "lib64/clang/%s/include" % DEFAULT_SHORT_VERSION,
+        "lib64/clang/%s/include" % constants.CLANG_DEFAULT_SHORT_VERSION,
     ],
 )
 
-_LIBCLANG_RT_PREFIX = "%s/lib64/clang/%s/lib/linux" % (DEFAULT_VERSION, DEFAULT_SHORT_VERSION)
+_LIBCLANG_RT_PREFIX = "%s/lib64/clang/%s/lib/linux" % (
+    constants.CLANG_DEFAULT_VERSION,
+    constants.CLANG_DEFAULT_SHORT_VERSION,
+)
 
 _LIBCLANG_RT_PREBUILT_MAP = {
     "//build/bazel/platforms/os_arch:android_arm": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-arm-android.a",
@@ -41,7 +43,7 @@ _LIBCLANG_RT_PREBUILT_MAP = {
 android_cc_toolchain(
     name = "cc_toolchain_x86_64",
     clang_version = ":clang",
-    clang_version_directory = DEFAULT_VERSION,
+    clang_version_directory = constants.CLANG_DEFAULT_VERSION,
     libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_x86_64"],
     linker_flags = constants.X86_64ToolchainLdflags + constants.X86_64Lldflags,
     target_flags = [
@@ -74,7 +76,7 @@ toolchain(
 android_cc_toolchain(
     name = "cc_toolchain_x86_64_linux_host",
     clang_version = ":clang",
-    clang_version_directory = DEFAULT_VERSION,
+    clang_version_directory = constants.CLANG_DEFAULT_VERSION,
     libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:linux_glibc_x86_64"],
     linker_flags = [
         "-m64",
@@ -118,7 +120,7 @@ toolchain(
 android_cc_toolchain(
     name = "cc_toolchain_x86",
     clang_version = ":clang",
-    clang_version_directory = DEFAULT_VERSION,
+    clang_version_directory = constants.CLANG_DEFAULT_VERSION,
     libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_x86"],
     linker_flags = constants.X86ToolchainLdflags + constants.X86Lldflags,
     target_flags = [
@@ -150,7 +152,7 @@ toolchain(
 android_cc_toolchain(
     name = "cc_toolchain_arm64",
     clang_version = ":clang",
-    clang_version_directory = DEFAULT_VERSION,
+    clang_version_directory = constants.CLANG_DEFAULT_VERSION,
     libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_arm64"],
     linker_flags = constants.Arm64Lldflags,
     target_flags = [
@@ -181,7 +183,7 @@ toolchain(
 android_cc_toolchain(
     name = "cc_toolchain_arm32",
     clang_version = ":clang",
-    clang_version_directory = DEFAULT_VERSION,
+    clang_version_directory = constants.CLANG_DEFAULT_VERSION,
     libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_arm"],
     linker_flags = constants.ArmLldflags,
     target_flags = ["--target=" + constants.ArmClangTriple + "10000"] +
@@ -213,7 +215,7 @@ cc_import(
 
 [alias(
     name = "llvm-%s" % tool,
-    actual = DEFAULT_VERSION + "/bin/llvm-%s" % tool,
+    actual = constants.CLANG_DEFAULT_VERSION + "/bin/llvm-%s" % tool,
     visibility = ["//visibility:public"],
 ) for tool in [
     "ar",
@@ -226,8 +228,8 @@ cc_import(
 filegroup(
     name = "test_tools",
     srcs = [
-        DEFAULT_VERSION + "/bin/llvm-readelf",
-        DEFAULT_VERSION + "/bin/llvm-nm",
+        constants.CLANG_DEFAULT_VERSION + "/bin/llvm-readelf",
+        constants.CLANG_DEFAULT_VERSION + "/bin/llvm-nm",
     ],
     visibility = ["//build/bazel/tests:__subpackages__"],
 )
