@@ -447,18 +447,6 @@ type bazelLlvmPrebuiltLibraryStaticAttributes struct {
 	Includes       bazel.StringListAttribute
 }
 
-type bazelLlvmPrebuiltLibraryStatic struct {
-	android.BazelTargetModuleBase
-	bazelLlvmPrebuiltLibraryStaticAttributes
-}
-
-func BazelLlvmPrebuiltLibraryStaticFactory() android.Module {
-	module := &bazelLlvmPrebuiltLibraryStatic{}
-	module.AddProperties(&module.bazelLlvmPrebuiltLibraryStaticAttributes)
-	android.InitBazelTargetModule(module)
-	return module
-}
-
 func LlvmPrebuiltLibraryStaticBp2Build(ctx android.TopDownMutatorContext) {
 	module, ok := ctx.Module().(*cc.Module)
 	if !ok {
@@ -483,13 +471,6 @@ type bazelLibclangRtPrebuiltLibraryStaticAttributes struct {
 type bazelLibclangRtPrebuiltLibraryStatic struct {
 	android.BazelTargetModuleBase
 	bazelLibclangRtPrebuiltLibraryStaticAttributes
-}
-
-func BazelLibclangRtPrebuiltLibraryStaticFactory() android.Module {
-	module := &bazelLibclangRtPrebuiltLibraryStatic{}
-	module.AddProperties(&module.bazelLibclangRtPrebuiltLibraryStaticAttributes)
-	android.InitBazelTargetModule(module)
-	return module
 }
 
 func LibclangRtPrebuiltLibraryStaticBp2Build(ctx android.TopDownMutatorContext) {
@@ -523,18 +504,5 @@ func prebuiltLibraryStaticBp2BuildInternal(ctx android.TopDownMutatorContext, mo
 	}
 
 	name := android.RemoveOptionalPrebuiltPrefix(module.Name())
-	ctx.CreateBazelTargetModule(BazelLlvmPrebuiltLibraryStaticFactory, name, props, attrs)
-}
-
-func (m *bazelLlvmPrebuiltLibraryStatic) Name() string {
-	return m.BaseModuleName()
-}
-
-func (m *bazelLlvmPrebuiltLibraryStatic) GenerateAndroidBuildActions(ctx android.ModuleContext) {}
-
-func (m *bazelLibclangRtPrebuiltLibraryStatic) Name() string {
-	return m.BaseModuleName()
-}
-
-func (m *bazelLibclangRtPrebuiltLibraryStatic) GenerateAndroidBuildActions(ctx android.ModuleContext) {
+	ctx.CreateBazelTargetModule(name, props, attrs)
 }
