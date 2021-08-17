@@ -129,19 +129,19 @@ def _tool_paths(clang_version_info):
 def _compiler_flag_features(flags = [], os_is_device = False):
 
     # Combine the toolchain's provided flags with the default ones.
-    flags = flags + COMPILER_FLAGS + constants.CommonClangGlobalCflags
+    flags = flags + COMPILER_FLAGS + constants.CommonGlobalCflags
 
     if os_is_device:
-        flags += constants.DeviceClangGlobalCflags
+        flags += constants.DeviceGlobalCflags
     else:
-        flags += constants.HostClangGlobalCflags
+        flags += constants.HostGlobalCflags
 
     # Default assembler flags.
     asm_only_flags = ASM_COMPILER_FLAGS
 
     # Default C++ compile action only flags (No C)
     cpp_only_flags = []
-    cpp_only_flags += constants.CommonClangGlobalCppflags
+    cpp_only_flags += constants.CommonGlobalCppflags
     if os_is_device:
         cpp_only_flags += constants.DeviceGlobalCppflags
     else:
@@ -291,7 +291,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
                 actions = ALL_COMPILE_ACTIONS,
                 flag_groups = [
                     flag_group(
-                        flags = constants.NoOverrideClangGlobalCflags,
+                        flags = constants.NoOverrideGlobalCflags,
                     ),
                 ],
             ),
@@ -559,6 +559,16 @@ _cc_toolchain_config = rule(
     },
     provides = [CcToolchainConfigInfo],
 )
+
+# macro to expand feature flags for a toolchain
+# we do not pass these directly to the toolchain so the order can
+# be specified per toolchain
+def expand_feature_flags(enabled_features = [], flag_map = {}):
+  flags = []
+  for feature in enabled_features:
+    flags.extend(flag_map.get(feature, []))
+  return flags
+
 
 # Macro to set up both the toolchain and the config.
 def android_cc_toolchain(
