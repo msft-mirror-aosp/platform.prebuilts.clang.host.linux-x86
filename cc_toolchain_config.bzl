@@ -35,10 +35,12 @@ COMPILER_FLAGS = [
 ASM_COMPILER_FLAGS = [
     "-D__ASSEMBLY__",
 ]
+
 # CStdVersion in cc/config/global.go
 C_COMPILER_FLAGS = [
     "-std=gnu99",
 ]
+
 # CppStdVersion in cc/config/global.go
 CC_COMPILER_STANDARD_STD_FLAGS = [
     "-std=gnu++17",
@@ -127,7 +129,6 @@ def _tool_paths(clang_version_info):
     ]
 
 def _compiler_flag_features(flags = [], os_is_device = False):
-
     # Combine the toolchain's provided flags with the default ones.
     flags = flags + COMPILER_FLAGS + constants.CommonGlobalCflags
 
@@ -202,7 +203,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [ACTION_NAMES.cpp_compile] + ALL_ASSEMBLE_ACTIONS,
+                actions = ACTION_NAMES.cpp_compile,
                 flag_groups = [
                     flag_group(
                         flags = cpp_only_flags,
@@ -216,7 +217,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [ACTION_NAMES.c_compile] + ALL_ASSEMBLE_ACTIONS,
+                actions = ACTION_NAMES.c_compile,
                 flag_groups = [
                     flag_group(
                         flags = c_only_flags,
@@ -288,7 +289,9 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = ALL_COMPILE_ACTIONS,
+                # We want this to apply to all actions except assembly
+                # primarily to match Soong's semantics
+                actions = [act for act in ALL_COMPILE_ACTIONS if act not in ALL_ASSEMBLE_ACTIONS],
                 flag_groups = [
                     flag_group(
                         flags = constants.NoOverrideGlobalCflags,
@@ -297,7 +300,6 @@ def _compiler_flag_features(flags = [], os_is_device = False):
             ),
         ],
     ))
-
 
     return features
 
@@ -334,7 +336,7 @@ def _rtti_features():
         ],
         enabled = True,
     )
-    rtti_feature  = feature(
+    rtti_feature = feature(
         name = "rtti",
         enabled = False,
     )
@@ -485,10 +487,12 @@ def _cc_toolchain_config_impl(ctx):
     os_is_device = is_target_os_device(ctx)
 
     builtin_include_dirs = []
+
     # This is so that Bazel doesn't validate .d files against the set of headers
     # declared in BUILD files (Blueprint files don't contain that data)
     builtin_include_dirs.extend(["/"])
     builtin_include_dirs.extend(clang_version_info.includes)
+
     # b/186035856: Do not add anything to this list.
     builtin_include_dirs.extend(constants.CommonGlobalIncludes)
 
@@ -522,13 +526,13 @@ def _cc_toolchain_config_impl(ctx):
 
     # Aggregate all features
     features = compiler_flag_features + \
-        _rpath_features() + _rtti_features() + \
-        [
-            _use_libcrt_feature(ctx.file.libclang_rt_builtin),
-            linker_target_flag_feature,
-            linker_flag_feature,
-            toolchain_include_directories_feature,
-        ]
+               _rpath_features() + _rtti_features() + \
+               [
+                   _use_libcrt_feature(ctx.file.libclang_rt_builtin),
+                   linker_target_flag_feature,
+                   linker_flag_feature,
+                   toolchain_include_directories_feature,
+               ]
     features = [feature for feature in features if feature != None]
 
     return cc_common.create_cc_toolchain_config_info(
@@ -555,7 +559,7 @@ _cc_toolchain_config = rule(
         "clang_version": attr.label(mandatory = True, providers = [_ClangVersionInfo]),
         "target_flags": attr.string_list(default = []),
         "linker_flags": attr.string_list(default = []),
-        "libclang_rt_builtin": attr.label(allow_single_file=True),
+        "libclang_rt_builtin": attr.label(allow_single_file = True),
     },
     provides = [CcToolchainConfigInfo],
 )
@@ -564,11 +568,10 @@ _cc_toolchain_config = rule(
 # we do not pass these directly to the toolchain so the order can
 # be specified per toolchain
 def expand_feature_flags(enabled_features = [], flag_map = {}):
-  flags = []
-  for feature in enabled_features:
-    flags.extend(flag_map.get(feature, []))
-  return flags
-
+    flags = []
+    for feature in enabled_features:
+        flags.extend(flag_map.get(feature, []))
+    return flags
 
 # Macro to set up both the toolchain and the config.
 def android_cc_toolchain(
@@ -585,13 +588,13 @@ def android_cc_toolchain(
     libclang_rt_path = None
     if libclang_rt_builtin:
         libclang_rt_path = libclang_rt_builtin
-        extra_linker_paths.append(":"+libclang_rt_path)
+        extra_linker_paths.append(":" + libclang_rt_path)
 
     # Write the toolchain config.
     _cc_toolchain_config(
         name = "%s_config" % name,
         clang_version = clang_version,
-        libclang_rt_builtin= libclang_rt_path,
+        libclang_rt_builtin = libclang_rt_path,
         target_flags = target_flags,
         linker_flags = linker_flags,
         toolchain_identifier = toolchain_identifier,
