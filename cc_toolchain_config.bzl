@@ -203,7 +203,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = ACTION_NAMES.cpp_compile,
+                actions = [ACTION_NAMES.cpp_compile],
                 flag_groups = [
                     flag_group(
                         flags = cpp_only_flags,
@@ -217,7 +217,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = ACTION_NAMES.c_compile,
+                actions = [ACTION_NAMES.c_compile],
                 flag_groups = [
                     flag_group(
                         flags = c_only_flags,
