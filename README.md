@@ -8,7 +8,8 @@ LLVM Users
 ----------
 
 * [**Android Platform**](https://android.googlesource.com/platform/)
-  * Currently clang-r416183b
+  * Currently clang-r428724
+  * clang-r416183b1 for Android S release
   * clang-r383902b1 for Android R-QPR2 release
   * clang-r383902b for Android R release
   * clang-r353983c1 for Android Q-QPR2 release
@@ -17,7 +18,7 @@ LLVM Users
     * [Internal cs/ link](https://cs.corp.google.com/android/build/soong/cc/config/global.go?q=ClangDefaultVersion)
 
 * [**Android Platform LLVM binutils**](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/llvm-binutils-stable/)
-  * Currently clang-r416183b
+  * Currently clang-r428724
   * These can be updated by running [update-binutils.py](https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/master/update-binutils.py).
 
 * [**RenderScript**](https://developer.android.com/guide/topics/renderscript/index.html)
@@ -26,7 +27,7 @@ LLVM Users
     * [Internal cs/ link](https://cs.corp.google.com/android/build/soong/cc/config/global.go?q=RSClangVersion)
 
 * [**Android Linux Kernel**](http://go/android-systems)
-  * Currently clang-r416183b
+  * Currently clang-r428724
   * Look for "clang-" in [mainline build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android-mainline/build.config.common).
   * Look for "clang-" in [android13-5.10 build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android13-5.10/build.config.common)
   * Look for "clang-" in [android12-5.10 build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android12-5.10/build.config.common)
@@ -40,12 +41,9 @@ LLVM Users
   * Currently clang-r416183b
   * Look for "clang-" in [ndk/toolchains.py](https://android.googlesource.com/platform/ndk/+/refs/heads/master/ndk/toolchains.py)
 
-* [**Bazel**](https://opensource.googleblog.com/2020/11/welcome-android-open-source-project.html)
-  * Currently clang-r416183b
-  * Look for "clang-" in [prebuilts/clang/host/linux-x86/clang_version.bzl](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang_version.bzl)
-
 * [**Trusty**](https://source.android.com/security/trusty/)
-  * Currently clang-r383902
+  * LINUX_CLANG_BINDIR: clang-r428724
+  * CLANG_BINDIR: clang-r399163b
   * Look for "clang-" in [vendor/google/aosp/scripts/envsetup.sh](https://android.googlesource.com/trusty/vendor/google/aosp/+/master/scripts/envsetup.sh).
 
 * [**Android Emulator**](https://developer.android.com/studio/run/emulator.html)
@@ -55,26 +53,26 @@ LLVM Users
     * [Internal cs/ link](https://cs.corp.google.com/android/external/qemu/android/build/cmake/toolchain.cmake?q=clang-)
 
 * [**Context Hub Runtime Environment (CHRE)**](https://android.googlesource.com/platform/system/chre/)
-  * Currently clang-r416183b
+  * Currently clang-r428724
   * Look in [system/chre/build/arch/x86.mk](https://android.googlesource.com/platform/system/chre/+/master/build/arch/x86.mk#12).
 
 * [**OpenJDK (jdk/build)**](https://android.googlesource.com/toolchain/jdk/build/)
-  * Currently clang-r399163b
+  * Currently clang-r416183b
   * Look for "clang-" in [build-jetbrainsruntime-linux.sh](https://android.googlesource.com/toolchain/jdk/build/+/refs/heads/master/build-jetbrainsruntime-linux.sh)
   * Look for "clang-" in [build-openjdk-darwin.sh](https://android.googlesource.com/toolchain/jdk/build/+/refs/heads/master/build-openjdk-darwin.sh)
 
 * [**Clang Tools**](https://android.googlesource.com/platform/prebuilts/clang-tools/)
-  * Currently clang-r416183b
+  * Currently clang-r428724
   * Look for "clang-r" in [envsetup.sh](https://android.googlesource.com/platform/development/+/refs/heads/master/vndk/tools/header-checker/android/envsetup.sh)
   * Check out branch clang-tools and run test: OUT_DIR=out prebuilts/clang-tools/build-prebuilts.sh
 
 * **Android Rust**
-  * Currently clang-r416183b
+  * Currently clang-r428724
   * Look for "CLANG_REVISION" in [paths.py](https://android.googlesource.com/toolchain/android_rust/+/refs/heads/master/paths.py)
   * Look for "bindgenClangVersion" in [bindgen.go](https://android.googlesource.com/platform/build/soong/+/refs/heads/master/rust/bindgen.go)
 
 * **Stage 1 compiler**
-  * Currently clang-bootstrap (clang-r407598 from a later build)
+  * Currently clang-r428724
   * Look for "clang-r" in [toolchain/llvm_android/constants.py](https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/master/constants.py)
   * Note the chicken & egg paradox of a self hosting bootstrapping compiler; this can only be updated AFTER a new prebuilt is checked in.
 
@@ -112,6 +110,9 @@ Prebuilt Versions
 * [clang-r412851](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r412851) - February 2021
 * [clang-r416183](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r416183) - March 2021
 * [clang-r416183b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r416183b) - April 2021
+* [clang-r416183c](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r416183b) - June 2021
+* [clang-r416183b1](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r416183b) - June 2021
+* [clang-r428724](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r428724) - August 2021
 
 
 More Information

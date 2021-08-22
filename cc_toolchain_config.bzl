@@ -1,6 +1,5 @@
 load("@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl", "feature", "flag_group", "flag_set", "tool_path", "with_feature_set")
 load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
-
 load("@soong_injection//cc_toolchain:constants.bzl", "constants")
 
 # Clang-specific configuration.
@@ -36,10 +35,12 @@ COMPILER_FLAGS = [
 ASM_COMPILER_FLAGS = [
     "-D__ASSEMBLY__",
 ]
+
 # CStdVersion in cc/config/global.go
 C_COMPILER_FLAGS = [
     "-std=gnu99",
 ]
+
 # CppStdVersion in cc/config/global.go
 CC_COMPILER_STANDARD_STD_FLAGS = [
     "-std=gnu++17",
@@ -64,6 +65,28 @@ STATIC_LINKER_FLAGS = [
 ]
 DYNAMIC_LINKER_FLAGS = [
     "-shared",
+]
+
+# The set of C and C++ actions used in the Android build. There are other types
+# of compile actions available in ACTION_NAMES, but those are not used in
+# Android yet.
+ALL_COMPILE_ACTIONS = [
+    ACTION_NAMES.c_compile,
+    ACTION_NAMES.cpp_compile,
+    ACTION_NAMES.assemble,
+    ACTION_NAMES.preprocess_assemble,
+]
+
+# Assembler actions for .s and .S files.
+ALL_ASSEMBLE_ACTIONS = [
+    ACTION_NAMES.assemble,
+    ACTION_NAMES.preprocess_assemble,
+]
+
+ALL_LINK_ACTIONS = [
+    ACTION_NAMES.cpp_link_executable,
+    ACTION_NAMES.cpp_link_dynamic_library,
+    ACTION_NAMES.cpp_link_nodeps_dynamic_library,
 ]
 
 def _tool_paths(clang_version_info):
@@ -106,21 +129,20 @@ def _tool_paths(clang_version_info):
     ]
 
 def _compiler_flag_features(flags = [], os_is_device = False):
-
     # Combine the toolchain's provided flags with the default ones.
-    flags = flags + COMPILER_FLAGS + constants.CommonClangGlobalCflags
+    flags = flags + COMPILER_FLAGS + constants.CommonGlobalCflags
 
     if os_is_device:
-        flags += constants.DeviceClangGlobalCflags
+        flags += constants.DeviceGlobalCflags
     else:
-        flags += constants.HostClangGlobalCflags
+        flags += constants.HostGlobalCflags
 
     # Default assembler flags.
     asm_only_flags = ASM_COMPILER_FLAGS
 
     # Default C++ compile action only flags (No C)
     cpp_only_flags = []
-    cpp_only_flags += constants.CommonClangGlobalCppflags
+    cpp_only_flags += constants.CommonGlobalCppflags
     if os_is_device:
         cpp_only_flags += constants.DeviceGlobalCppflags
     else:
@@ -139,12 +161,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.c_compile,
-                    ACTION_NAMES.cpp_compile,
-                    ACTION_NAMES.assemble,
-                    ACTION_NAMES.preprocess_assemble,
-                ],
+                actions = ALL_COMPILE_ACTIONS,
                 flag_groups = [
                     flag_group(
                         flags = non_external_flags,
@@ -158,12 +175,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.c_compile,
-                    ACTION_NAMES.cpp_compile,
-                    ACTION_NAMES.assemble,
-                    ACTION_NAMES.preprocess_assemble,
-                ],
+                actions = ALL_COMPILE_ACTIONS,
                 flag_groups = [
                     flag_group(
                         flags = flags,
@@ -177,10 +189,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.assemble,
-                    ACTION_NAMES.preprocess_assemble,
-                ],
+                actions = ALL_ASSEMBLE_ACTIONS,
                 flag_groups = [
                     flag_group(
                         flags = asm_only_flags,
@@ -194,11 +203,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.cpp_compile,
-                    ACTION_NAMES.assemble,
-                    ACTION_NAMES.preprocess_assemble,
-                ],
+                actions = [ACTION_NAMES.cpp_compile],
                 flag_groups = [
                     flag_group(
                         flags = cpp_only_flags,
@@ -212,11 +217,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.c_compile,
-                    ACTION_NAMES.assemble,
-                    ACTION_NAMES.preprocess_assemble,
-                ],
+                actions = [ACTION_NAMES.c_compile],
                 flag_groups = [
                     flag_group(
                         flags = c_only_flags,
@@ -270,12 +271,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.c_compile,
-                    ACTION_NAMES.cpp_compile,
-                    ACTION_NAMES.assemble,
-                    ACTION_NAMES.preprocess_assemble,
-                ],
+                actions = ALL_COMPILE_ACTIONS,
                 flag_groups = [
                     flag_group(
                         expand_if_available = "user_compile_flags",
@@ -293,37 +289,65 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.c_compile,
-                    ACTION_NAMES.cpp_compile,
-                    ACTION_NAMES.assemble,
-                    ACTION_NAMES.preprocess_assemble,
-                ],
+                # We want this to apply to all actions except assembly
+                # primarily to match Soong's semantics
+                actions = [act for act in ALL_COMPILE_ACTIONS if act not in ALL_ASSEMBLE_ACTIONS],
                 flag_groups = [
                     flag_group(
-                        flags = constants.NoOverrideClangGlobalCflags,
+                        flags = constants.NoOverrideGlobalCflags,
                     ),
                 ],
             ),
         ],
     ))
 
-
     return features
+
+def _rtti_features():
+    rtti_flag_feature = feature(
+        name = "rtti_flag",
+        flag_sets = [
+            flag_set(
+                actions = [
+                    ACTION_NAMES.cpp_compile,
+                ],
+                flag_groups = [
+                    flag_group(
+                        flags = ["-frtti"],
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(features = ["rtti"]),
+                ],
+            ),
+            flag_set(
+                actions = [
+                    ACTION_NAMES.cpp_compile,
+                ],
+                flag_groups = [
+                    flag_group(
+                        flags = ["-fno-rtti"],
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(not_features = ["rtti"]),
+                ],
+            ),
+        ],
+        enabled = True,
+    )
+    rtti_feature = feature(
+        name = "rtti",
+        enabled = False,
+    )
+    return [rtti_flag_feature, rtti_feature]
 
 def _rpath_features():
     runtime_library_search_directories_feature = feature(
         name = "runtime_library_search_directories",
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.cpp_link_executable,
-                    ACTION_NAMES.cpp_link_dynamic_library,
-                    ACTION_NAMES.cpp_link_nodeps_dynamic_library,
-                    ACTION_NAMES.lto_index_for_executable,
-                    ACTION_NAMES.lto_index_for_dynamic_library,
-                    ACTION_NAMES.lto_index_for_nodeps_dynamic_library,
-                ],
+                actions = ALL_LINK_ACTIONS,
                 flag_groups = [
                     flag_group(
                         iterate_over = "runtime_library_search_directories",
@@ -350,14 +374,7 @@ def _rpath_features():
                 ],
             ),
             flag_set(
-                actions = [
-                    ACTION_NAMES.cpp_link_executable,
-                    ACTION_NAMES.cpp_link_dynamic_library,
-                    ACTION_NAMES.cpp_link_nodeps_dynamic_library,
-                    ACTION_NAMES.lto_index_for_executable,
-                    ACTION_NAMES.lto_index_for_dynamic_library,
-                    ACTION_NAMES.lto_index_for_nodeps_dynamic_library,
-                ],
+                actions = ALL_LINK_ACTIONS,
                 flag_groups = [
                     flag_group(
                         iterate_over = "runtime_library_search_directories",
@@ -385,6 +402,27 @@ def _rpath_features():
         enabled = False,
     )
     return [runtime_library_search_directories_feature, disable_rpath_feature]
+
+def _use_libcrt_feature(path):
+    if not path:
+        return None
+    return feature(
+        name = "use_libcrt",
+        enabled = True,
+        flag_sets = [
+            # TODO(b/190383809): binaries need to be linked with late static libs grouped
+            flag_set(
+                actions = [
+                    ACTION_NAMES.cpp_link_dynamic_library,
+                ],
+                flag_groups = [
+                    flag_group(
+                        flags = [path.path],
+                    ),
+                ],
+            ),
+        ],
+    )
 
 def _linker_flag_feature(name, flags = [], additional_static_flags = [], additional_dynamic_flags = []):
     if not flags:
@@ -428,18 +466,7 @@ def _toolchain_include_feature(system_includes = []):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.assemble,
-                    ACTION_NAMES.preprocess_assemble,
-                    ACTION_NAMES.linkstamp_compile,
-                    ACTION_NAMES.c_compile,
-                    ACTION_NAMES.cpp_compile,
-                    ACTION_NAMES.cpp_header_parsing,
-                    ACTION_NAMES.cpp_module_compile,
-                    ACTION_NAMES.cpp_module_codegen,
-                    ACTION_NAMES.lto_backend,
-                    ACTION_NAMES.clif_match,
-                ],
+                actions = ALL_COMPILE_ACTIONS,
                 flag_groups = [
                     flag_group(
                         flags = flags,
@@ -464,8 +491,10 @@ def _cc_toolchain_config_impl(ctx):
     # This is so that Bazel doesn't validate .d files against the set of headers
     # declared in BUILD files (Blueprint files don't contain that data)
     builtin_include_dirs.extend(["/"])
-
     builtin_include_dirs.extend(clang_version_info.includes)
+
+    # b/186035856: Do not add anything to this list.
+    builtin_include_dirs.extend(constants.CommonGlobalIncludes)
 
     # Compiler action features
     compiler_flag_features = _compiler_flag_features(ctx.attr.target_flags, os_is_device)
@@ -497,12 +526,13 @@ def _cc_toolchain_config_impl(ctx):
 
     # Aggregate all features
     features = compiler_flag_features + \
-        _rpath_features() + \
-        [
-            linker_target_flag_feature,
-            linker_flag_feature,
-            toolchain_include_directories_feature
-        ]
+               _rpath_features() + _rtti_features() + \
+               [
+                   _use_libcrt_feature(ctx.file.libclang_rt_builtin),
+                   linker_target_flag_feature,
+                   linker_flag_feature,
+                   toolchain_include_directories_feature,
+               ]
     features = [feature for feature in features if feature != None]
 
     return cc_common.create_cc_toolchain_config_info(
@@ -529,11 +559,19 @@ _cc_toolchain_config = rule(
         "clang_version": attr.label(mandatory = True, providers = [_ClangVersionInfo]),
         "target_flags": attr.string_list(default = []),
         "linker_flags": attr.string_list(default = []),
-        '_android_os_constraint': attr.label(default = "//build/bazel/platforms/os:android"),
-        '_linux_os_constraint': attr.label(default = "//build/bazel/platforms/os:linux"),
+        "libclang_rt_builtin": attr.label(allow_single_file = True),
     },
     provides = [CcToolchainConfigInfo],
 )
+
+# macro to expand feature flags for a toolchain
+# we do not pass these directly to the toolchain so the order can
+# be specified per toolchain
+def expand_feature_flags(enabled_features = [], flag_map = {}):
+    flags = []
+    for feature in enabled_features:
+        flags.extend(flag_map.get(feature, []))
+    return flags
 
 # Macro to set up both the toolchain and the config.
 def android_cc_toolchain(
@@ -542,13 +580,21 @@ def android_cc_toolchain(
         # This should come from the clang_version provider.
         # Instead, it's hard-coded because this is a macro, not a rule.
         clang_version_directory = None,
+        libclang_rt_builtin = None,
         target_flags = [],
         linker_flags = [],
         toolchain_identifier = None):
+    extra_linker_paths = []
+    libclang_rt_path = None
+    if libclang_rt_builtin:
+        libclang_rt_path = libclang_rt_builtin
+        extra_linker_paths.append(":" + libclang_rt_path)
+
     # Write the toolchain config.
     _cc_toolchain_config(
         name = "%s_config" % name,
         clang_version = clang_version,
+        libclang_rt_builtin = libclang_rt_path,
         target_flags = target_flags,
         linker_flags = linker_flags,
         toolchain_identifier = toolchain_identifier,
@@ -595,7 +641,7 @@ def android_cc_toolchain(
         name = "%s_linker_files" % name,
         srcs = [
             "%s_linker_binaries" % name,
-        ],
+        ] + extra_linker_paths,
     )
     native.filegroup(
         name = "%s_all_files" % name,

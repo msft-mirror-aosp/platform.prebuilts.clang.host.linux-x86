@@ -1008,6 +1008,19 @@ libclang_rt_prebuilt_library_static {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+libclang_rt_prebuilt_object {
+    name: "clang_rt.crtbegin",
+    host_supported: true,
+    defaults: ["libclang_rt-prebuilt-default"],
+}
+
+libclang_rt_prebuilt_object {
+    name: "clang_rt.crtend",
+    host_supported: true,
+    defaults: ["libclang_rt-prebuilt-default"],
+}
+
+///////////////////////////////////////////////////////////////////////////////
 cc_defaults {
     name: "libunwind-android-default",
     defaults: [
@@ -1121,6 +1134,15 @@ clang_builtin_headers {
     name: "clang_builtin_headers_resources",
     tool_files: ["soong/generate_clang_builtin_headers_resources.sh"],
     out: ["clang_builtin_headers_resources.inc"],
+}
+
+// Export llvm tools as a filegroup which is packaged and available for CI
+// tests.
+llvm_tools_filegroup {
+    name: "llvm-tools",
+    visibility: ["//development/scripts:__subpackages__"],
+    // The tools and libs in the filegroup are in
+    // ./soong/clangprebuilts.go:llvmToolsFiles
 }
 
 subdirs = [
