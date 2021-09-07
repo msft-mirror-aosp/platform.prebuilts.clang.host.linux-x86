@@ -468,11 +468,6 @@ type bazelLibclangRtPrebuiltLibraryStaticAttributes struct {
 	Includes       bazel.StringListAttribute
 }
 
-type bazelLibclangRtPrebuiltLibraryStatic struct {
-	android.BazelTargetModuleBase
-	bazelLibclangRtPrebuiltLibraryStaticAttributes
-}
-
 func LibclangRtPrebuiltLibraryStaticBp2Build(ctx android.TopDownMutatorContext) {
 	module, ok := ctx.Module().(*cc.Module)
 	if !ok {
