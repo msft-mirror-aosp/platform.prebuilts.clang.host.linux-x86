@@ -1,4 +1,4 @@
-load("@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl", "feature", "flag_group", "flag_set", "tool_path", "with_feature_set")
+load("@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl", "action_config", "feature", "flag_group", "flag_set", "tool", "tool_path", "with_feature_set")
 load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
 load("@soong_injection//cc_toolchain:constants.bzl", "constants")
 
@@ -125,6 +125,10 @@ def _tool_paths(clang_version_info):
         tool_path(
             name = "strip",
             path = clang_version_info.directory.basename + "/bin/llvm-strip",
+        ),
+        tool_path(
+            name = "clang++",
+            path = clang_version_info.directory.basename + "/bin/clang++",
         ),
     ]
 
@@ -484,6 +488,32 @@ def is_target_os_device(ctx):
 
 def _cc_toolchain_config_impl(ctx):
     clang_version_info = ctx.attr.clang_version[_ClangVersionInfo]
+    tool_paths = _tool_paths(clang_version_info)
+    tool_name_to_tool = {}
+    for tool_path in tool_paths:
+        tool_name_to_tool[tool_path.name] = tool(
+            path = tool_path.path,
+        )
+
+    # use clang++ for linking to match Soong
+    action_configs = []
+    for action_name in ALL_LINK_ACTIONS:
+        action_configs.append(action_config(
+            action_name = action_name,
+            enabled = True,
+            tools = [
+                tool_name_to_tool["clang++"],
+            ],
+        ))
+
+    action_configs.append(action_config(
+        action_name = ACTION_NAMES.cpp_compile,
+        enabled = True,
+        tools = [
+            tool_name_to_tool["clang++"],
+        ],
+    ))
+
     os_is_device = is_target_os_device(ctx)
 
     builtin_include_dirs = []
@@ -549,6 +579,7 @@ def _cc_toolchain_config_impl(ctx):
         abi_libc_version = "unknown",
         tool_paths = _tool_paths(clang_version_info),
         features = features,
+        action_configs = action_configs,
         cxx_builtin_include_directories = builtin_include_dirs,
     )
 
@@ -617,7 +648,7 @@ def android_cc_toolchain(
     native.filegroup(
         name = "%s_linker_binaries" % name,
         srcs = native.glob([
-            # Linking shared libraries uses clang.
+            # Linking shared libraries uses clang++, which symlinks to clang.
             clang_version_directory + "/bin/clang*",
         ]) + [
             clang_version_directory + "/bin/lld",
