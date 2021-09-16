@@ -442,9 +442,10 @@ func llvmToolsFilegroupFactory() android.Module {
 	return module
 }
 
-type bazelLlvmPrebuiltLibraryStaticAttributes struct {
-	Static_library bazel.LabelAttribute
-	Includes       bazel.StringListAttribute
+type bazelPrebuiltLibraryStaticAttributes struct {
+	Static_library         bazel.LabelAttribute
+	Export_includes        bazel.StringListAttribute
+	Export_system_includes bazel.StringListAttribute
 }
 
 func LlvmPrebuiltLibraryStaticBp2Build(ctx android.TopDownMutatorContext) {
@@ -461,16 +462,6 @@ func LlvmPrebuiltLibraryStaticBp2Build(ctx android.TopDownMutatorContext) {
 	}
 
 	prebuiltLibraryStaticBp2BuildInternal(ctx, module)
-}
-
-type bazelLibclangRtPrebuiltLibraryStaticAttributes struct {
-	Static_library bazel.LabelAttribute
-	Includes       bazel.StringListAttribute
-}
-
-type bazelLibclangRtPrebuiltLibraryStatic struct {
-	android.BazelTargetModuleBase
-	bazelLibclangRtPrebuiltLibraryStaticAttributes
 }
 
 func LibclangRtPrebuiltLibraryStaticBp2Build(ctx android.TopDownMutatorContext) {
@@ -493,9 +484,10 @@ func prebuiltLibraryStaticBp2BuildInternal(ctx android.TopDownMutatorContext, mo
 	prebuiltAttrs := cc.Bp2BuildParsePrebuiltLibraryProps(ctx, module)
 	exportedIncludes := cc.Bp2BuildParseExportedIncludesForPrebuiltLibrary(ctx, module)
 
-	attrs := &bazelLlvmPrebuiltLibraryStaticAttributes{
-		Static_library: prebuiltAttrs.Src,
-		Includes:       exportedIncludes,
+	attrs := &bazelPrebuiltLibraryStaticAttributes{
+		Static_library:         prebuiltAttrs.Src,
+		Export_includes:        exportedIncludes.Includes,
+		Export_system_includes: exportedIncludes.SystemIncludes,
 	}
 
 	props := bazel.BazelTargetModuleProperties{
