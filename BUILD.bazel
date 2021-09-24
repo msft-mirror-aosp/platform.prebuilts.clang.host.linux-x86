@@ -42,6 +42,8 @@ _LIBCLANG_RT_PREBUILT_MAP = {
 # x86_64 toolchain definition.
 android_cc_toolchain(
     name = "cc_toolchain_x86_64",
+    target_os = "android",
+    target_arch = "x86_64",
     clang_version = ":clang",
     clang_version_directory = generated_constants.CLANG_DEFAULT_VERSION,
     libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_x86_64"],
@@ -75,6 +77,8 @@ toolchain(
 # TODO(b/186628704): automatically generate from Soong.
 android_cc_toolchain(
     name = "cc_toolchain_x86_64_linux_host",
+    target_os = "linux_glibc",
+    target_arch = "x86_64",
     clang_version = ":clang",
     clang_version_directory = generated_constants.CLANG_DEFAULT_VERSION,
     libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:linux_glibc_x86_64"],
@@ -119,6 +123,8 @@ toolchain(
 # x86 toolchain definition.
 android_cc_toolchain(
     name = "cc_toolchain_x86",
+    target_os = "android",
+    target_arch = "x86",
     clang_version = ":clang",
     clang_version_directory = generated_constants.CLANG_DEFAULT_VERSION,
     libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_x86"],
@@ -151,6 +157,8 @@ toolchain(
 # arm64 toolchain definition.
 android_cc_toolchain(
     name = "cc_toolchain_arm64",
+    target_os = "android",
+    target_arch = "arm64",
     clang_version = ":clang",
     clang_version_directory = generated_constants.CLANG_DEFAULT_VERSION,
     libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_arm64"],
@@ -182,6 +190,8 @@ toolchain(
 # arm32 toolchain definition.
 android_cc_toolchain(
     name = "cc_toolchain_arm32",
+    target_os = "android",
+    target_arch = "arm",
     clang_version = ":clang",
     clang_version_directory = generated_constants.CLANG_DEFAULT_VERSION,
     libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_arm"],
