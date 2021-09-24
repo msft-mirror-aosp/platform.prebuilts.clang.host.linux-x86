@@ -417,9 +417,6 @@ def _toolchain_include_feature(system_includes = []):
         ],
     )
 
-def is_target_os_device(ctx):
-    return not "_host" in ctx.attr.toolchain_identifier
-
 def _cc_toolchain_config_impl(ctx):
     clang_version_info = ctx.attr.clang_version[_ClangVersionInfo]
     tool_paths = _tool_paths(clang_version_info)
@@ -448,7 +445,7 @@ def _cc_toolchain_config_impl(ctx):
         ],
     ))
 
-    os_is_device = is_target_os_device(ctx)
+    os_is_device = ctx.attr.target_os == "android"
 
     # This is so that Bazel doesn't validate .d files against the set of headers
     # declared in BUILD files (Blueprint files don't contain that data)
@@ -500,24 +497,26 @@ def _cc_toolchain_config_impl(ctx):
     return cc_common.create_cc_toolchain_config_info(
         ctx = ctx,
         toolchain_identifier = ctx.attr.toolchain_identifier,
-        host_system_name = "i686-unknown-linux-gnu",
-        # TODO: replace the following placeholders with the real target values,
-        # preferably declared at the toolchain.
-        target_system_name = "x86_64-unknown-unknown",
-        target_cpu = "x86_64",
-        target_libc = "unknown",
-        compiler = "clang",
-        abi_version = "unknown",
-        abi_libc_version = "unknown",
         tool_paths = _tool_paths(clang_version_info),
         features = features,
         action_configs = action_configs,
         cxx_builtin_include_directories = builtin_include_dirs,
+        target_cpu = "_".join([ctx.attr.target_os, ctx.attr.target_arch]),
+        # The attributes below are required by the constructor, but don't
+        # affect actions at all.
+        host_system_name = "__toolchain_host_system_name__",
+        target_system_name = "__toolchain_target_system_name__",
+        target_libc = "__toolchain_target_libc__",
+        compiler = "__toolchain_compiler__",
+        abi_version = "__toolchain_abi_version__",
+        abi_libc_version = "__toolchain_abi_libc_version__",
     )
 
 _cc_toolchain_config = rule(
     implementation = _cc_toolchain_config_impl,
     attrs = {
+        "target_os": attr.string(mandatory = True),
+        "target_arch": attr.string(mandatory = True),
         "toolchain_identifier": attr.string(mandatory = True),
         "clang_version": attr.label(mandatory = True, providers = [_ClangVersionInfo]),
         "target_flags": attr.string_list(default = []),
@@ -539,6 +538,8 @@ def expand_feature_flags(enabled_features = [], flag_map = {}):
 # Macro to set up both the toolchain and the config.
 def android_cc_toolchain(
         name,
+        target_os = None,
+        target_arch = None,
         clang_version = None,
         # This should come from the clang_version provider.
         # Instead, it's hard-coded because this is a macro, not a rule.
@@ -556,6 +557,8 @@ def android_cc_toolchain(
     # Write the toolchain config.
     _cc_toolchain_config(
         name = "%s_config" % name,
+        target_os = target_os,
+        target_arch = target_arch,
         clang_version = clang_version,
         libclang_rt_builtin = libclang_rt_path,
         target_flags = target_flags,
