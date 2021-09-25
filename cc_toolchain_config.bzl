@@ -1,6 +1,19 @@
-load("@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl", "action_config", "feature", "flag_group", "flag_set", "tool", "tool_path", "with_feature_set")
-load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
-load("@soong_injection//cc_toolchain:constants.bzl", "constants")
+load(
+    "@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl",
+    "action_config",
+    "feature",
+    "flag_group",
+    "flag_set",
+    "tool",
+    "tool_path",
+    "with_feature_set",
+)
+load(
+    ":cc_toolchain_constants.bzl",
+    _actions = "actions",
+    _flags = "flags",
+    _generated_constants = "generated_constants",
+)
 
 # Clang-specific configuration.
 _ClangVersionInfo = provider(fields = ["directory", "includes"])
@@ -20,74 +33,6 @@ clang_version = rule(
         "includes": attr.string_list(default = []),
     },
 )
-
-# These defines should only apply to targets which are not under
-# @external/. This can be controlled by adding "-non_external_compiler_flags"
-# to the features list for external/ packages.
-# This corresponds to special-casing in Soong (see "external/" in build/soong/cc/compiler.go).
-NON_EXTERNAL_DEFINES = [
-    "-DANDROID_STRICT",
-]
-
-COMPILER_FLAGS = [
-    "-fPIC",
-]
-ASM_COMPILER_FLAGS = [
-    "-D__ASSEMBLY__",
-]
-
-# CStdVersion in cc/config/global.go
-C_COMPILER_FLAGS = [
-    "-std=gnu99",
-]
-
-# CppStdVersion in cc/config/global.go
-CC_COMPILER_STANDARD_STD_FLAGS = [
-    "-std=gnu++17",
-]
-
-# Should be toggled instead of CC_COMPILER_STANDARD_STD_FLAGS if
-# the soong module has "cpp_std: 'experimental'". In bazel, tied
-# to the feature "cpp_std_experimental".
-CC_COMPILER_EXPERIMENTAL_STD_FLAGS = [
-    "-std=gnu++2a",
-]
-
-# These are the linker flags for OSes that use Bionic: LinuxBionic, Android
-BIONIC_LINKER_FLAGS = [
-    "-nostdlib",
-    "-Wl,--no-undefined",
-    "-Wl,--hash-style=gnu",
-    "-Wl,--gc-sections",
-]
-STATIC_LINKER_FLAGS = [
-    "-static",
-]
-DYNAMIC_LINKER_FLAGS = [
-    "-shared",
-]
-
-# The set of C and C++ actions used in the Android build. There are other types
-# of compile actions available in ACTION_NAMES, but those are not used in
-# Android yet.
-ALL_COMPILE_ACTIONS = [
-    ACTION_NAMES.c_compile,
-    ACTION_NAMES.cpp_compile,
-    ACTION_NAMES.assemble,
-    ACTION_NAMES.preprocess_assemble,
-]
-
-# Assembler actions for .s and .S files.
-ALL_ASSEMBLE_ACTIONS = [
-    ACTION_NAMES.assemble,
-    ACTION_NAMES.preprocess_assemble,
-]
-
-ALL_LINK_ACTIONS = [
-    ACTION_NAMES.cpp_link_executable,
-    ACTION_NAMES.cpp_link_dynamic_library,
-    ACTION_NAMES.cpp_link_nodeps_dynamic_library,
-]
 
 def _tool_paths(clang_version_info):
     return [
@@ -133,30 +78,36 @@ def _tool_paths(clang_version_info):
     ]
 
 def _compiler_flag_features(flags = [], os_is_device = False):
+    compiler_flags = []
+
     # Combine the toolchain's provided flags with the default ones.
-    flags = flags + COMPILER_FLAGS + constants.CommonGlobalCflags
+    compiler_flags.extend(flags)
+    compiler_flags.extend(_flags.compiler_flags)
+    compiler_flags.extend(_generated_constants.CommonGlobalCflags)
 
     if os_is_device:
-        flags += constants.DeviceGlobalCflags
+        compiler_flags.extend(_generated_constants.DeviceGlobalCflags)
     else:
-        flags += constants.HostGlobalCflags
+        compiler_flags.extend(_generated_constants.HostGlobalCflags)
 
-    # Default assembler flags.
-    asm_only_flags = ASM_COMPILER_FLAGS
+    # Default compiler flags for assembly sources.
+    asm_only_flags = _flags.asm_compiler_flags
 
     # Default C++ compile action only flags (No C)
     cpp_only_flags = []
-    cpp_only_flags += constants.CommonGlobalCppflags
+    cpp_only_flags.extend(_generated_constants.CommonGlobalCppflags)
     if os_is_device:
-        cpp_only_flags += constants.DeviceGlobalCppflags
+        cpp_only_flags.extend(_generated_constants.DeviceGlobalCppflags)
     else:
-        cpp_only_flags += constants.HostGlobalCppflags
+        cpp_only_flags.extend(_generated_constants.HostGlobalCppflags)
 
     # Default C compile action only flags (No C++)
-    c_only_flags = C_COMPILER_FLAGS + constants.CommonGlobalConlyflags
+    c_only_flags = []
+    c_only_flags.extend(_flags.c_compiler_flags)
+    c_only_flags.extend(_generated_constants.CommonGlobalConlyflags)
 
     # Flags that only apply in the external/ directory.
-    non_external_flags = NON_EXTERNAL_DEFINES
+    non_external_flags = _flags.non_external_defines
 
     features = []
 
@@ -165,7 +116,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = ALL_COMPILE_ACTIONS,
+                actions = _actions.compile,
                 flag_groups = [
                     flag_group(
                         flags = non_external_flags,
@@ -179,10 +130,10 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = ALL_COMPILE_ACTIONS,
+                actions = _actions.compile,
                 flag_groups = [
                     flag_group(
-                        flags = flags,
+                        flags = compiler_flags,
                     ),
                 ],
             ),
@@ -193,7 +144,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = ALL_ASSEMBLE_ACTIONS,
+                actions = _actions.assemble,
                 flag_groups = [
                     flag_group(
                         flags = asm_only_flags,
@@ -207,7 +158,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [ACTION_NAMES.cpp_compile],
+                actions = _actions.cpp_compile,
                 flag_groups = [
                     flag_group(
                         flags = cpp_only_flags,
@@ -221,7 +172,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [ACTION_NAMES.c_compile],
+                actions = _actions.c_compile,
                 flag_groups = [
                     flag_group(
                         flags = c_only_flags,
@@ -234,12 +185,10 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         name = "cpp_std_experimental",
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.cpp_compile,
-                ],
+                actions = _actions.cpp_compile,
                 flag_groups = [
                     flag_group(
-                        flags = CC_COMPILER_EXPERIMENTAL_STD_FLAGS,
+                        flags = _flags.cc_compiler_experimental_std_flags,
                     ),
                 ],
             ),
@@ -250,15 +199,13 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.cpp_compile,
-                ],
+                actions = _actions.cpp_compile,
                 with_features = [
                     with_feature_set(not_features = ["cpp_std_experimental"]),
                 ],
                 flag_groups = [
                     flag_group(
-                        flags = CC_COMPILER_STANDARD_STD_FLAGS,
+                        flags = _flags.cc_compiler_standard_std_flags,
                     ),
                 ],
             ),
@@ -275,7 +222,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = ALL_COMPILE_ACTIONS,
+                actions = _actions.compile,
                 flag_groups = [
                     flag_group(
                         expand_if_available = "user_compile_flags",
@@ -295,10 +242,10 @@ def _compiler_flag_features(flags = [], os_is_device = False):
             flag_set(
                 # We want this to apply to all actions except assembly
                 # primarily to match Soong's semantics
-                actions = [act for act in ALL_COMPILE_ACTIONS if act not in ALL_ASSEMBLE_ACTIONS],
+                actions = [a for a in _actions.compile if a not in _actions.assemble],
                 flag_groups = [
                     flag_group(
-                        flags = constants.NoOverrideGlobalCflags,
+                        flags = _generated_constants.NoOverrideGlobalCflags,
                     ),
                 ],
             ),
@@ -312,9 +259,7 @@ def _rtti_features():
         name = "rtti_flag",
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.cpp_compile,
-                ],
+                actions = _actions.cpp_compile,
                 flag_groups = [
                     flag_group(
                         flags = ["-frtti"],
@@ -325,9 +270,7 @@ def _rtti_features():
                 ],
             ),
             flag_set(
-                actions = [
-                    ACTION_NAMES.cpp_compile,
-                ],
+                actions = _actions.cpp_compile,
                 flag_groups = [
                     flag_group(
                         flags = ["-fno-rtti"],
@@ -351,7 +294,7 @@ def _rpath_features():
         name = "runtime_library_search_directories",
         flag_sets = [
             flag_set(
-                actions = ALL_LINK_ACTIONS,
+                actions = _actions.link,
                 flag_groups = [
                     flag_group(
                         iterate_over = "runtime_library_search_directories",
@@ -378,7 +321,7 @@ def _rpath_features():
                 ],
             ),
             flag_set(
-                actions = ALL_LINK_ACTIONS,
+                actions = _actions.link,
                 flag_groups = [
                     flag_group(
                         iterate_over = "runtime_library_search_directories",
@@ -416,9 +359,7 @@ def _use_libcrt_feature(path):
         flag_sets = [
             # TODO(b/190383809): binaries need to be linked with late static libs grouped
             flag_set(
-                actions = [
-                    ACTION_NAMES.cpp_link_dynamic_library,
-                ],
+                actions = _actions.cpp_link_dynamic_library,
                 flag_groups = [
                     flag_group(
                         flags = [path.path],
@@ -436,9 +377,7 @@ def _linker_flag_feature(name, flags = [], additional_static_flags = [], additio
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.cpp_link_executable,
-                ],
+                actions = _actions.cpp_link_executable,
                 flag_groups = [
                     flag_group(
                         flags = flags + additional_static_flags,
@@ -446,9 +385,7 @@ def _linker_flag_feature(name, flags = [], additional_static_flags = [], additio
                 ],
             ),
             flag_set(
-                actions = [
-                    ACTION_NAMES.cpp_link_dynamic_library,
-                ],
+                actions = _actions.cpp_link_dynamic_library,
                 flag_groups = [
                     flag_group(
                         flags = flags + additional_dynamic_flags,
@@ -470,7 +407,7 @@ def _toolchain_include_feature(system_includes = []):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = ALL_COMPILE_ACTIONS,
+                actions = _actions.compile,
                 flag_groups = [
                     flag_group(
                         flags = flags,
@@ -479,12 +416,6 @@ def _toolchain_include_feature(system_includes = []):
             ),
         ],
     )
-
-def is_target_os_device(ctx):
-    if "_host" in ctx.attr.toolchain_identifier:
-        return False
-    else:
-        return True
 
 def _cc_toolchain_config_impl(ctx):
     clang_version_info = ctx.attr.clang_version[_ClangVersionInfo]
@@ -497,7 +428,7 @@ def _cc_toolchain_config_impl(ctx):
 
     # use clang++ for linking to match Soong
     action_configs = []
-    for action_name in ALL_LINK_ACTIONS:
+    for action_name in _actions.link:
         action_configs.append(action_config(
             action_name = action_name,
             enabled = True,
@@ -507,24 +438,22 @@ def _cc_toolchain_config_impl(ctx):
         ))
 
     action_configs.append(action_config(
-        action_name = ACTION_NAMES.cpp_compile,
+        action_name = _actions.cpp_compile[0],
         enabled = True,
         tools = [
             tool_name_to_tool["clang++"],
         ],
     ))
 
-    os_is_device = is_target_os_device(ctx)
-
-    builtin_include_dirs = []
+    os_is_device = ctx.attr.target_os == "android"
 
     # This is so that Bazel doesn't validate .d files against the set of headers
     # declared in BUILD files (Blueprint files don't contain that data)
-    builtin_include_dirs.extend(["/"])
+    builtin_include_dirs = ["/"]
     builtin_include_dirs.extend(clang_version_info.includes)
 
     # b/186035856: Do not add anything to this list.
-    builtin_include_dirs.extend(constants.CommonGlobalIncludes)
+    builtin_include_dirs.extend(_generated_constants.CommonGlobalIncludes)
 
     # Compiler action features
     compiler_flag_features = _compiler_flag_features(ctx.attr.target_flags, os_is_device)
@@ -536,17 +465,17 @@ def _cc_toolchain_config_impl(ctx):
     )
 
     linker_flags = []
-    linker_flags += ctx.attr.linker_flags
+    linker_flags.extend(ctx.attr.linker_flags)
     if os_is_device:
-        linker_flags += constants.DeviceGlobalLldflags
-        linker_flags += BIONIC_LINKER_FLAGS
+        linker_flags.extend(_generated_constants.DeviceGlobalLldflags)
+        linker_flags.extend(_flags.bionic_linker_flags)
     else:
-        linker_flags += constants.HostGlobalLldflags
+        linker_flags.extend(_generated_constants.HostGlobalLldflags)
     linker_flag_feature = _linker_flag_feature(
         "linker_flags",
         flags = linker_flags,
-        additional_static_flags = STATIC_LINKER_FLAGS,
-        additional_dynamic_flags = DYNAMIC_LINKER_FLAGS,
+        additional_static_flags = _flags.static_linker_flags,
+        additional_dynamic_flags = _flags.dynamic_linker_flags,
     )
 
     # System include directories features
@@ -568,24 +497,26 @@ def _cc_toolchain_config_impl(ctx):
     return cc_common.create_cc_toolchain_config_info(
         ctx = ctx,
         toolchain_identifier = ctx.attr.toolchain_identifier,
-        host_system_name = "i686-unknown-linux-gnu",
-        # TODO: replace the following placeholders with the real target values,
-        # preferably declared at the toolchain.
-        target_system_name = "x86_64-unknown-unknown",
-        target_cpu = "x86_64",
-        target_libc = "unknown",
-        compiler = "clang",
-        abi_version = "unknown",
-        abi_libc_version = "unknown",
         tool_paths = _tool_paths(clang_version_info),
         features = features,
         action_configs = action_configs,
         cxx_builtin_include_directories = builtin_include_dirs,
+        target_cpu = "_".join([ctx.attr.target_os, ctx.attr.target_arch]),
+        # The attributes below are required by the constructor, but don't
+        # affect actions at all.
+        host_system_name = "__toolchain_host_system_name__",
+        target_system_name = "__toolchain_target_system_name__",
+        target_libc = "__toolchain_target_libc__",
+        compiler = "__toolchain_compiler__",
+        abi_version = "__toolchain_abi_version__",
+        abi_libc_version = "__toolchain_abi_libc_version__",
     )
 
 _cc_toolchain_config = rule(
     implementation = _cc_toolchain_config_impl,
     attrs = {
+        "target_os": attr.string(mandatory = True),
+        "target_arch": attr.string(mandatory = True),
         "toolchain_identifier": attr.string(mandatory = True),
         "clang_version": attr.label(mandatory = True, providers = [_ClangVersionInfo]),
         "target_flags": attr.string_list(default = []),
@@ -607,6 +538,8 @@ def expand_feature_flags(enabled_features = [], flag_map = {}):
 # Macro to set up both the toolchain and the config.
 def android_cc_toolchain(
         name,
+        target_os = None,
+        target_arch = None,
         clang_version = None,
         # This should come from the clang_version provider.
         # Instead, it's hard-coded because this is a macro, not a rule.
@@ -624,6 +557,8 @@ def android_cc_toolchain(
     # Write the toolchain config.
     _cc_toolchain_config(
         name = "%s_config" % name,
+        target_os = target_os,
+        target_arch = target_arch,
         clang_version = clang_version,
         libclang_rt_builtin = libclang_rt_path,
         target_flags = target_flags,
@@ -634,15 +569,12 @@ def android_cc_toolchain(
     # Create the filegroups needed for sandboxing toolchain inputs to C++ actions.
     native.filegroup(
         name = "%s_compiler_clang_includes" % name,
-        srcs =
-            native.glob([clang_version_directory + "/lib64/clang/*/include/**"]),
+        srcs = native.glob([clang_version_directory + "/lib64/clang/*/include/**"]),
     )
 
     native.filegroup(
         name = "%s_compiler_binaries" % name,
-        srcs = native.glob([
-            clang_version_directory + "/bin/clang*",
-        ]),
+        srcs = native.glob([clang_version_directory + "/bin/clang*"]),
     )
 
     native.filegroup(
@@ -668,12 +600,12 @@ def android_cc_toolchain(
             "%s_compiler_clang_includes" % name,
         ],
     )
+
     native.filegroup(
         name = "%s_linker_files" % name,
-        srcs = [
-            "%s_linker_binaries" % name,
-        ] + extra_linker_paths,
+        srcs = ["%s_linker_binaries" % name] + extra_linker_paths,
     )
+
     native.filegroup(
         name = "%s_all_files" % name,
         srcs = [
