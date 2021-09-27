@@ -8,6 +8,7 @@ load(
     "feature",
     "flag_group",
     "flag_set",
+    "variable_with_value",
     "with_feature_set",
 )
 load(
@@ -309,7 +310,7 @@ def _use_libcrt_feature(path):
         ],
     )
 
-def _linker_flag_feature(name, flags = [], additional_static_flags = [], additional_dynamic_flags = []):
+def _linker_flag_feature(name, flags = []):
     if not flags:
         return None
     return feature(
@@ -317,19 +318,9 @@ def _linker_flag_feature(name, flags = [], additional_static_flags = [], additio
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [_actions.cpp_link_executable],
+                actions = _actions.link,
                 flag_groups = [
-                    flag_group(
-                        flags = flags + additional_static_flags,
-                    ),
-                ],
-            ),
-            flag_set(
-                actions = [_actions.cpp_link_dynamic_library],
-                flag_groups = [
-                    flag_group(
-                        flags = flags + additional_dynamic_flags,
-                    ),
+                    flag_group(flags = flags),
                 ],
             ),
         ],
@@ -376,6 +367,494 @@ def _additional_linker_flags(os_is_device):
         linker_flags.extend(_generated_constants.HostGlobalLldflags)
     return linker_flags
 
+# Legacy features moved from their hardcoded Bazel's Java implementation
+# to Starlark.
+#
+# These legacy features must come before all other features.
+def _get_legacy_features_begin():
+    features = [
+        # Legacy features omitted from this list, since they're not used in
+        # Android builds currently, or is alternatively supported through rules
+        # directly (e.g.  stripped_shared_library for debug symbol stripping).
+        #
+        # runtime_library_search_directories: replaced by custom _rpath_feature().
+        #
+        # legacy_compile_flags: unused
+        # per_object_debug_info: unused
+        #
+        # Optimization related features:
+        #
+        # fdo_instrument
+        # fdo_optimize
+        # cs_fdo_instrument
+        # cs_fdo_optimize
+        # fdo_prefetch_hints
+        # autofdo
+        # propeller_optimize
+        #
+        # Interface libraries related features:
+        #
+        # supports_interface_shared_libraries
+        # build_interface_libraries
+        # dynamic_library_linker_tool
+        #
+        # Coverage:
+        #
+        # coverage
+        # llvm_coverage_map_format
+        # gcc_coverage_map_format
+        #
+        # Others:
+        #
+        # symbol_counts
+        # static_libgcc
+        # fission_support
+        # static_link_cpp_runtimes
+        # ---
+        #
+        # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=98;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
+        feature(
+            name = "dependency_file",
+            enabled = True,
+            flag_sets = [
+                flag_set(
+                    actions = _actions.compile,
+                    flag_groups = [
+                        flag_group(
+                            expand_if_available = "dependency_file",
+                            flags = [
+                                "-MD",
+                                "-MF",
+                                "%{dependency_file}",
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=129;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
+        feature(
+            name = "random_seed",
+            enabled = True,
+            flag_sets = [
+                flag_set(
+                    actions = [_actions.c_compile, _actions.cpp_compile],
+                    flag_groups = [
+                        flag_group(
+                            expand_if_available = "output_file",
+                            flags = ["-frandom-seed=%{output_file}"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=147;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
+        feature(
+            name = "pic",
+            enabled = True,
+            flag_sets = [
+                flag_set(
+                    actions = _actions.compile,
+                    flag_groups = [
+                        flag_group(
+                            expand_if_available = "pic",
+                            flags = ["-fPIC"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=186;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
+        feature(
+            name = "preprocessor_defines",
+            enabled = True,
+            flag_sets = [
+                flag_set(
+                    actions = _actions.compile,
+                    flag_groups = [
+                        flag_group(
+                            iterate_over = "preprocessor_defines",
+                            flags = ["-D%{preprocessor_defines}"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=207;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
+        feature(
+            name = "includes",
+            enabled = True,
+            flag_sets = [
+                flag_set(
+                    actions = _actions.compile,
+                    flag_groups = [
+                        flag_group(
+                            expand_if_available = "includes",
+                            iterate_over = "includes",
+                            flags = ["-include", "%{includes}"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=232;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
+        feature(
+            name = "include_paths",
+            enabled = True,
+            flag_sets = [
+                flag_set(
+                    actions = _actions.compile,
+                    flag_groups = [
+                        flag_group(
+                            iterate_over = "quote_include_paths",
+                            flags = ["-iquote", "%{quote_include_paths}"],
+                        ),
+                        flag_group(
+                            iterate_over = "include_paths",
+                            flags = ["-I", "%{include_paths}"],
+                        ),
+                        flag_group(
+                            iterate_over = "system_include_paths",
+                            flags = ["-isystem", "%{system_include_paths}"],
+                        ),
+                        flag_group(
+                            flags = ["-F%{framework_include_paths}"],
+                            iterate_over = "framework_include_paths",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=476;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
+        feature(
+            name = "shared_flag",
+            flag_sets = [
+                flag_set(
+                    actions = [
+                        _actions.cpp_link_dynamic_library,
+                        _actions.cpp_link_nodeps_dynamic_library,
+                    ],
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-shared",
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=492;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
+        feature(
+            name = "linkstamps",
+            flag_sets = [
+                flag_set(
+                    actions = _actions.link,
+                    flag_groups = [
+                        flag_group(
+                            expand_if_available = "linkstamp_paths",
+                            iterate_over = "linkstamp_paths",
+                            flags = ["%{linkstamp_paths}"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=512;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
+        feature(
+            name = "output_execpath_flags",
+            flag_sets = [
+                flag_set(
+                    actions = _actions.link,
+                    flag_groups = [
+                        flag_group(
+                            expand_if_available = "output_execpath",
+                            flags = [
+                                "-o",
+                                "%{output_execpath}",
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=592;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
+        feature(
+            name = "library_search_directories",
+            flag_sets = [
+                flag_set(
+                    actions = _actions.link,
+                    flag_groups = [
+                        flag_group(
+                            expand_if_available = "library_search_directories",
+                            iterate_over = "library_search_directories",
+                            flags = ["-L%{library_search_directories}"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=612;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
+        feature(
+            name = "archiver_flags",
+            flag_sets = [
+                flag_set(
+                    actions = ["c++-link-static-library"],
+                    flag_groups = [
+                        flag_group(
+                            flags = ["rcsD"],
+                        ),
+                        flag_group(
+                            expand_if_available = "output_execpath",
+                            flags = ["%{output_execpath}"],
+                        ),
+                    ],
+                ),
+                flag_set(
+                    actions = ["c++-link-static-library"],
+                    flag_groups = [
+                        flag_group(
+                            expand_if_available = "libraries_to_link",
+                            iterate_over = "libraries_to_link",
+                            flag_groups = [
+                                flag_group(
+                                    expand_if_equal = variable_with_value(
+                                        name = "libraries_to_link.type",
+                                        value = "object_file",
+                                    ),
+                                    flags = ["%{libraries_to_link.name}"],
+                                ),
+                            ],
+                        ),
+                        flag_group(
+                            expand_if_equal = variable_with_value(
+                                name = "libraries_to_link.type",
+                                value = "object_file_group",
+                            ),
+                            iterate_over = "libraries_to_link.object_files",
+                            flags = ["%{libraries_to_link.object_files}"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=653;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
+        feature(
+            name = "libraries_to_link",
+            flag_sets = [
+                flag_set(
+                    actions = _actions.link,
+                    flag_groups = ([
+                        flag_group(
+                            expand_if_true = "thinlto_param_file",
+                            flags = ["-Wl,@%{thinlto_param_file}"],
+                        ),
+                        flag_group(
+                            expand_if_available = "libraries_to_link",
+                            iterate_over = "libraries_to_link",
+                            flag_groups = (
+                                [
+                                    flag_group(
+                                        expand_if_equal = variable_with_value(
+                                            name = "libraries_to_link.type",
+                                            value = "object_file_group",
+                                        ),
+                                        expand_if_false = "libraries_to_link.is_whole_archive",
+                                        flags = ["-Wl,--start-lib"],
+                                    ),
+                                    flag_group(
+                                        expand_if_equal = variable_with_value(
+                                            name = "libraries_to_link.type",
+                                            value = "static_library",
+                                        ),
+                                        expand_if_true = "libraries_to_link.is_whole_archive",
+                                        flags = ["-Wl,-whole-archive"],
+                                    ),
+                                    flag_group(
+                                        expand_if_equal = variable_with_value(
+                                            name = "libraries_to_link.type",
+                                            value = "object_file_group",
+                                        ),
+                                        iterate_over = "libraries_to_link.object_files",
+                                        flags = ["%{libraries_to_link.object_files}"],
+                                    ),
+                                    flag_group(
+                                        expand_if_equal = variable_with_value(
+                                            name = "libraries_to_link.type",
+                                            value = "object_file",
+                                        ),
+                                        flags = ["%{libraries_to_link.name}"],
+                                    ),
+                                    flag_group(
+                                        expand_if_equal = variable_with_value(
+                                            name = "libraries_to_link.type",
+                                            value = "interface_library",
+                                        ),
+                                        flags = ["%{libraries_to_link.name}"],
+                                    ),
+                                    flag_group(
+                                        expand_if_equal = variable_with_value(
+                                            name = "libraries_to_link.type",
+                                            value = "static_library",
+                                        ),
+                                        flags = ["%{libraries_to_link.name}"],
+                                    ),
+                                    flag_group(
+                                        expand_if_equal = variable_with_value(
+                                            name = "libraries_to_link.type",
+                                            value = "dynamic_library",
+                                        ),
+                                        flags = ["-l%{libraries_to_link.name}"],
+                                    ),
+                                    flag_group(
+                                        expand_if_equal = variable_with_value(
+                                            name = "libraries_to_link.type",
+                                            value = "versioned_dynamic_library",
+                                        ),
+                                        flags = ["-l:%{libraries_to_link.name}"],
+                                    ),
+                                    flag_group(
+                                        expand_if_equal = variable_with_value(
+                                            name = "libraries_to_link.type",
+                                            value = "static_library",
+                                        ),
+                                        expand_if_true = "libraries_to_link.is_whole_archive",
+                                        flags = ["-Wl,-no-whole-archive"],
+                                    ),
+                                    flag_group(
+                                        expand_if_equal = variable_with_value(
+                                            name = "libraries_to_link.type",
+                                            value = "object_file_group",
+                                        ),
+                                        expand_if_false = "libraries_to_link.is_whole_archive",
+                                        flags = ["-Wl,--end-lib"],
+                                    ),
+                                ]
+                            ),
+                        ),
+                    ]),
+                ),
+            ],
+        ),
+        # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=826;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
+        feature(
+            name = "force_pic_flags",
+            flag_sets = [
+                flag_set(
+                    actions = [_actions.cpp_link_executable],
+                    flag_groups = [
+                        flag_group(
+                            expand_if_available = "force_pic",
+                            flags = ["-pie"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=842;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
+        feature(
+            name = "user_link_flags",
+            flag_sets = [
+                flag_set(
+                    actions = _actions.link,
+                    flag_groups = [
+                        flag_group(
+                            expand_if_available = "user_link_flags",
+                            iterate_over = "user_link_flags",
+                            flags = ["%{user_link_flags}"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        feature(
+            name = "strip_debug_symbols",
+            flag_sets = [
+                flag_set(
+                    actions = _actions.link,
+                    flag_groups = [
+                        flag_group(
+                            expand_if_available = "strip_debug_symbols",
+                            flags = ["-Wl,-S"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    ]
+
+    return features
+
+# Legacy features moved from their hardcoded Bazel's Java implementation
+# to Starlark.
+#
+# These legacy features must come after all other features.
+def _get_legacy_features_end():
+    # Omitted legacy (unused or re-implemented) features:
+    #
+    # fully_static_link
+    # user_compile_flags
+    # sysroot
+    features = [
+        feature(
+            name = "linker_param_file",
+            enabled = True,
+            flag_sets = [
+                flag_set(
+                    actions = _actions.link + _actions.archive,
+                    flag_groups = [
+                        flag_group(
+                            expand_if_available = "linker_param_file",
+                            flags = ["@%{linker_param_file}"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=1511;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
+        feature(
+            name = "compiler_input_flags",
+            enabled = True,
+            flag_sets = [
+                flag_set(
+                    actions = _actions.compile,
+                    flag_groups = [
+                        flag_group(
+                            expand_if_available = "source_file",
+                            flags = ["-c", "%{source_file}"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=1538;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
+        feature(
+            name = "compiler_output_flags",
+            enabled = True,
+            flag_sets = [
+                flag_set(
+                    actions = _actions.compile,
+                    flag_groups = [
+                        flag_group(
+                            expand_if_available = "output_assembly_file",
+                            flags = ["-S"],
+                        ),
+                        flag_group(
+                            expand_if_available = "output_preprocess_file",
+                            flags = ["-E"],
+                        ),
+                        flag_group(
+                            expand_if_available = "output_file",
+                            flags = ["-o", "%{output_file}"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    ]
+
+    return features
+
 # Create the full list of features.
 def get_features(
         target_os,
@@ -385,8 +864,12 @@ def get_features(
         libclang_rt_builtin):
     os_is_device = target_os == "android"
 
-    # Aggregate all features
+    # Aggregate all features in order:
     features = [
+        # Do not depend on Bazel's built-in legacy features and action configs:
+        feature(name = "no_legacy_features"),
+        # Instead, explicitly depend on a subset of legacy configs:
+        _get_legacy_features_begin(),
         _compiler_flag_features(target_flags, os_is_device),
         _rpath_features(),
         _rtti_features(),
@@ -394,13 +877,9 @@ def get_features(
         # Shared compile/link flags that should also be part of the link actions.
         _linker_flag_feature("linker_target_flags", flags = target_flags),
         # Link-only flags.
-        _linker_flag_feature(
-            "linker_flags",
-            flags = linker_only_flags + _additional_linker_flags(os_is_device),
-            additional_static_flags = _flags.static_linker_flags,
-            additional_dynamic_flags = _flags.dynamic_linker_flags,
-        ),
+        _linker_flag_feature("linker_flags", flags = linker_only_flags + _additional_linker_flags(os_is_device)),
         # System include directories features
         _toolchain_include_feature(system_includes = builtin_include_dirs),
+        _get_legacy_features_end(),
     ]
     return _flatten([f for f in features if f != None])
