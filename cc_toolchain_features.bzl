@@ -366,6 +366,16 @@ def _flatten(xs):
             ret.append(x)
     return ret
 
+# Additional linker flags that are dependent on a host or device target.
+def _additional_linker_flags(os_is_device):
+    linker_flags = []
+    if os_is_device:
+        linker_flags.extend(_generated_constants.DeviceGlobalLldflags)
+        linker_flags.extend(_flags.bionic_linker_flags)
+    else:
+        linker_flags.extend(_generated_constants.HostGlobalLldflags)
+    return linker_flags
+
 # Create the full list of features.
 def get_features(
         target_os,
@@ -375,29 +385,21 @@ def get_features(
         libclang_rt_builtin):
     os_is_device = target_os == "android"
 
-    # Linker-only flags feature
-    linker_flags = []
-    linker_flags.extend(linker_only_flags)
-    if os_is_device:
-        linker_flags.extend(_generated_constants.DeviceGlobalLldflags)
-        linker_flags.extend(_flags.bionic_linker_flags)
-    else:
-        linker_flags.extend(_generated_constants.HostGlobalLldflags)
-    linker_flag_feature = _linker_flag_feature(
-        "linker_flags",
-        flags = linker_flags,
-        additional_static_flags = _flags.static_linker_flags,
-        additional_dynamic_flags = _flags.dynamic_linker_flags,
-    )
-
     # Aggregate all features
     features = [
         _compiler_flag_features(target_flags, os_is_device),
         _rpath_features(),
         _rtti_features(),
         _use_libcrt_feature(libclang_rt_builtin),
+        # Shared compile/link flags that should also be part of the link actions.
         _linker_flag_feature("linker_target_flags", flags = target_flags),
-        linker_flag_feature,
+        # Link-only flags.
+        _linker_flag_feature(
+            "linker_flags",
+            flags = linker_only_flags + _additional_linker_flags(os_is_device),
+            additional_static_flags = _flags.static_linker_flags,
+            additional_dynamic_flags = _flags.dynamic_linker_flags,
+        ),
         # System include directories features
         _toolchain_include_feature(system_includes = builtin_include_dirs),
     ]
