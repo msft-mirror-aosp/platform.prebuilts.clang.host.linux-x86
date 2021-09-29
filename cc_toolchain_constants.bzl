@@ -40,12 +40,6 @@ flags = struct(
         "-Wl,--hash-style=gnu",
         "-Wl,--gc-sections",
     ],
-    static_linker_flags = [
-        "-static",
-    ],
-    dynamic_linker_flags = [
-        "-shared",
-    ],
     # ===========
     # Other flags
     # ===========
@@ -84,6 +78,13 @@ actions = struct(
         ACTION_NAMES.cpp_link_dynamic_library,
         ACTION_NAMES.cpp_link_nodeps_dynamic_library,
     ],
+    # Differentiate archive actions from link actions
+    archive = [
+        ACTION_NAMES.cpp_link_static_library,
+    ],
     cpp_link_dynamic_library = ACTION_NAMES.cpp_link_dynamic_library,
+    cpp_link_nodeps_dynamic_library = ACTION_NAMES.cpp_link_nodeps_dynamic_library,
+    cpp_link_static_library = ACTION_NAMES.cpp_link_static_library,
     cpp_link_executable = ACTION_NAMES.cpp_link_executable,
+    strip = ACTION_NAMES.strip,
 )
