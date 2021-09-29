@@ -82,13 +82,18 @@ def _create_action_configs(tool_paths):
     for tool_path in tool_paths:
         tool_name_to_tool[tool_path.name] = tool(path = tool_path.path)
 
-    # use clang++ for linking to match Soong
-    # https://cs.android.com/android/_/android/platform/build/soong/+/a14b18fb31eada7b8b58ecd469691c20dcb371b3:cc/builder.go;l=790;drc=769a51cc6aa9402c1c55e978e72f528c26b6a48f
-    for action_name in _actions.link:
+    # use clang for assembler actions
+    # https://cs.android.com/android/_/android/platform/build/soong/+/a14b18fb31eada7b8b58ecd469691c20dcb371b3:cc/builder.go;l=616;drc=769a51cc6aa9402c1c55e978e72f528c26b6a48f
+    for action_name in _actions.assemble:
         action_configs.append(action_config(
             action_name = action_name,
             enabled = True,
-            tools = [tool_name_to_tool["clang++"]],
+            tools = [tool_name_to_tool["gcc"]],
+            implies = [
+                "user_compile_flags",
+                "compiler_input_flags",
+                "compiler_output_flags",
+            ],
         ))
 
     # use clang++ for compiling C++
@@ -97,6 +102,11 @@ def _create_action_configs(tool_paths):
         action_name = _actions.cpp_compile,
         enabled = True,
         tools = [tool_name_to_tool["clang++"]],
+        implies = [
+            "user_compile_flags",
+            "compiler_input_flags",
+            "compiler_output_flags",
+        ],
     ))
 
     # use clang for compiling C
@@ -109,16 +119,67 @@ def _create_action_configs(tool_paths):
         # http://google3/third_party/bazel/src/main/java/com/google/devtools/build/lib/rules/cpp/CcModule.java;l=1106-1122;rcl=398974497
         # http://google3/third_party/bazel/src/main/java/com/google/devtools/build/lib/rules/cpp/CcModule.java;l=1185-1187;rcl=398974497
         tools = [tool_name_to_tool["gcc"]],
+        implies = [
+            "user_compile_flags",
+            "compiler_input_flags",
+            "compiler_output_flags",
+        ],
     ))
 
-    # use clang for assembler actions
-    # https://cs.android.com/android/_/android/platform/build/soong/+/a14b18fb31eada7b8b58ecd469691c20dcb371b3:cc/builder.go;l=616;drc=769a51cc6aa9402c1c55e978e72f528c26b6a48f
-    for action_name in _actions.assemble:
+    # use clang++ for dynamic linking
+    # https://cs.android.com/android/_/android/platform/build/soong/+/a14b18fb31eada7b8b58ecd469691c20dcb371b3:cc/builder.go;l=790;drc=769a51cc6aa9402c1c55e978e72f528c26b6a48f
+    for action_name in [_actions.cpp_link_dynamic_library, _actions.cpp_link_nodeps_dynamic_library]:
         action_configs.append(action_config(
             action_name = action_name,
             enabled = True,
-            tools = [tool_name_to_tool["gcc"]],
+            tools = [tool_name_to_tool["clang++"]],
+            implies = [
+                "strip_debug_symbols",
+                "shared_flag",
+                "linkstamps",
+                "output_execpath_flags",
+                "runtime_library_search_directories",
+                "library_search_directories",
+                "libraries_to_link",
+                "user_link_flags",
+                "linker_param_file",
+            ],
         ))
+
+    # use clang++ for linking cc executables
+    action_configs.append(action_config(
+        action_name = _actions.cpp_link_executable,
+        enabled = True,
+        tools = [tool_name_to_tool["clang++"]],
+        implies = [
+            "strip_debug_symbols",
+            "linkstamps",
+            "output_execpath_flags",
+            "runtime_library_search_directories",
+            "library_search_directories",
+            "libraries_to_link",
+            "force_pic_flags",
+            "user_link_flags",
+            "linker_param_file",
+        ],
+    ))
+
+    # use llvm-ar for creating static archives
+    action_configs.append(action_config(
+        action_name = _actions.cpp_link_static_library,
+        enabled = True,
+        tools = [tool_name_to_tool["ar"]],
+        implies = ["archiver_flags"],
+    ))
+
+    # unused, but Bazel complains if there isn't an action config for strip
+    action_configs.append(action_config(
+        action_name = _actions.strip,
+        enabled = True,
+        tools = [tool_name_to_tool["strip"]],
+        # This doesn't imply any feature, because Bazel currently mimics
+        # Soong by running strip actions in a rule (stripped_shared_library).
+    ))
 
     return action_configs
 
