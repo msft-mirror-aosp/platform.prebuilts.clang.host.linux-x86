@@ -375,12 +375,15 @@ def _get_legacy_features_begin():
     features = [
         # Legacy features omitted from this list, since they're not used in
         # Android builds currently, or is alternatively supported through rules
-        # directly (e.g.  stripped_shared_library for debug symbol stripping).
+        # directly (e.g. stripped_shared_library for debug symbol stripping).
         #
         # runtime_library_search_directories: replaced by custom _rpath_feature().
         #
-        # legacy_compile_flags: unused
-        # per_object_debug_info: unused
+        # Compile related features:
+        #
+        # random_seed
+        # legacy_compile_flags
+        # per_object_debug_info
         #
         # Optimization related features:
         #
@@ -410,7 +413,8 @@ def _get_legacy_features_begin():
         # static_libgcc
         # fission_support
         # static_link_cpp_runtimes
-        # ---
+        #
+        # ------------------------
         #
         # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=98;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
         feature(
@@ -427,22 +431,6 @@ def _get_legacy_features_begin():
                                 "-MF",
                                 "%{dependency_file}",
                             ],
-                        ),
-                    ],
-                ),
-            ],
-        ),
-        # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=129;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
-        feature(
-            name = "random_seed",
-            enabled = True,
-            flag_sets = [
-                flag_set(
-                    actions = [_actions.c_compile, _actions.cpp_compile],
-                    flag_groups = [
-                        flag_group(
-                            expand_if_available = "output_file",
-                            flags = ["-frandom-seed=%{output_file}"],
                         ),
                     ],
                 ),
