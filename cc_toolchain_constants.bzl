@@ -71,12 +71,8 @@ actions = struct(
         ACTION_NAMES.assemble,
         ACTION_NAMES.preprocess_assemble,
     ],
-    c_compile = [
-        ACTION_NAMES.c_compile,
-    ],
-    cpp_compile = [
-        ACTION_NAMES.cpp_compile,
-    ],
+    c_compile = ACTION_NAMES.c_compile,
+    cpp_compile = ACTION_NAMES.cpp_compile,
     # Assembler actions for .s and .S files.
     assemble = [
         ACTION_NAMES.assemble,
@@ -88,10 +84,6 @@ actions = struct(
         ACTION_NAMES.cpp_link_dynamic_library,
         ACTION_NAMES.cpp_link_nodeps_dynamic_library,
     ],
-    cpp_link_dynamic_library = [
-        ACTION_NAMES.cpp_link_dynamic_library,
-    ],
-    cpp_link_executable = [
-        ACTION_NAMES.cpp_link_executable,
-    ],
+    cpp_link_dynamic_library = ACTION_NAMES.cpp_link_dynamic_library,
+    cpp_link_executable = ACTION_NAMES.cpp_link_executable,
 )

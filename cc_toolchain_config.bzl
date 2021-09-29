@@ -158,7 +158,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = _actions.cpp_compile,
+                actions = [_actions.cpp_compile],
                 flag_groups = [
                     flag_group(
                         flags = cpp_only_flags,
@@ -172,7 +172,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = _actions.c_compile,
+                actions = [_actions.c_compile],
                 flag_groups = [
                     flag_group(
                         flags = c_only_flags,
@@ -185,7 +185,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         name = "cpp_std_experimental",
         flag_sets = [
             flag_set(
-                actions = _actions.cpp_compile,
+                actions = [_actions.cpp_compile],
                 flag_groups = [
                     flag_group(
                         flags = _flags.cc_compiler_experimental_std_flags,
@@ -199,7 +199,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = _actions.cpp_compile,
+                actions = [_actions.cpp_compile],
                 with_features = [
                     with_feature_set(not_features = ["cpp_std_experimental"]),
                 ],
@@ -259,7 +259,7 @@ def _rtti_features():
         name = "rtti_flag",
         flag_sets = [
             flag_set(
-                actions = _actions.cpp_compile,
+                actions = [_actions.cpp_compile],
                 flag_groups = [
                     flag_group(
                         flags = ["-frtti"],
@@ -270,7 +270,7 @@ def _rtti_features():
                 ],
             ),
             flag_set(
-                actions = _actions.cpp_compile,
+                actions = [_actions.cpp_compile],
                 flag_groups = [
                     flag_group(
                         flags = ["-fno-rtti"],
@@ -359,7 +359,7 @@ def _use_libcrt_feature(path):
         flag_sets = [
             # TODO(b/190383809): binaries need to be linked with late static libs grouped
             flag_set(
-                actions = _actions.cpp_link_dynamic_library,
+                actions = [_actions.cpp_link_dynamic_library],
                 flag_groups = [
                     flag_group(
                         flags = [path.path],
@@ -377,7 +377,7 @@ def _linker_flag_feature(name, flags = [], additional_static_flags = [], additio
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = _actions.cpp_link_executable,
+                actions = [_actions.cpp_link_executable],
                 flag_groups = [
                     flag_group(
                         flags = flags + additional_static_flags,
@@ -385,7 +385,7 @@ def _linker_flag_feature(name, flags = [], additional_static_flags = [], additio
                 ],
             ),
             flag_set(
-                actions = _actions.cpp_link_dynamic_library,
+                actions = [_actions.cpp_link_dynamic_library],
                 flag_groups = [
                     flag_group(
                         flags = flags + additional_dynamic_flags,
@@ -417,33 +417,59 @@ def _toolchain_include_feature(system_includes = []):
         ],
     )
 
-def _cc_toolchain_config_impl(ctx):
-    clang_version_info = ctx.attr.clang_version[_ClangVersionInfo]
-    tool_paths = _tool_paths(clang_version_info)
+# Set tools used for all actions in Android's C++ builds.
+def _create_action_configs(tool_paths):
+    action_configs = []
+
     tool_name_to_tool = {}
     for tool_path in tool_paths:
-        tool_name_to_tool[tool_path.name] = tool(
-            path = tool_path.path,
-        )
+        tool_name_to_tool[tool_path.name] = tool(path = tool_path.path)
 
     # use clang++ for linking to match Soong
-    action_configs = []
+    # https://cs.android.com/android/_/android/platform/build/soong/+/a14b18fb31eada7b8b58ecd469691c20dcb371b3:cc/builder.go;l=790;drc=769a51cc6aa9402c1c55e978e72f528c26b6a48f
     for action_name in _actions.link:
         action_configs.append(action_config(
             action_name = action_name,
             enabled = True,
-            tools = [
-                tool_name_to_tool["clang++"],
-            ],
+            tools = [tool_name_to_tool["clang++"]],
         ))
 
+    # use clang++ for compiling C++
+    # https://cs.android.com/android/_/android/platform/build/soong/+/a14b18fb31eada7b8b58ecd469691c20dcb371b3:cc/builder.go;l=627;drc=769a51cc6aa9402c1c55e978e72f528c26b6a48f
     action_configs.append(action_config(
-        action_name = _actions.cpp_compile[0],
+        action_name = _actions.cpp_compile,
         enabled = True,
-        tools = [
-            tool_name_to_tool["clang++"],
-        ],
+        tools = [tool_name_to_tool["clang++"]],
     ))
+
+    # use clang for compiling C
+    # https://cs.android.com/android/_/android/platform/build/soong/+/a14b18fb31eada7b8b58ecd469691c20dcb371b3:cc/builder.go;l=623;drc=769a51cc6aa9402c1c55e978e72f528c26b6a48f
+    action_configs.append(action_config(
+        action_name = _actions.c_compile,
+        enabled = True,
+        # this is clang, but needs to be called gcc for legacy reasons.
+        # to avoid this, we need to set `no_legacy_features`: b/201257475
+        # http://google3/third_party/bazel/src/main/java/com/google/devtools/build/lib/rules/cpp/CcModule.java;l=1106-1122;rcl=398974497
+        # http://google3/third_party/bazel/src/main/java/com/google/devtools/build/lib/rules/cpp/CcModule.java;l=1185-1187;rcl=398974497
+        tools = [tool_name_to_tool["gcc"]],
+    ))
+
+    # use clang for assembler actions
+    # https://cs.android.com/android/_/android/platform/build/soong/+/a14b18fb31eada7b8b58ecd469691c20dcb371b3:cc/builder.go;l=616;drc=769a51cc6aa9402c1c55e978e72f528c26b6a48f
+    for action_name in _actions.assemble:
+        action_configs.append(action_config(
+            action_name = action_name,
+            enabled = True,
+            tools = [tool_name_to_tool["gcc"]],
+        ))
+
+    return action_configs
+
+def _cc_toolchain_config_impl(ctx):
+    clang_version_info = ctx.attr.clang_version[_ClangVersionInfo]
+    tool_paths = _tool_paths(clang_version_info)
+
+    action_configs = _create_action_configs(tool_paths)
 
     os_is_device = ctx.attr.target_os == "android"
 
@@ -497,7 +523,7 @@ def _cc_toolchain_config_impl(ctx):
     return cc_common.create_cc_toolchain_config_info(
         ctx = ctx,
         toolchain_identifier = ctx.attr.toolchain_identifier,
-        tool_paths = _tool_paths(clang_version_info),
+        tool_paths = tool_paths,
         features = features,
         action_configs = action_configs,
         cxx_builtin_include_directories = builtin_include_dirs,
