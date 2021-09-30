@@ -1,12 +1,8 @@
 load(
     "@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl",
     "action_config",
-    "feature",
-    "flag_group",
-    "flag_set",
     "tool",
     "tool_path",
-    "with_feature_set",
 )
 load(
     ":cc_toolchain_constants.bzl",
@@ -14,6 +10,7 @@ load(
     _flags = "flags",
     _generated_constants = "generated_constants",
 )
+load(":cc_toolchain_features.bzl", "get_features")
 
 # Clang-specific configuration.
 _ClangVersionInfo = provider(fields = ["directory", "includes"])
@@ -77,375 +74,120 @@ def _tool_paths(clang_version_info):
         ),
     ]
 
-def _compiler_flag_features(flags = [], os_is_device = False):
-    compiler_flags = []
+# Set tools used for all actions in Android's C++ builds.
+def _create_action_configs(tool_paths):
+    action_configs = []
 
-    # Combine the toolchain's provided flags with the default ones.
-    compiler_flags.extend(flags)
-    compiler_flags.extend(_flags.compiler_flags)
-    compiler_flags.extend(_generated_constants.CommonGlobalCflags)
+    tool_name_to_tool = {}
+    for tool_path in tool_paths:
+        tool_name_to_tool[tool_path.name] = tool(path = tool_path.path)
 
-    if os_is_device:
-        compiler_flags.extend(_generated_constants.DeviceGlobalCflags)
-    else:
-        compiler_flags.extend(_generated_constants.HostGlobalCflags)
+    # use clang for assembler actions
+    # https://cs.android.com/android/_/android/platform/build/soong/+/a14b18fb31eada7b8b58ecd469691c20dcb371b3:cc/builder.go;l=616;drc=769a51cc6aa9402c1c55e978e72f528c26b6a48f
+    for action_name in _actions.assemble:
+        action_configs.append(action_config(
+            action_name = action_name,
+            enabled = True,
+            tools = [tool_name_to_tool["gcc"]],
+            implies = [
+                "user_compile_flags",
+                "compiler_input_flags",
+                "compiler_output_flags",
+            ],
+        ))
 
-    # Default compiler flags for assembly sources.
-    asm_only_flags = _flags.asm_compiler_flags
-
-    # Default C++ compile action only flags (No C)
-    cpp_only_flags = []
-    cpp_only_flags.extend(_generated_constants.CommonGlobalCppflags)
-    if os_is_device:
-        cpp_only_flags.extend(_generated_constants.DeviceGlobalCppflags)
-    else:
-        cpp_only_flags.extend(_generated_constants.HostGlobalCppflags)
-
-    # Default C compile action only flags (No C++)
-    c_only_flags = []
-    c_only_flags.extend(_flags.c_compiler_flags)
-    c_only_flags.extend(_generated_constants.CommonGlobalConlyflags)
-
-    # Flags that only apply in the external/ directory.
-    non_external_flags = _flags.non_external_defines
-
-    features = []
-
-    features.append(feature(
-        name = "non_external_compiler_flags",
+    # use clang++ for compiling C++
+    # https://cs.android.com/android/_/android/platform/build/soong/+/a14b18fb31eada7b8b58ecd469691c20dcb371b3:cc/builder.go;l=627;drc=769a51cc6aa9402c1c55e978e72f528c26b6a48f
+    action_configs.append(action_config(
+        action_name = _actions.cpp_compile,
         enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = _actions.compile,
-                flag_groups = [
-                    flag_group(
-                        flags = non_external_flags,
-                    ),
-                ],
-            ),
-        ],
-    ))
-    features.append(feature(
-        name = "common_compiler_flags",
-        enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = _actions.compile,
-                flag_groups = [
-                    flag_group(
-                        flags = compiler_flags,
-                    ),
-                ],
-            ),
-        ],
-    ))
-    features.append(feature(
-        name = "asm_compiler_flags",
-        enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = _actions.assemble,
-                flag_groups = [
-                    flag_group(
-                        flags = asm_only_flags,
-                    ),
-                ],
-            ),
-        ],
-    ))
-    features.append(feature(
-        name = "cpp_compiler_flags",
-        enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = _actions.cpp_compile,
-                flag_groups = [
-                    flag_group(
-                        flags = cpp_only_flags,
-                    ),
-                ],
-            ),
-        ],
-    ))
-    features.append(feature(
-        name = "c_compiler_flags",
-        enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = _actions.c_compile,
-                flag_groups = [
-                    flag_group(
-                        flags = c_only_flags,
-                    ),
-                ],
-            ),
-        ],
-    ))
-    features.append(feature(
-        name = "cpp_std_experimental",
-        flag_sets = [
-            flag_set(
-                actions = _actions.cpp_compile,
-                flag_groups = [
-                    flag_group(
-                        flags = _flags.cc_compiler_experimental_std_flags,
-                    ),
-                ],
-            ),
-        ],
-    ))
-    features.append(feature(
-        name = "cpp_std_standard",
-        enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = _actions.cpp_compile,
-                with_features = [
-                    with_feature_set(not_features = ["cpp_std_experimental"]),
-                ],
-                flag_groups = [
-                    flag_group(
-                        flags = _flags.cc_compiler_standard_std_flags,
-                    ),
-                ],
-            ),
+        tools = [tool_name_to_tool["clang++"]],
+        implies = [
+            "user_compile_flags",
+            "compiler_input_flags",
+            "compiler_output_flags",
         ],
     ))
 
-    # The user_compile_flags feature is used by Bazel to add --copt, --conlyopt,
-    # and --cxxopt values. Any features added above this call will thus appear
-    # earlier in the commandline than the user opts (so users could override
-    # flags set by earlier features). Anything after the user options are
-    # effectively non-overridable by users.
-    features.append(feature(
-        name = "user_compile_flags",
+    # use clang for compiling C
+    # https://cs.android.com/android/_/android/platform/build/soong/+/a14b18fb31eada7b8b58ecd469691c20dcb371b3:cc/builder.go;l=623;drc=769a51cc6aa9402c1c55e978e72f528c26b6a48f
+    action_configs.append(action_config(
+        action_name = _actions.c_compile,
         enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = _actions.compile,
-                flag_groups = [
-                    flag_group(
-                        expand_if_available = "user_compile_flags",
-                        flags = ["%{user_compile_flags}"],
-                        iterate_over = "user_compile_flags",
-                    ),
-                ],
-            ),
+        # this is clang, but needs to be called gcc for legacy reasons.
+        # to avoid this, we need to set `no_legacy_features`: b/201257475
+        # http://google3/third_party/bazel/src/main/java/com/google/devtools/build/lib/rules/cpp/CcModule.java;l=1106-1122;rcl=398974497
+        # http://google3/third_party/bazel/src/main/java/com/google/devtools/build/lib/rules/cpp/CcModule.java;l=1185-1187;rcl=398974497
+        tools = [tool_name_to_tool["gcc"]],
+        implies = [
+            "user_compile_flags",
+            "compiler_input_flags",
+            "compiler_output_flags",
         ],
     ))
 
-    # These cannot be overriden by the user.
-    features.append(feature(
-        name = "no_override_clang_global_copts",
+    # use clang++ for dynamic linking
+    # https://cs.android.com/android/_/android/platform/build/soong/+/a14b18fb31eada7b8b58ecd469691c20dcb371b3:cc/builder.go;l=790;drc=769a51cc6aa9402c1c55e978e72f528c26b6a48f
+    for action_name in [_actions.cpp_link_dynamic_library, _actions.cpp_link_nodeps_dynamic_library]:
+        action_configs.append(action_config(
+            action_name = action_name,
+            enabled = True,
+            tools = [tool_name_to_tool["clang++"]],
+            implies = [
+                "strip_debug_symbols",
+                "shared_flag",
+                "linkstamps",
+                "output_execpath_flags",
+                "runtime_library_search_directories",
+                "library_search_directories",
+                "libraries_to_link",
+                "user_link_flags",
+                "linker_param_file",
+            ],
+        ))
+
+    # use clang++ for linking cc executables
+    action_configs.append(action_config(
+        action_name = _actions.cpp_link_executable,
         enabled = True,
-        flag_sets = [
-            flag_set(
-                # We want this to apply to all actions except assembly
-                # primarily to match Soong's semantics
-                actions = [a for a in _actions.compile if a not in _actions.assemble],
-                flag_groups = [
-                    flag_group(
-                        flags = _generated_constants.NoOverrideGlobalCflags,
-                    ),
-                ],
-            ),
+        tools = [tool_name_to_tool["clang++"]],
+        implies = [
+            "strip_debug_symbols",
+            "linkstamps",
+            "output_execpath_flags",
+            "runtime_library_search_directories",
+            "library_search_directories",
+            "libraries_to_link",
+            "force_pic_flags",
+            "user_link_flags",
+            "linker_param_file",
         ],
     ))
 
-    return features
-
-def _rtti_features():
-    rtti_flag_feature = feature(
-        name = "rtti_flag",
-        flag_sets = [
-            flag_set(
-                actions = _actions.cpp_compile,
-                flag_groups = [
-                    flag_group(
-                        flags = ["-frtti"],
-                    ),
-                ],
-                with_features = [
-                    with_feature_set(features = ["rtti"]),
-                ],
-            ),
-            flag_set(
-                actions = _actions.cpp_compile,
-                flag_groups = [
-                    flag_group(
-                        flags = ["-fno-rtti"],
-                    ),
-                ],
-                with_features = [
-                    with_feature_set(not_features = ["rtti"]),
-                ],
-            ),
-        ],
+    # use llvm-ar for creating static archives
+    action_configs.append(action_config(
+        action_name = _actions.cpp_link_static_library,
         enabled = True,
-    )
-    rtti_feature = feature(
-        name = "rtti",
-        enabled = False,
-    )
-    return [rtti_flag_feature, rtti_feature]
+        tools = [tool_name_to_tool["ar"]],
+        implies = ["archiver_flags"],
+    ))
 
-def _rpath_features():
-    runtime_library_search_directories_feature = feature(
-        name = "runtime_library_search_directories",
-        flag_sets = [
-            flag_set(
-                actions = _actions.link,
-                flag_groups = [
-                    flag_group(
-                        iterate_over = "runtime_library_search_directories",
-                        flag_groups = [
-                            flag_group(
-                                flags = [
-                                    "-Wl,-rpath,$EXEC_ORIGIN/%{runtime_library_search_directories}",
-                                ],
-                                expand_if_true = "is_cc_test",
-                            ),
-                            flag_group(
-                                flags = [
-                                    "-Wl,-rpath,$ORIGIN/%{runtime_library_search_directories}",
-                                ],
-                                expand_if_false = "is_cc_test",
-                            ),
-                        ],
-                        expand_if_available =
-                            "runtime_library_search_directories",
-                    ),
-                ],
-                with_features = [
-                    with_feature_set(features = ["static_link_cpp_runtimes"]),
-                ],
-            ),
-            flag_set(
-                actions = _actions.link,
-                flag_groups = [
-                    flag_group(
-                        iterate_over = "runtime_library_search_directories",
-                        flag_groups = [
-                            flag_group(
-                                flags = [
-                                    "-Wl,-rpath,$ORIGIN/%{runtime_library_search_directories}",
-                                ],
-                            ),
-                        ],
-                        expand_if_available =
-                            "runtime_library_search_directories",
-                    ),
-                ],
-                with_features = [
-                    with_feature_set(
-                        not_features = ["static_link_cpp_runtimes", "disable_rpath"],
-                    ),
-                ],
-            ),
-        ],
-    )
-    disable_rpath_feature = feature(
-        name = "disable_rpath",
-        enabled = False,
-    )
-    return [runtime_library_search_directories_feature, disable_rpath_feature]
-
-def _use_libcrt_feature(path):
-    if not path:
-        return None
-    return feature(
-        name = "use_libcrt",
+    # unused, but Bazel complains if there isn't an action config for strip
+    action_configs.append(action_config(
+        action_name = _actions.strip,
         enabled = True,
-        flag_sets = [
-            # TODO(b/190383809): binaries need to be linked with late static libs grouped
-            flag_set(
-                actions = _actions.cpp_link_dynamic_library,
-                flag_groups = [
-                    flag_group(
-                        flags = [path.path],
-                    ),
-                ],
-            ),
-        ],
-    )
+        tools = [tool_name_to_tool["strip"]],
+        # This doesn't imply any feature, because Bazel currently mimics
+        # Soong by running strip actions in a rule (stripped_shared_library).
+    ))
 
-def _linker_flag_feature(name, flags = [], additional_static_flags = [], additional_dynamic_flags = []):
-    if not flags:
-        return None
-    return feature(
-        name = name,
-        enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = _actions.cpp_link_executable,
-                flag_groups = [
-                    flag_group(
-                        flags = flags + additional_static_flags,
-                    ),
-                ],
-            ),
-            flag_set(
-                actions = _actions.cpp_link_dynamic_library,
-                flag_groups = [
-                    flag_group(
-                        flags = flags + additional_dynamic_flags,
-                    ),
-                ],
-            ),
-        ],
-    )
-
-def _toolchain_include_feature(system_includes = []):
-    flags = []
-    for include in system_includes:
-        flags.append("-isystem")
-        flags.append(include)
-    if not flags:
-        return None
-    return feature(
-        name = "toolchain_include_directories",
-        enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = _actions.compile,
-                flag_groups = [
-                    flag_group(
-                        flags = flags,
-                    ),
-                ],
-            ),
-        ],
-    )
+    return action_configs
 
 def _cc_toolchain_config_impl(ctx):
     clang_version_info = ctx.attr.clang_version[_ClangVersionInfo]
     tool_paths = _tool_paths(clang_version_info)
-    tool_name_to_tool = {}
-    for tool_path in tool_paths:
-        tool_name_to_tool[tool_path.name] = tool(
-            path = tool_path.path,
-        )
 
-    # use clang++ for linking to match Soong
-    action_configs = []
-    for action_name in _actions.link:
-        action_configs.append(action_config(
-            action_name = action_name,
-            enabled = True,
-            tools = [
-                tool_name_to_tool["clang++"],
-            ],
-        ))
-
-    action_configs.append(action_config(
-        action_name = _actions.cpp_compile[0],
-        enabled = True,
-        tools = [
-            tool_name_to_tool["clang++"],
-        ],
-    ))
-
-    os_is_device = ctx.attr.target_os == "android"
+    action_configs = _create_action_configs(tool_paths)
 
     # This is so that Bazel doesn't validate .d files against the set of headers
     # declared in BUILD files (Blueprint files don't contain that data)
@@ -455,49 +197,18 @@ def _cc_toolchain_config_impl(ctx):
     # b/186035856: Do not add anything to this list.
     builtin_include_dirs.extend(_generated_constants.CommonGlobalIncludes)
 
-    # Compiler action features
-    compiler_flag_features = _compiler_flag_features(ctx.attr.target_flags, os_is_device)
-
-    # Linker action features
-    linker_target_flag_feature = _linker_flag_feature(
-        "linker_target_flags",
-        flags = ctx.attr.target_flags,
+    features = get_features(
+        ctx.attr.target_os,
+        ctx.attr.target_flags,
+        ctx.attr.linker_flags,
+        builtin_include_dirs,
+        ctx.file.libclang_rt_builtin,
     )
-
-    linker_flags = []
-    linker_flags.extend(ctx.attr.linker_flags)
-    if os_is_device:
-        linker_flags.extend(_generated_constants.DeviceGlobalLldflags)
-        linker_flags.extend(_flags.bionic_linker_flags)
-    else:
-        linker_flags.extend(_generated_constants.HostGlobalLldflags)
-    linker_flag_feature = _linker_flag_feature(
-        "linker_flags",
-        flags = linker_flags,
-        additional_static_flags = _flags.static_linker_flags,
-        additional_dynamic_flags = _flags.dynamic_linker_flags,
-    )
-
-    # System include directories features
-    toolchain_include_directories_feature = _toolchain_include_feature(
-        system_includes = builtin_include_dirs,
-    )
-
-    # Aggregate all features
-    features = compiler_flag_features + \
-               _rpath_features() + _rtti_features() + \
-               [
-                   _use_libcrt_feature(ctx.file.libclang_rt_builtin),
-                   linker_target_flag_feature,
-                   linker_flag_feature,
-                   toolchain_include_directories_feature,
-               ]
-    features = [feature for feature in features if feature != None]
 
     return cc_common.create_cc_toolchain_config_info(
         ctx = ctx,
         toolchain_identifier = ctx.attr.toolchain_identifier,
-        tool_paths = _tool_paths(clang_version_info),
+        tool_paths = tool_paths,
         features = features,
         action_configs = action_configs,
         cxx_builtin_include_directories = builtin_include_dirs,
