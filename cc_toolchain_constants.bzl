@@ -1,8 +1,6 @@
 load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
 load("@soong_injection//cc_toolchain:constants.bzl", _generated_constants = "constants")
 
-# Constants used for android_cc_toolchain configurations.
-#
 # This file uses structs to organize and control the visibility of symbols.
 
 # Handcrafted default flags.
@@ -36,9 +34,15 @@ flags = struct(
     bionic_linker_flags = [
         # These are the linker flags for OSes that use Bionic: LinuxBionic, Android
         "-nostdlib",
-        "-Wl,--no-undefined",
-        "-Wl,--hash-style=gnu",
         "-Wl,--gc-sections",
+    ],
+    bionic_static_executable_linker_flags = [
+        "-Bstatic",
+    ],
+    bionic_dynamic_executable_linker_flags = [
+        "-pie",
+        "-Bdynamic",
+        "-Wl,-z,nocopyreloc",
     ],
     # ===========
     # Other flags
