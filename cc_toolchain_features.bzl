@@ -843,20 +843,79 @@ def _get_legacy_features_end():
 
     return features
 
+def _link_crtbegin(shared_library_crtbegin = None):
+    if shared_library_crtbegin == None:
+        return []
+
+    features = [
+        feature(
+            # User facing feature
+            name = "link_crt",
+            implies = [
+                "link_crtbegin",
+                "link_crtend"
+            ],
+            enabled = True,
+        ),
+        # TODO(b/197920036): add support for linking shared/static executables
+        feature(
+            name = "link_crtbegin",
+            enabled = False,
+            flag_sets = [
+                flag_set(
+                    actions = [_actions.cpp_link_dynamic_library],
+                    flag_groups = [
+                        flag_group(
+                            flags = [shared_library_crtbegin.path],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    ]
+
+    return features
+
+def _link_crtend(shared_library_crtend):
+    if shared_library_crtend == None:
+        return None
+
+    # TODO(b/197920036): add support for linking shared/static executables
+    return feature(
+        name = "link_crtend",
+        enabled = False,
+        flag_sets = [
+            flag_set(
+                actions = [_actions.cpp_link_dynamic_library],
+                flag_groups = [
+                    flag_group(
+                        flags = [shared_library_crtend.path],
+                    ),
+                ],
+            ),
+        ],
+    )
+
 # Create the full list of features.
 def get_features(
         target_os,
         target_flags,
         linker_only_flags,
         builtin_include_dirs,
-        libclang_rt_builtin):
+        libclang_rt_builtin,
+        shared_library_crtbegin,
+        shared_library_crtend):
     os_is_device = target_os == "android"
 
     # Aggregate all features in order:
     features = [
         # Do not depend on Bazel's built-in legacy features and action configs:
         feature(name = "no_legacy_features"),
-        # Instead, explicitly depend on a subset of legacy configs:
+
+        # This must always come first, after no_legacy_features.
+        _link_crtbegin(shared_library_crtbegin),
+
+        # Explicitly depend on a subset of legacy configs:
         _get_legacy_features_begin(),
         _compiler_flag_features(target_flags, os_is_device),
         _rpath_features(),
@@ -869,5 +928,8 @@ def get_features(
         # System include directories features
         _toolchain_include_feature(system_includes = builtin_include_dirs),
         _get_legacy_features_end(),
+
+        # This must always come last.
+        _link_crtend(shared_library_crtend),
     ]
     return _flatten([f for f in features if f != None])
