@@ -20,15 +20,8 @@ flags = struct(
         # CStdVersion in cc/config/global.go
         "-std=gnu99",
     ],
-    cc_compiler_standard_std_flags = [
-        # Should be toggled instead of CC_COMPILER_STANDARD_STD_FLAGS if
-        # the soong module has "cpp_std: 'experimental'". In bazel, tied
-        # to the feature "cpp_std_experimental".
+    cc_compiler_standard_std_flag = [
         "-std=gnu++17",
-    ],
-    cc_compiler_experimental_std_flags = [
-        # CppStdVersion in cc/config/global.go
-        "-std=gnu++2a",
     ],
     # ============
     # Linker flags
