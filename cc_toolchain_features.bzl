@@ -122,31 +122,18 @@ def _compiler_flag_features(flags = [], os_is_device = False):
             ),
         ],
     ))
-    features.append(feature(
-        name = "cpp_std_experimental",
-        flag_sets = [
-            flag_set(
-                actions = [_actions.cpp_compile],
-                flag_groups = [
-                    flag_group(
-                        flags = _flags.cc_compiler_experimental_std_flags,
-                    ),
-                ],
-            ),
-        ],
-    ))
+    # Apply the default -std copt. If the user sets it on the target/command
+    # line, it will be overridden below by user_compile_flags. There is no other
+    # way than copts to set the std version.
     features.append(feature(
         name = "cpp_std_standard",
         enabled = True,
         flag_sets = [
             flag_set(
                 actions = [_actions.cpp_compile],
-                with_features = [
-                    with_feature_set(not_features = ["cpp_std_experimental"]),
-                ],
                 flag_groups = [
                     flag_group(
-                        flags = _flags.cc_compiler_standard_std_flags,
+                        flags = _flags.cc_compiler_standard_std_flag,
                     ),
                 ],
             ),
