@@ -142,6 +142,7 @@ def _create_action_configs(tool_paths):
                 "runtime_library_search_directories",
                 "library_search_directories",
                 "libraries_to_link",
+                "pic",
                 "user_link_flags",
                 "linker_param_file",
             ],
@@ -159,7 +160,6 @@ def _create_action_configs(tool_paths):
             "runtime_library_search_directories",
             "library_search_directories",
             "libraries_to_link",
-            "force_pic_flags",
             "user_link_flags",
             "linker_param_file",
         ],
@@ -200,6 +200,7 @@ def _cc_toolchain_config_impl(ctx):
 
     features = get_features(
         ctx.attr.target_os,
+        ctx.attr.target_arch,
         ctx.attr.target_flags,
         ctx.attr.linker_flags,
         builtin_include_dirs,
