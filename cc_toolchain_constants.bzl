@@ -1,8 +1,6 @@
 load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
 load("@soong_injection//cc_toolchain:constants.bzl", _generated_constants = "constants")
 
-# Constants used for android_cc_toolchain configurations.
-#
 # This file uses structs to organize and control the visibility of symbols.
 
 # Handcrafted default flags.
@@ -20,15 +18,8 @@ flags = struct(
         # CStdVersion in cc/config/global.go
         "-std=gnu99",
     ],
-    cc_compiler_standard_std_flags = [
-        # Should be toggled instead of CC_COMPILER_STANDARD_STD_FLAGS if
-        # the soong module has "cpp_std: 'experimental'". In bazel, tied
-        # to the feature "cpp_std_experimental".
+    cc_compiler_standard_std_flag = [
         "-std=gnu++17",
-    ],
-    cc_compiler_experimental_std_flags = [
-        # CppStdVersion in cc/config/global.go
-        "-std=gnu++2a",
     ],
     # ============
     # Linker flags
@@ -36,9 +27,15 @@ flags = struct(
     bionic_linker_flags = [
         # These are the linker flags for OSes that use Bionic: LinuxBionic, Android
         "-nostdlib",
-        "-Wl,--no-undefined",
-        "-Wl,--hash-style=gnu",
         "-Wl,--gc-sections",
+    ],
+    bionic_static_executable_linker_flags = [
+        "-Bstatic",
+    ],
+    bionic_dynamic_executable_linker_flags = [
+        "-pie",
+        "-Bdynamic",
+        "-Wl,-z,nocopyreloc",
     ],
     # ===========
     # Other flags
@@ -87,4 +84,15 @@ actions = struct(
     cpp_link_static_library = ACTION_NAMES.cpp_link_static_library,
     cpp_link_executable = ACTION_NAMES.cpp_link_executable,
     strip = ACTION_NAMES.strip,
+)
+
+crt = struct(
+    # crtbegin and crtend libraries for compiling cc_library_shared and
+    # cc_binary against the Bionic runtime
+    shared_library_crtbegin = "//bionic/libc:crtbegin_so",
+    shared_library_crtend = "//bionic/libc:crtend_so",
+    shared_binary_crtbegin = "//bionic/libc:crtbegin_dynamic",
+    shared_binary_crtend = "//bionic/libc:crtend_android",
+    static_binary_crtbegin = "//bionic/libc:crtbegin_static",
+    static_binary_crtend = "//bionic/libc:crtend_android",
 )
