@@ -16,7 +16,46 @@ load(
     _actions = "actions",
     _flags = "flags",
     _generated_constants = "generated_constants",
+    _cpp_std_versions = "cpp_std_versions",
+    _default_cpp_std_version = "default_cpp_std_version",
 )
+
+def _get_cpp_std_feature():
+    features = []
+    features.append(feature(
+        # The default cpp_std feature. Remember to disable
+        # this feature if enabling the others.
+        name = "cpp_std_default",
+        enabled = True,
+        implies = [_default_cpp_std_version],
+    ))
+    features.extend([
+        feature(name = std_version, provides = ['cpp_std'])
+        for std_version in _cpp_std_versions
+    ])
+    features.append(feature(
+        name = "cpp_std_flag",
+        enabled = True,
+        # Create the -std flag group for each of the std versions,
+        # enabled with with_feature_set.
+        flag_sets = [
+            flag_set(
+                actions = [_actions.cpp_compile],
+                flag_groups = [
+                    flag_group(
+                        flags = ["-std=" + std_version],
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        features = [std_version],
+                    )
+                ]
+            )
+            for std_version in _cpp_std_versions
+        ],
+    ))
+    return features
 
 def _compiler_flag_features(flags = [], os_is_device = False):
     compiler_flags = []
@@ -51,6 +90,49 @@ def _compiler_flag_features(flags = [], os_is_device = False):
     non_external_flags = _flags.non_external_defines
 
     features = []
+
+    # TODO: disabled on windows
+    features.append(feature(
+        name = "pic",
+        enabled = False,
+        flag_sets = [
+            flag_set(
+                actions = _actions.compile,
+                flag_groups = [
+                    flag_group(
+                        flags = ["-fPIC"],
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        features = ["linker_flags"],
+                        not_features = ["pie"],
+                    ),
+                ],
+            ),
+        ],
+    ))
+
+    features.append(feature(
+        name = "pie",
+        enabled = False,
+        flag_sets = [
+            flag_set(
+                actions = _actions.compile,
+                flag_groups = [
+                    flag_group(
+                        flags = ["-fPIE"],
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        features = ["linker_flags"],
+                        not_features = ["pic"],
+                    ),
+                ],
+            ),
+        ],
+    ))
 
     features.append(feature(
         name = "non_external_compiler_flags",
@@ -117,36 +199,6 @@ def _compiler_flag_features(flags = [], os_is_device = False):
                 flag_groups = [
                     flag_group(
                         flags = c_only_flags,
-                    ),
-                ],
-            ),
-        ],
-    ))
-    features.append(feature(
-        name = "cpp_std_experimental",
-        flag_sets = [
-            flag_set(
-                actions = [_actions.cpp_compile],
-                flag_groups = [
-                    flag_group(
-                        flags = _flags.cc_compiler_experimental_std_flags,
-                    ),
-                ],
-            ),
-        ],
-    ))
-    features.append(feature(
-        name = "cpp_std_standard",
-        enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = [_actions.cpp_compile],
-                with_features = [
-                    with_feature_set(not_features = ["cpp_std_experimental"]),
-                ],
-                flag_groups = [
-                    flag_group(
-                        flags = _flags.cc_compiler_standard_std_flags,
                     ),
                 ],
             ),
@@ -230,6 +282,140 @@ def _rtti_features():
     )
     return [rtti_flag_feature, rtti_feature]
 
+# TODO(b/202167934): Darwin does not support pack dynamic relocations
+def _pack_dynamic_relocations_features(os_is_device):
+    pack_dynamic_relocations_feature = feature(
+        name = "pack_dynamic_relocations",
+        enabled = True,
+    )
+
+    disable_pack_relocations_feature = feature(
+        name = "disable_pack_relocations",
+        flag_sets = [
+            flag_set(
+                actions = _actions.link,
+                flag_groups = [
+                    flag_group(
+                        flags = ["-Wl,--pack-dyn-relocs=none"],
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        features = ["linker_flags"],
+                        not_features = ["pack_dynamic_relocations"],
+                    ),
+                ],
+            ),
+        ],
+        enabled = False,
+    )
+
+    if not os_is_device:
+        return [pack_dynamic_relocations_feature, disable_pack_relocations_feature]
+
+    # sdk version >= 30
+    sht_relr_feature = feature(
+        name = "sht_relr",
+        provides = ["pack_dynamic_relocations"],
+        flag_sets = [
+            flag_set(
+                actions = _actions.link,
+                flag_groups = [
+                    flag_group(
+                        flags = ["-Wl,--pack-dyn-relocs=android+relr"],
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        features = ["linker_flags"],
+                        not_features = [
+                            "disable_pack_relocations",
+                            "android_relr",
+                            "relocation_packer",
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    )
+
+    # sdk version >= 28
+    android_relr_feature = feature(
+        name = "android_relr",
+        provides = ["pack_dynamic_relocations"],
+        flag_sets = [
+            flag_set(
+                actions = _actions.link,
+                flag_groups = [
+                    flag_group(
+                        flags = ["-Wl,--pack-dyn-relocs=android+relr", "-Wl,--use-android-relr-tags"],
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        features = ["linker_flags"],
+                        not_features = [
+                            "disable_pack_relocations",
+                            "sht_relr",
+                            "relocation_packer",
+                        ],
+                    ),
+                ],
+            ),
+        ],
+        enabled = False,
+    )
+
+    # sdk version >= 32
+    relocation_packer_feature = feature(
+        name = "relocation_packer",
+        provides = ["pack_dynamic_relocations"],
+        flag_sets = [
+            flag_set(
+                actions = _actions.link,
+                flag_groups = [
+                    flag_group(
+                        flags = ["-Wl,--pack-dyn-relocs=android"],
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        features = ["linker_flags"],
+                        not_features = [
+                            "disable_pack_relocations",
+                            "sht_relr",
+                            "android_relr",
+                        ],
+                    ),
+                ],
+            ),
+        ],
+        enabled = False,
+    )
+
+    return [
+        pack_dynamic_relocations_feature,
+        disable_pack_relocations_feature,
+        sht_relr_feature,
+        android_relr_feature,
+        relocation_packer_feature,
+    ]
+
+# TODO(b/202167934): Darwin by default disallows undefined symbols, to allow, -Wl,undefined,dynamic_lookup
+def _undefined_symbols_feature():
+    return _linker_flag_feature("no_undefined_symbols", flags = ["-Wl,--no-undefined"], enabled = True)
+
+def _dynamic_linker_flag_feature(os_is_device, arch_is_64_bit):
+    if not os_is_device:
+        return _binary_linker_flag_feature(name = "dynamic_linker", flags = ["-Wl,--no-dynamic-linker"])
+
+    # TODO: handle bootstrap partition, asan
+    dynamic_linker_path = "/system/bin/linker"
+    if arch_is_64_bit:
+        dynamic_linker_path += "64"
+    return _binary_linker_flag_feature(name = "dynamic_linker", flags = ["-Wl,-dynamic-linker," + dynamic_linker_path])
+
+# TODO(b/202167934): Darwin uses @loader_path in place of $ORIGIN
 def _rpath_features():
     runtime_library_search_directories_feature = feature(
         name = "runtime_library_search_directories",
@@ -294,37 +480,32 @@ def _rpath_features():
 def _use_libcrt_feature(path):
     if not path:
         return None
-    return feature(
-        name = "use_libcrt",
-        enabled = True,
-        flag_sets = [
-            # TODO(b/190383809): binaries need to be linked with late static libs grouped
-            flag_set(
-                actions = [_actions.cpp_link_dynamic_library],
-                flag_groups = [
-                    flag_group(
-                        flags = [path.path],
-                    ),
-                ],
-            ),
-        ],
-    )
+    return _flag_feature("use_libcrt", actions = _actions.link, flags = [
+        path.path,
+        "-Wl,--exclude-libs=" + path.path,
+    ])
 
-def _linker_flag_feature(name, flags = []):
-    if not flags:
+def _flag_feature(name, actions = None, flags = None, enabled = True):
+    if not flags or not actions:
         return None
     return feature(
         name = name,
-        enabled = True,
+        enabled = enabled,
         flag_sets = [
             flag_set(
-                actions = _actions.link,
+                actions = actions,
                 flag_groups = [
                     flag_group(flags = flags),
                 ],
             ),
         ],
     )
+
+def _linker_flag_feature(name, flags = [], enabled = True):
+    return _flag_feature(name, actions = _actions.link, flags = flags, enabled = enabled)
+
+def _binary_linker_flag_feature(name, flags = [], enabled = True):
+    return _flag_feature(name, actions = [_actions.cpp_link_executable], flags = flags, enabled = enabled)
 
 def _toolchain_include_feature(system_includes = []):
     flags = []
@@ -367,6 +548,18 @@ def _additional_linker_flags(os_is_device):
         linker_flags.extend(_generated_constants.HostGlobalLldflags)
     return linker_flags
 
+def _static_binary_linker_flags(os_is_device):
+    linker_flags = []
+    if os_is_device:
+        linker_flags.extend(_flags.bionic_static_executable_linker_flags)
+    return linker_flags
+
+def _shared_binary_linker_flags(os_is_device):
+    linker_flags = []
+    if os_is_device:
+        linker_flags.extend(_flags.bionic_dynamic_executable_linker_flags)
+    return linker_flags
+
 # Legacy features moved from their hardcoded Bazel's Java implementation
 # to Starlark.
 #
@@ -384,6 +577,8 @@ def _get_legacy_features_begin():
         # random_seed
         # legacy_compile_flags
         # per_object_debug_info
+        # pic
+        # force_pic_flags
         #
         # Optimization related features:
         #
@@ -431,22 +626,6 @@ def _get_legacy_features_begin():
                                 "-MF",
                                 "%{dependency_file}",
                             ],
-                        ),
-                    ],
-                ),
-            ],
-        ),
-        # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=147;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
-        feature(
-            name = "pic",
-            enabled = True,
-            flag_sets = [
-                flag_set(
-                    actions = _actions.compile,
-                    flag_groups = [
-                        flag_group(
-                            expand_if_available = "pic",
-                            flags = ["-fPIC"],
                         ),
                     ],
                 ),
@@ -532,6 +711,7 @@ def _get_legacy_features_begin():
                 ),
             ],
         ),
+
         # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=492;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
         feature(
             name = "linkstamps",
@@ -724,21 +904,6 @@ def _get_legacy_features_begin():
                 ),
             ],
         ),
-        # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=826;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
-        feature(
-            name = "force_pic_flags",
-            flag_sets = [
-                flag_set(
-                    actions = [_actions.cpp_link_executable],
-                    flag_groups = [
-                        flag_group(
-                            expand_if_available = "force_pic",
-                            flags = ["-pie"],
-                        ),
-                    ],
-                ),
-            ],
-        ),
         # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=842;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
         feature(
             name = "user_link_flags",
@@ -843,21 +1008,88 @@ def _get_legacy_features_end():
 
     return features
 
+def _link_crtbegin(shared_library_crtbegin = None):
+    if shared_library_crtbegin == None:
+        return []
+
+    features = [
+        feature(
+            # User facing feature
+            name = "link_crt",
+            implies = [
+                "link_crtbegin",
+                "link_crtend"
+            ],
+            enabled = True,
+        ),
+        # TODO(b/197920036): add support for linking shared/static executables
+        feature(
+            name = "link_crtbegin",
+            enabled = False,
+            flag_sets = [
+                flag_set(
+                    actions = [_actions.cpp_link_dynamic_library],
+                    flag_groups = [
+                        flag_group(
+                            flags = [shared_library_crtbegin.path],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    ]
+
+    return features
+
+def _link_crtend(shared_library_crtend):
+    if shared_library_crtend == None:
+        return None
+
+    # TODO(b/197920036): add support for linking shared/static executables
+    return feature(
+        name = "link_crtend",
+        enabled = False,
+        flag_sets = [
+            flag_set(
+                actions = [_actions.cpp_link_dynamic_library],
+                flag_groups = [
+                    flag_group(
+                        flags = [shared_library_crtend.path],
+                    ),
+                ],
+            ),
+        ],
+    )
+
 # Create the full list of features.
 def get_features(
         target_os,
+        target_arch,
         target_flags,
         linker_only_flags,
         builtin_include_dirs,
-        libclang_rt_builtin):
+        libclang_rt_builtin,
+        shared_library_crtbegin,
+        shared_library_crtend):
     os_is_device = target_os == "android"
+    arch_is_64_bit = target_arch.endswith("64")
 
     # Aggregate all features in order:
     features = [
         # Do not depend on Bazel's built-in legacy features and action configs:
         feature(name = "no_legacy_features"),
-        # Instead, explicitly depend on a subset of legacy configs:
+
+        # This must always come first, after no_legacy_features.
+        _link_crtbegin(shared_library_crtbegin),
+
+        # Explicitly depend on a subset of legacy configs:
         _get_legacy_features_begin(),
+
+        # get_cpp_std_feature must come before _compiler_flag_features and user
+        # compile flags, as build targets may use copts/cflags to explicitly
+        # change the -std version to overwrite the defaults or cpp_std attribute
+        # value.
+        _get_cpp_std_feature(),
         _compiler_flag_features(target_flags, os_is_device),
         _rpath_features(),
         _rtti_features(),
@@ -866,8 +1098,19 @@ def get_features(
         _linker_flag_feature("linker_target_flags", flags = target_flags),
         # Link-only flags.
         _linker_flag_feature("linker_flags", flags = linker_only_flags + _additional_linker_flags(os_is_device)),
+        _undefined_symbols_feature(),
+        _dynamic_linker_flag_feature(os_is_device, arch_is_64_bit),
+        _binary_linker_flag_feature("dynamic_executable", flags = _shared_binary_linker_flags(os_is_device)),
+        # distinct from other static flags as it can be disabled separately
+        _binary_linker_flag_feature("static_flag", flags = ["-static"], enabled = False),
+        # default for executables is dynamic linking
+        _binary_linker_flag_feature("static_executable", flags = _static_binary_linker_flags(os_is_device), enabled = False),
+        _pack_dynamic_relocations_features(os_is_device),
         # System include directories features
         _toolchain_include_feature(system_includes = builtin_include_dirs),
         _get_legacy_features_end(),
+
+        # This must always come last.
+        _link_crtend(shared_library_crtend),
     ]
     return _flatten([f for f in features if f != None])
