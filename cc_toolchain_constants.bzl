@@ -18,9 +18,6 @@ flags = struct(
         # CStdVersion in cc/config/global.go
         "-std=gnu99",
     ],
-    cc_compiler_standard_std_flag = [
-        "-std=gnu++17",
-    ],
     # ============
     # Linker flags
     # ============
@@ -96,3 +93,15 @@ crt = struct(
     static_binary_crtbegin = "//bionic/libc:crtbegin_static",
     static_binary_crtend = "//bionic/libc:crtend_android",
 )
+
+default_cpp_std_version = "gnu++17"
+cpp_std_versions = [
+    "gnu++98",
+    "gnu++11",
+    "gnu++17",
+    "gnu++2a",
+    "c++98",
+    "c++11",
+    "c++17",
+    "c++2a",
+]
