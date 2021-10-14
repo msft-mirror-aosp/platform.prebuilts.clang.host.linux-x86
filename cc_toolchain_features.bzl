@@ -16,7 +16,46 @@ load(
     _actions = "actions",
     _flags = "flags",
     _generated_constants = "generated_constants",
+    _cpp_std_versions = "cpp_std_versions",
+    _default_cpp_std_version = "default_cpp_std_version",
 )
+
+def _get_cpp_std_feature():
+    features = []
+    features.append(feature(
+        # The default cpp_std feature. Remember to disable
+        # this feature if enabling the others.
+        name = "cpp_std_default",
+        enabled = True,
+        implies = [_default_cpp_std_version],
+    ))
+    features.extend([
+        feature(name = std_version, provides = ['cpp_std'])
+        for std_version in _cpp_std_versions
+    ])
+    features.append(feature(
+        name = "cpp_std_flag",
+        enabled = True,
+        # Create the -std flag group for each of the std versions,
+        # enabled with with_feature_set.
+        flag_sets = [
+            flag_set(
+                actions = [_actions.cpp_compile],
+                flag_groups = [
+                    flag_group(
+                        flags = ["-std=" + std_version],
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        features = [std_version],
+                    )
+                ]
+            )
+            for std_version in _cpp_std_versions
+        ],
+    ))
+    return features
 
 def _compiler_flag_features(flags = [], os_is_device = False):
     compiler_flags = []
@@ -160,23 +199,6 @@ def _compiler_flag_features(flags = [], os_is_device = False):
                 flag_groups = [
                     flag_group(
                         flags = c_only_flags,
-                    ),
-                ],
-            ),
-        ],
-    ))
-    # Apply the default -std copt. If the user sets it on the target/command
-    # line, it will be overridden below by user_compile_flags. There is no other
-    # way than copts to set the std version.
-    features.append(feature(
-        name = "cpp_std_standard",
-        enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = [_actions.cpp_compile],
-                flag_groups = [
-                    flag_group(
-                        flags = _flags.cc_compiler_standard_std_flag,
                     ),
                 ],
             ),
@@ -1062,6 +1084,12 @@ def get_features(
 
         # Explicitly depend on a subset of legacy configs:
         _get_legacy_features_begin(),
+
+        # get_cpp_std_feature must come before _compiler_flag_features and user
+        # compile flags, as build targets may use copts/cflags to explicitly
+        # change the -std version to overwrite the defaults or cpp_std attribute
+        # value.
+        _get_cpp_std_feature(),
         _compiler_flag_features(target_flags, os_is_device),
         _rpath_features(),
         _rtti_features(),
