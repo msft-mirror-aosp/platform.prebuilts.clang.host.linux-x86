@@ -38,7 +38,7 @@ LLVM Users
 
 * [**Trusty**](https://source.android.com/security/trusty/)
   * LINUX_CLANG_BINDIR: clang-r433403
-  * CLANG_BINDIR: clang-r399163b
+  * CLANG_BINDIR: clang-r416183c1
   * Look for "clang-" in [vendor/google/aosp/scripts/envsetup.sh](https://android.googlesource.com/trusty/vendor/google/aosp/+/master/scripts/envsetup.sh).
 
 * [**Android Emulator**](https://developer.android.com/studio/run/emulator.html)
