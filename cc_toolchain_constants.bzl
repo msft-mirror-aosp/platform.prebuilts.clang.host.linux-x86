@@ -18,9 +18,6 @@ flags = struct(
         # CStdVersion in cc/config/global.go
         "-std=gnu99",
     ],
-    cc_compiler_standard_std_flag = [
-        "-std=gnu++17",
-    ],
     # ============
     # Linker flags
     # ============
@@ -86,13 +83,24 @@ actions = struct(
     strip = ACTION_NAMES.strip,
 )
 
-crt = struct(
+bionic_crt = struct(
     # crtbegin and crtend libraries for compiling cc_library_shared and
     # cc_binary against the Bionic runtime
     shared_library_crtbegin = "//bionic/libc:crtbegin_so",
     shared_library_crtend = "//bionic/libc:crtend_so",
     shared_binary_crtbegin = "//bionic/libc:crtbegin_dynamic",
-    shared_binary_crtend = "//bionic/libc:crtend_android",
     static_binary_crtbegin = "//bionic/libc:crtbegin_static",
-    static_binary_crtend = "//bionic/libc:crtend_android",
+    binary_crtend = "//bionic/libc:crtend_android",
 )
+
+default_cpp_std_version = "gnu++17"
+cpp_std_versions = [
+    "gnu++98",
+    "gnu++11",
+    "gnu++17",
+    "gnu++2a",
+    "c++98",
+    "c++11",
+    "c++17",
+    "c++2a",
+]

@@ -16,7 +16,46 @@ load(
     _actions = "actions",
     _flags = "flags",
     _generated_constants = "generated_constants",
+    _cpp_std_versions = "cpp_std_versions",
+    _default_cpp_std_version = "default_cpp_std_version",
 )
+
+def _get_cpp_std_feature():
+    features = []
+    features.append(feature(
+        # The default cpp_std feature. Remember to disable
+        # this feature if enabling the others.
+        name = "cpp_std_default",
+        enabled = True,
+        implies = [_default_cpp_std_version],
+    ))
+    features.extend([
+        feature(name = std_version, provides = ['cpp_std'])
+        for std_version in _cpp_std_versions
+    ])
+    features.append(feature(
+        name = "cpp_std_flag",
+        enabled = True,
+        # Create the -std flag group for each of the std versions,
+        # enabled with with_feature_set.
+        flag_sets = [
+            flag_set(
+                actions = [_actions.cpp_compile],
+                flag_groups = [
+                    flag_group(
+                        flags = ["-std=" + std_version],
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        features = [std_version],
+                    )
+                ]
+            )
+            for std_version in _cpp_std_versions
+        ],
+    ))
+    return features
 
 def _compiler_flag_features(flags = [], os_is_device = False):
     compiler_flags = []
@@ -160,23 +199,6 @@ def _compiler_flag_features(flags = [], os_is_device = False):
                 flag_groups = [
                     flag_group(
                         flags = c_only_flags,
-                    ),
-                ],
-            ),
-        ],
-    ))
-    # Apply the default -std copt. If the user sets it on the target/command
-    # line, it will be overridden below by user_compile_flags. There is no other
-    # way than copts to set the std version.
-    features.append(feature(
-        name = "cpp_std_standard",
-        enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = [_actions.cpp_compile],
-                flag_groups = [
-                    flag_group(
-                        flags = _flags.cc_compiler_standard_std_flag,
                     ),
                 ],
             ),
@@ -986,30 +1008,82 @@ def _get_legacy_features_end():
 
     return features
 
-def _link_crtbegin(shared_library_crtbegin = None):
-    if shared_library_crtbegin == None:
+def _link_crtbegin(crt_files):
+    # in practice, either all of these are supported for a toolchain or none of them do
+    if crt_files.shared_library_crtbegin == None or crt_files.shared_binary_crtbegin == None or crt_files.static_binary_crtbegin == None:
         return []
 
     features = [
         feature(
             # User facing feature
             name = "link_crt",
-            implies = [
-                "link_crtbegin",
-                "link_crtend"
-            ],
             enabled = True,
+            implies = ["link_crtbegin", "link_crtend"],
         ),
-        # TODO(b/197920036): add support for linking shared/static executables
         feature(
             name = "link_crtbegin",
-            enabled = False,
+            enabled = True,
+        ),
+        feature(
+            name = "link_crtbegin_so",
+            enabled = True,
             flag_sets = [
                 flag_set(
                     actions = [_actions.cpp_link_dynamic_library],
                     flag_groups = [
                         flag_group(
-                            flags = [shared_library_crtbegin.path],
+                            flags = [crt_files.shared_library_crtbegin.path],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            features = ["link_crt", "link_crtbegin"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        feature(
+            name = "link_crtbegin_dynamic",
+            enabled = True,
+            flag_sets = [
+                flag_set(
+                    actions = [_actions.cpp_link_executable],
+                    flag_groups = [
+                        flag_group(
+                            flags = [crt_files.shared_binary_crtbegin.path],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            features = [
+                                "dynamic_executable",
+                                "link_crt",
+                                "link_crtbegin",
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        feature(
+            name = "link_crtbegin_static",
+            enabled = True,
+            flag_sets = [
+                flag_set(
+                    actions = [_actions.cpp_link_executable],
+                    flag_groups = [
+                        flag_group(
+                            flags = [crt_files.static_binary_crtbegin.path],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            features = [
+                                "link_crt",
+                                "link_crtbegin",
+                                "static_executable",
+                            ],
                         ),
                     ],
                 ),
@@ -1019,25 +1093,55 @@ def _link_crtbegin(shared_library_crtbegin = None):
 
     return features
 
-def _link_crtend(shared_library_crtend):
-    if shared_library_crtend == None:
+def _link_crtend(crt_files):
+    # in practice, either all of these are supported for a toolchain or none of them do
+    if crt_files.shared_library_crtend == None or crt_files.binary_crtend == None:
         return None
 
-    # TODO(b/197920036): add support for linking shared/static executables
-    return feature(
-        name = "link_crtend",
-        enabled = False,
-        flag_sets = [
-            flag_set(
-                actions = [_actions.cpp_link_dynamic_library],
-                flag_groups = [
-                    flag_group(
-                        flags = [shared_library_crtend.path],
-                    ),
-                ],
-            ),
-        ],
-    )
+    return [
+        feature(
+            name = "link_crtend",
+            enabled = True,
+        ),
+        feature(
+            name = "link_crtend_so",
+            enabled = True,
+            flag_sets = [
+                flag_set(
+                    actions = [_actions.cpp_link_dynamic_library],
+                    flag_groups = [
+                        flag_group(
+                            flags = [crt_files.shared_library_crtend.path],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            features = ["link_crt", "link_crtend"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        feature(
+            name = "link_crtend_binary",
+            enabled = True,
+            flag_sets = [
+                flag_set(
+                    actions = [_actions.cpp_link_executable],
+                    flag_groups = [
+                        flag_group(
+                            flags = [crt_files.binary_crtend.path],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            features = ["link_crt", "link_crtend"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    ]
 
 # Create the full list of features.
 def get_features(
@@ -1047,8 +1151,7 @@ def get_features(
         linker_only_flags,
         builtin_include_dirs,
         libclang_rt_builtin,
-        shared_library_crtbegin,
-        shared_library_crtend):
+        crt_files):
     os_is_device = target_os == "android"
     arch_is_64_bit = target_arch.endswith("64")
 
@@ -1058,10 +1161,16 @@ def get_features(
         feature(name = "no_legacy_features"),
 
         # This must always come first, after no_legacy_features.
-        _link_crtbegin(shared_library_crtbegin),
+        _link_crtbegin(crt_files),
 
         # Explicitly depend on a subset of legacy configs:
         _get_legacy_features_begin(),
+
+        # get_cpp_std_feature must come before _compiler_flag_features and user
+        # compile flags, as build targets may use copts/cflags to explicitly
+        # change the -std version to overwrite the defaults or cpp_std attribute
+        # value.
+        _get_cpp_std_feature(),
         _compiler_flag_features(target_flags, os_is_device),
         _rpath_features(),
         _rtti_features(),
@@ -1083,6 +1192,6 @@ def get_features(
         _get_legacy_features_end(),
 
         # This must always come last.
-        _link_crtend(shared_library_crtend),
+        _link_crtend(crt_files),
     ]
     return _flatten([f for f in features if f != None])
