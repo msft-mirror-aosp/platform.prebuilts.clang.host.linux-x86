@@ -7,9 +7,9 @@ load(
 load(
     ":cc_toolchain_constants.bzl",
     _actions = "actions",
+    _bionic_crt = "bionic_crt",
     _flags = "flags",
     _generated_constants = "generated_constants",
-    _crt = "crt",
 )
 load(":cc_toolchain_features.bzl", "get_features")
 
@@ -198,6 +198,14 @@ def _cc_toolchain_config_impl(ctx):
     # b/186035856: Do not add anything to this list.
     builtin_include_dirs.extend(_generated_constants.CommonGlobalIncludes)
 
+    crt_files = struct(
+        shared_library_crtbegin = ctx.file.shared_library_crtbegin,
+        shared_library_crtend = ctx.file.shared_library_crtend,
+        shared_binary_crtbegin = ctx.file.shared_binary_crtbegin,
+        static_binary_crtbegin = ctx.file.static_binary_crtbegin,
+        binary_crtend = ctx.file.binary_crtend,
+    )
+
     features = get_features(
         ctx.attr.target_os,
         ctx.attr.target_arch,
@@ -205,8 +213,7 @@ def _cc_toolchain_config_impl(ctx):
         ctx.attr.linker_flags,
         builtin_include_dirs,
         ctx.file.libclang_rt_builtin,
-        ctx.file.shared_library_crtbegin,
-        ctx.file.shared_library_crtend,
+        crt_files,
     )
 
     return cc_common.create_cc_toolchain_config_info(
@@ -241,11 +248,9 @@ _cc_toolchain_config = rule(
         # cc_binary against the Bionic runtime
         "shared_library_crtbegin": attr.label(allow_single_file = True, cfg = "target"),
         "shared_library_crtend": attr.label(allow_single_file = True, cfg = "target"),
-        # TODO(b/197920036): handle cc_binary
-        # "shared_binary_crtbegin": attr.label(allow_single_file = True),
-        # "shared_binary_crtend": attr.label(allow_single_file = True),
-        # "static_binary_crtbegin": attr.label(allow_single_file = True),
-        # "static_binary_crtend": attr.label(allow_single_file = True),
+        "shared_binary_crtbegin": attr.label(allow_single_file = True, cfg = "target"),
+        "static_binary_crtbegin": attr.label(allow_single_file = True, cfg = "target"),
+        "binary_crtend": attr.label(allow_single_file = True, cfg = "target"),
     },
     provides = [CcToolchainConfigInfo],
 )
@@ -293,8 +298,11 @@ def android_cc_toolchain(
     _cc_toolchain_config(
         name = "%s_config" % name,
         toolchain_identifier = toolchain_identifier,
-        shared_library_crtbegin = _crt.shared_library_crtbegin,
-        shared_library_crtend = _crt.shared_library_crtend,
+        shared_library_crtbegin = _bionic_crt.shared_library_crtbegin,
+        shared_library_crtend = _bionic_crt.shared_library_crtend,
+        shared_binary_crtbegin = _bionic_crt.shared_binary_crtbegin,
+        static_binary_crtbegin = _bionic_crt.static_binary_crtbegin,
+        binary_crtend = _bionic_crt.binary_crtend,
         **common_toolchain_config
     )
 
@@ -371,8 +379,11 @@ def android_cc_toolchain(
     native.filegroup(
         name = "%s_crt_libs" % name,
         srcs = [
-            _crt.shared_library_crtbegin,
-            _crt.shared_library_crtend,
+            _bionic_crt.shared_library_crtbegin,
+            _bionic_crt.shared_library_crtend,
+            _bionic_crt.shared_binary_crtbegin,
+            _bionic_crt.static_binary_crtbegin,
+            _bionic_crt.binary_crtend,
         ],
     )
 
