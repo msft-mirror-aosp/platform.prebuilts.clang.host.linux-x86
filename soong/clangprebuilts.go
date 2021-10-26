@@ -35,7 +35,7 @@ const libclangSoFormat = "libclang.so.%sgit"
 const libclangCxxSoFormat = "libclang_cxx.so.%sgit"
 const libcxxSoName = "libc++.so.1"
 const libcxxabiSoName = "libc++abi.so.1"
-const libxml2SoName = "libxml2.so.2.9.10"
+const libxml2SoName = "libxml2.so.2.9.12"
 
 var (
 	// Files included in the llvm-tools filegroup in ../Android.bp
@@ -325,7 +325,7 @@ func llvmDarwinFileGroup(ctx android.LoadHookContext) {
 	if libName == "libc++" || libName == "libc++abi" {
 		libName += ".1"
 	} else if libName == "libxml2" {
-		libName += ".2.9.10"
+		libName += ".2.9.12"
 	}
 	lib := path.Join(clangDir, "lib64", libName+".dylib")
 
@@ -442,9 +442,10 @@ func llvmToolsFilegroupFactory() android.Module {
 	return module
 }
 
-type bazelLlvmPrebuiltLibraryStaticAttributes struct {
-	Static_library bazel.LabelAttribute
-	Includes       bazel.StringListAttribute
+type bazelPrebuiltLibraryStaticAttributes struct {
+	Static_library         bazel.LabelAttribute
+	Export_includes        bazel.StringListAttribute
+	Export_system_includes bazel.StringListAttribute
 }
 
 func LlvmPrebuiltLibraryStaticBp2Build(ctx android.TopDownMutatorContext) {
@@ -461,16 +462,6 @@ func LlvmPrebuiltLibraryStaticBp2Build(ctx android.TopDownMutatorContext) {
 	}
 
 	prebuiltLibraryStaticBp2BuildInternal(ctx, module)
-}
-
-type bazelLibclangRtPrebuiltLibraryStaticAttributes struct {
-	Static_library bazel.LabelAttribute
-	Includes       bazel.StringListAttribute
-}
-
-type bazelLibclangRtPrebuiltLibraryStatic struct {
-	android.BazelTargetModuleBase
-	bazelLibclangRtPrebuiltLibraryStaticAttributes
 }
 
 func LibclangRtPrebuiltLibraryStaticBp2Build(ctx android.TopDownMutatorContext) {
@@ -493,9 +484,10 @@ func prebuiltLibraryStaticBp2BuildInternal(ctx android.TopDownMutatorContext, mo
 	prebuiltAttrs := cc.Bp2BuildParsePrebuiltLibraryProps(ctx, module)
 	exportedIncludes := cc.Bp2BuildParseExportedIncludesForPrebuiltLibrary(ctx, module)
 
-	attrs := &bazelLlvmPrebuiltLibraryStaticAttributes{
-		Static_library: prebuiltAttrs.Src,
-		Includes:       exportedIncludes,
+	attrs := &bazelPrebuiltLibraryStaticAttributes{
+		Static_library:         prebuiltAttrs.Src,
+		Export_includes:        exportedIncludes.Includes,
+		Export_system_includes: exportedIncludes.SystemIncludes,
 	}
 
 	props := bazel.BazelTargetModuleProperties{
@@ -504,5 +496,57 @@ func prebuiltLibraryStaticBp2BuildInternal(ctx android.TopDownMutatorContext, mo
 	}
 
 	name := android.RemoveOptionalPrebuiltPrefix(module.Name())
-	ctx.CreateBazelTargetModule(name, props, attrs)
+	ctx.CreateBazelTargetModule(props, android.CommonAttributes{Name:name}, attrs)
+}
+
+type bazelPrebuiltLibrarySharedAttributes struct {
+	Shared_library         bazel.LabelAttribute
+}
+
+func LlvmPrebuiltLibrarySharedBp2Build(ctx android.TopDownMutatorContext) {
+	module, ok := ctx.Module().(*cc.Module)
+	if !ok {
+		// Not a cc module
+		return
+	}
+	if !module.ConvertWithBp2build(ctx) {
+		return
+	}
+	if ctx.ModuleType() != "llvm_prebuilt_library_shared" {
+		return
+	}
+
+	prebuiltLibrarySharedBp2BuildInternal(ctx, module)
+}
+
+func LibclangRtPrebuiltLibrarySharedBp2Build(ctx android.TopDownMutatorContext) {
+	module, ok := ctx.Module().(*cc.Module)
+	if !ok {
+		// Not a cc module
+		return
+	}
+	if !module.ConvertWithBp2build(ctx) {
+		return
+	}
+	if ctx.ModuleType() != "libclang_rt_prebuilt_library_shared" {
+		return
+	}
+
+	prebuiltLibrarySharedBp2BuildInternal(ctx, module)
+}
+
+func prebuiltLibrarySharedBp2BuildInternal(ctx android.TopDownMutatorContext, module *cc.Module) {
+	prebuiltAttrs := cc.Bp2BuildParsePrebuiltLibraryProps(ctx, module)
+
+	attrs := &bazelPrebuiltLibrarySharedAttributes{
+		Shared_library:         prebuiltAttrs.Src,
+	}
+
+	props := bazel.BazelTargetModuleProperties{
+		Rule_class:        "prebuilt_library_shared",
+		Bzl_load_location: "//build/bazel/rules:prebuilt_library_shared.bzl",
+	}
+
+	name := android.RemoveOptionalPrebuiltPrefix(module.Name())
+	ctx.CreateBazelTargetModule(props, android.CommonAttributes{ Name: name }, attrs)
 }
