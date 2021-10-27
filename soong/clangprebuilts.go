@@ -72,6 +72,8 @@ func init() {
 
 	android.RegisterBp2BuildMutator("llvm_prebuilt_library_static", LlvmPrebuiltLibraryStaticBp2Build)
 	android.RegisterBp2BuildMutator("libclang_rt_prebuilt_library_static", LibclangRtPrebuiltLibraryStaticBp2Build)
+
+	android.RegisterBp2BuildMutator("libclang_rt_prebuilt_library_shared", LibclangRtPrebuiltLibrarySharedBp2Build)
 }
 
 func getClangPrebuiltDir(ctx android.LoadHookContext) string {
@@ -501,22 +503,6 @@ func prebuiltLibraryStaticBp2BuildInternal(ctx android.TopDownMutatorContext, mo
 
 type bazelPrebuiltLibrarySharedAttributes struct {
 	Shared_library         bazel.LabelAttribute
-}
-
-func LlvmPrebuiltLibrarySharedBp2Build(ctx android.TopDownMutatorContext) {
-	module, ok := ctx.Module().(*cc.Module)
-	if !ok {
-		// Not a cc module
-		return
-	}
-	if !module.ConvertWithBp2build(ctx) {
-		return
-	}
-	if ctx.ModuleType() != "llvm_prebuilt_library_shared" {
-		return
-	}
-
-	prebuiltLibrarySharedBp2BuildInternal(ctx, module)
 }
 
 func LibclangRtPrebuiltLibrarySharedBp2Build(ctx android.TopDownMutatorContext) {
