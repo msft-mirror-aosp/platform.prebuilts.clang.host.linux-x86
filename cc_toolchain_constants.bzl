@@ -104,3 +104,15 @@ cpp_std_versions = [
     "c++17",
     "c++2a",
 ]
+
+# Added by linker.go for non-bionic, non-musl, non-windows toolchains.
+# Should be added to host builds to match the default behavior of device builds.
+device_compatibility_flags_non_windows = [
+    "-ldl",
+    "-lpthread",
+    "-lm",
+]
+
+# Added by linker.go for non-bionic, non-musl, non-darwin toolchains.
+# Should be added to host builds to match the default behavior of device builds.
+device_compatibility_flags_non_darwin = [ "-lrt" ]
