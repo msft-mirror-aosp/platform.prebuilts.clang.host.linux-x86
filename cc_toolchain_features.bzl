@@ -247,7 +247,10 @@ def _compiler_flag_features(flags = [], os_is_device = False):
 
     return features
 
-def _rtti_features():
+def _rtti_features(rtti_toggle):
+    if not rtti_toggle:
+        return []
+
     rtti_flag_feature = feature(
         name = "rtti_flag",
         flag_sets = [
@@ -406,71 +409,95 @@ def _undefined_symbols_feature():
     return _linker_flag_feature("no_undefined_symbols", flags = ["-Wl,--no-undefined"], enabled = True)
 
 def _dynamic_linker_flag_feature(os_is_device, arch_is_64_bit):
-    if not os_is_device:
-        return _binary_linker_flag_feature(name = "dynamic_linker", flags = ["-Wl,--no-dynamic-linker"])
-
-    # TODO: handle bootstrap partition, asan
-    dynamic_linker_path = "/system/bin/linker"
-    if arch_is_64_bit:
-        dynamic_linker_path += "64"
-    return _binary_linker_flag_feature(name = "dynamic_linker", flags = ["-Wl,-dynamic-linker," + dynamic_linker_path])
+    if os_is_device:
+        # TODO: handle bootstrap partition, asan
+        dynamic_linker_path = "/system/bin/linker"
+        if arch_is_64_bit:
+            dynamic_linker_path += "64"
+        return _binary_linker_flag_feature(name = "dynamic_linker", flags = ["-Wl,-dynamic-linker," + dynamic_linker_path])
+    # TODO(b/205771732, b/205772164): linux_musl and linux_bionic should
+    # add "-Wl,--no-dynamic-linker".
+    return []
 
 # TODO(b/202167934): Darwin uses @loader_path in place of $ORIGIN
-def _rpath_features():
+def _rpath_features(os_is_device, arch_is_64_bit):
+    runtime_library_search_directories_flag_sets = [
+        flag_set(
+            actions = _actions.link,
+            flag_groups = [
+                flag_group(
+                    iterate_over = "runtime_library_search_directories",
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-Wl,-rpath,$EXEC_ORIGIN/%{runtime_library_search_directories}",
+                            ],
+                            expand_if_true = "is_cc_test",
+                        ),
+                        flag_group(
+                            flags = [
+                                "-Wl,-rpath,$ORIGIN/%{runtime_library_search_directories}",
+                            ],
+                            expand_if_false = "is_cc_test",
+                        ),
+                    ],
+                    expand_if_available =
+                        "runtime_library_search_directories",
+                ),
+            ],
+            with_features = [
+                with_feature_set(features = ["static_link_cpp_runtimes"]),
+            ],
+        ),
+        flag_set(
+            actions = _actions.link,
+            flag_groups = [
+                flag_group(
+                    iterate_over = "runtime_library_search_directories",
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-Wl,-rpath,$ORIGIN/%{runtime_library_search_directories}",
+                            ],
+                        ),
+                    ],
+                    expand_if_available =
+                        "runtime_library_search_directories",
+                ),
+            ],
+            with_features = [
+                with_feature_set(
+                    not_features = ["static_link_cpp_runtimes", "disable_rpath"],
+                ),
+            ],
+        ),
+    ]
+
+    if (not os_is_device) and arch_is_64_bit:
+        runtime_library_search_directories_flag_sets += [flag_set(
+            actions = _actions.link,
+            flag_groups = [
+                flag_group(
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-Wl,-rpath,$ORIGIN/../lib64",
+                                "-Wl,-rpath,$ORIGIN/lib64",
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+            with_features = [
+                with_feature_set(not_features = ["static_link_cpp_runtimes"]),
+            ],
+        )]
+
     runtime_library_search_directories_feature = feature(
         name = "runtime_library_search_directories",
-        flag_sets = [
-            flag_set(
-                actions = _actions.link,
-                flag_groups = [
-                    flag_group(
-                        iterate_over = "runtime_library_search_directories",
-                        flag_groups = [
-                            flag_group(
-                                flags = [
-                                    "-Wl,-rpath,$EXEC_ORIGIN/%{runtime_library_search_directories}",
-                                ],
-                                expand_if_true = "is_cc_test",
-                            ),
-                            flag_group(
-                                flags = [
-                                    "-Wl,-rpath,$ORIGIN/%{runtime_library_search_directories}",
-                                ],
-                                expand_if_false = "is_cc_test",
-                            ),
-                        ],
-                        expand_if_available =
-                            "runtime_library_search_directories",
-                    ),
-                ],
-                with_features = [
-                    with_feature_set(features = ["static_link_cpp_runtimes"]),
-                ],
-            ),
-            flag_set(
-                actions = _actions.link,
-                flag_groups = [
-                    flag_group(
-                        iterate_over = "runtime_library_search_directories",
-                        flag_groups = [
-                            flag_group(
-                                flags = [
-                                    "-Wl,-rpath,$ORIGIN/%{runtime_library_search_directories}",
-                                ],
-                            ),
-                        ],
-                        expand_if_available =
-                            "runtime_library_search_directories",
-                    ),
-                ],
-                with_features = [
-                    with_feature_set(
-                        not_features = ["static_link_cpp_runtimes", "disable_rpath"],
-                    ),
-                ],
-            ),
-        ],
+        flag_sets = runtime_library_search_directories_flag_sets
     )
+
     disable_rpath_feature = feature(
         name = "disable_rpath",
         enabled = False,
@@ -933,6 +960,7 @@ def _get_legacy_features_begin():
                     ],
                 ),
             ],
+            enabled = True,
         ),
     ]
 
@@ -1148,14 +1176,19 @@ def get_features(
         target_os,
         target_arch,
         target_flags,
+        compile_only_flags,
         linker_only_flags,
         builtin_include_dirs,
         libclang_rt_builtin,
-        crt_files):
+        crt_files,
+        rtti_toggle):
     os_is_device = target_os == "android"
     arch_is_64_bit = target_arch.endswith("64")
 
-    # Aggregate all features in order:
+    # Aggregate all features in order.
+    # Note that the feature-list helper methods called below may return empty
+    # lists, depending on whether these features should be enabled. These are still
+    # listed in the below stanza as-is to preserve ordering.
     features = [
         # Do not depend on Bazel's built-in legacy features and action configs:
         feature(name = "no_legacy_features"),
@@ -1171,9 +1204,9 @@ def get_features(
         # change the -std version to overwrite the defaults or cpp_std attribute
         # value.
         _get_cpp_std_feature(),
-        _compiler_flag_features(target_flags, os_is_device),
-        _rpath_features(),
-        _rtti_features(),
+        _compiler_flag_features(target_flags + compile_only_flags, os_is_device),
+        _rpath_features(os_is_device, arch_is_64_bit),
+        _rtti_features(rtti_toggle),
         _use_libcrt_feature(libclang_rt_builtin),
         # Shared compile/link flags that should also be part of the link actions.
         _linker_flag_feature("linker_target_flags", flags = target_flags),
@@ -1194,4 +1227,5 @@ def get_features(
         # This must always come last.
         _link_crtend(crt_files),
     ]
+
     return _flatten([f for f in features if f != None])
