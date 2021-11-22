@@ -12,7 +12,7 @@ package(default_visibility = ["//visibility:public"])
 filegroup(name = "empty")
 
 load(":cc_toolchain_config.bzl", "android_cc_toolchain", "clang_version", "expand_feature_flags")
-load(":cc_toolchain_constants.bzl", "generated_constants")
+load(":cc_toolchain_constants.bzl", "device_compatibility_flags_non_windows", "device_compatibility_flags_non_darwin", "generated_constants")
 
 # Different clang versions are configured here.
 clang_version(
@@ -123,28 +123,47 @@ android_cc_toolchain(
     target_arch = "x86_64",
     clang_version = ":clang",
     clang_version_directory = generated_constants.CLANG_DEFAULT_VERSION,
+    crt = False,
     libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:linux_glibc_x86_64"],
-    linker_flags = [
-        "-m64",
-        "-Wl,-z,noexecstack",
-        "-Wl,-z,relro",
-        "-Wl,-z,now",
-        "-Wl,--no-undefined-version",
-    ],
-    target_flags = [
-        "-m64",
-        "-fdiagnostics-color",
-        "-Wa,--noexecstack",
-        "-fPIC",
-        "-U_FORTIFY_SOURCE",
-        "-D_FORTIFY_SOURCE=2",
-        "-fstack-protector",
-        # Workaround differences in inttypes.h between host and target.
-        # See bug 12708004.
-        "-D__STDC_FORMAT_MACROS",
-        "-D__STDC_CONSTANT_MACROS",
-    ],
+    linker_flags = generated_constants.LinuxGlibcLdflags +
+                   generated_constants.LinuxLdflags +
+                   generated_constants.LinuxX8664Ldflags +
+                   device_compatibility_flags_non_windows +
+                   device_compatibility_flags_non_darwin,
+    target_flags = ["--target=x86_64-linux-gnu"],
+    compiler_flags = generated_constants.LinuxCflags +
+                     generated_constants.LinuxGlibcCflags +
+                     generated_constants.LinuxX8664Cflags +
+                     # Added by stl.go for non-bionic toolchains.
+                     ["-nostdinc++"],
+    gcc_toolchain = generated_constants.LinuxGccRoot,
     toolchain_identifier = "x86_64-toolchain",
+    rtti_toggle = False,
+)
+
+# Toolchain to compile for the linux x86 target.
+android_cc_toolchain(
+    name = "cc_toolchain_x86_linux_host",
+    target_os = "linux_glibc",
+    target_arch = "x86",
+    clang_version = ":clang",
+    clang_version_directory = generated_constants.CLANG_DEFAULT_VERSION,
+    crt = False,
+    libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:linux_glibc_x86"],
+    linker_flags = generated_constants.LinuxGlibcLdflags +
+                   generated_constants.LinuxLdflags +
+                   generated_constants.LinuxX86Ldflags +
+                   device_compatibility_flags_non_windows +
+                   device_compatibility_flags_non_darwin,
+    target_flags = ["--target=i686-linux-gnu"],
+    compiler_flags = generated_constants.LinuxCflags +
+                     generated_constants.LinuxGlibcCflags +
+                     generated_constants.LinuxX86Cflags +
+                     # Added by stl.go for non-bionic toolchains.
+                     ["-nostdinc++"],
+    gcc_toolchain = generated_constants.LinuxGccRoot,
+    toolchain_identifier = "x86-toolchain",
+    rtti_toggle = False,
 )
 
 toolchain_type(name = "nocrt_toolchain")
@@ -185,7 +204,7 @@ ARCHITECTURES = ["x86_64", "x86", "arm", "arm64"]
     ) for arch in ARCHITECTURES
 ]
 
-# Host toolchains for linux x86_64
+# Toolchains for linux host (x86_64) archs
 [
     toolchain(
         name = "%s_def" % toolchain_name,
@@ -197,13 +216,33 @@ ARCHITECTURES = ["x86_64", "x86", "arm", "arm64"]
             "//build/bazel/platforms/arch:x86_64",
             "//build/bazel/platforms/os:linux",
         ],
-        # TODO(b/181803350): Fix linux toolchain flag set, as the current flags are for android.
         toolchain = toolchain_name,
         toolchain_type = toolchain_type,
     ) for (toolchain_name, toolchain_type) in
     [
         ("cc_toolchain_x86_64_linux_host", "@bazel_tools//tools/cpp:toolchain_type"),
         ("cc_toolchain_x86_64_linux_host_nocrt", "nocrt_toolchain"),
+    ]
+]
+
+# Toolchains for linux target (non-host) x86 arch
+[
+    toolchain(
+        name = "%s_def" % toolchain_name,
+        exec_compatible_with = [
+            "//build/bazel/platforms/arch:x86_64",
+            "//build/bazel/platforms/os:linux",
+        ],
+        target_compatible_with = [
+            "//build/bazel/platforms/arch:x86",
+            "//build/bazel/platforms/os:linux",
+        ],
+        toolchain = toolchain_name,
+        toolchain_type = toolchain_type,
+    ) for (toolchain_name, toolchain_type) in
+    [
+        ("cc_toolchain_x86_linux_host", "@bazel_tools//tools/cpp:toolchain_type"),
+        ("cc_toolchain_x86_linux_host_nocrt", "nocrt_toolchain"),
     ]
 ]
 
