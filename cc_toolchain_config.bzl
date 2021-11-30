@@ -7,9 +7,9 @@ load(
 load(
     ":cc_toolchain_constants.bzl",
     _actions = "actions",
+    _bionic_crt = "bionic_crt",
     _flags = "flags",
     _generated_constants = "generated_constants",
-    _crt = "crt",
 )
 load(":cc_toolchain_features.bzl", "get_features")
 
@@ -135,7 +135,6 @@ def _create_action_configs(tool_paths):
             enabled = True,
             tools = [tool_name_to_tool["clang++"]],
             implies = [
-                "strip_debug_symbols",
                 "shared_flag",
                 "linkstamps",
                 "output_execpath_flags",
@@ -154,7 +153,6 @@ def _create_action_configs(tool_paths):
         enabled = True,
         tools = [tool_name_to_tool["clang++"]],
         implies = [
-            "strip_debug_symbols",
             "linkstamps",
             "output_execpath_flags",
             "runtime_library_search_directories",
@@ -198,15 +196,24 @@ def _cc_toolchain_config_impl(ctx):
     # b/186035856: Do not add anything to this list.
     builtin_include_dirs.extend(_generated_constants.CommonGlobalIncludes)
 
+    crt_files = struct(
+        shared_library_crtbegin = ctx.file.shared_library_crtbegin,
+        shared_library_crtend = ctx.file.shared_library_crtend,
+        shared_binary_crtbegin = ctx.file.shared_binary_crtbegin,
+        static_binary_crtbegin = ctx.file.static_binary_crtbegin,
+        binary_crtend = ctx.file.binary_crtend,
+    )
+
     features = get_features(
         ctx.attr.target_os,
         ctx.attr.target_arch,
         ctx.attr.target_flags,
+        ctx.attr.compiler_flags,
         ctx.attr.linker_flags,
         builtin_include_dirs,
         ctx.file.libclang_rt_builtin,
-        ctx.file.shared_library_crtbegin,
-        ctx.file.shared_library_crtend,
+        crt_files,
+        ctx.attr.rtti_toggle,
     )
 
     return cc_common.create_cc_toolchain_config_info(
@@ -235,17 +242,17 @@ _cc_toolchain_config = rule(
         "toolchain_identifier": attr.string(mandatory = True),
         "clang_version": attr.label(mandatory = True, providers = [_ClangVersionInfo]),
         "target_flags": attr.string_list(default = []),
+        "compiler_flags": attr.string_list(default = []),
         "linker_flags": attr.string_list(default = []),
         "libclang_rt_builtin": attr.label(allow_single_file = True),
         # crtbegin and crtend libraries for compiling cc_library_shared and
         # cc_binary against the Bionic runtime
         "shared_library_crtbegin": attr.label(allow_single_file = True, cfg = "target"),
         "shared_library_crtend": attr.label(allow_single_file = True, cfg = "target"),
-        # TODO(b/197920036): handle cc_binary
-        # "shared_binary_crtbegin": attr.label(allow_single_file = True),
-        # "shared_binary_crtend": attr.label(allow_single_file = True),
-        # "static_binary_crtbegin": attr.label(allow_single_file = True),
-        # "static_binary_crtend": attr.label(allow_single_file = True),
+        "shared_binary_crtbegin": attr.label(allow_single_file = True, cfg = "target"),
+        "static_binary_crtbegin": attr.label(allow_single_file = True, cfg = "target"),
+        "binary_crtend": attr.label(allow_single_file = True, cfg = "target"),
+        "rtti_toggle": attr.bool(default = True),
     },
     provides = [CcToolchainConfigInfo],
 )
@@ -268,15 +275,23 @@ def android_cc_toolchain(
         # This should come from the clang_version provider.
         # Instead, it's hard-coded because this is a macro, not a rule.
         clang_version_directory = None,
+        gcc_toolchain = None,
+        # If false, the crt version and "normal" version of this toolchain are identical.
+        crt = True,
         libclang_rt_builtin = None,
         target_flags = [],
+        compiler_flags = [],
         linker_flags = [],
-        toolchain_identifier = None):
+        toolchain_identifier = None,
+        rtti_toggle = True):
     extra_linker_paths = []
     libclang_rt_path = None
     if libclang_rt_builtin:
         libclang_rt_path = libclang_rt_builtin
         extra_linker_paths.append(":" + libclang_rt_path)
+    if gcc_toolchain:
+        gcc_toolchain_path = "//%s:tools" % gcc_toolchain
+        extra_linker_paths.append(gcc_toolchain_path)
 
     common_toolchain_config = dict(
         [
@@ -285,17 +300,10 @@ def android_cc_toolchain(
             ("clang_version", clang_version),
             ("libclang_rt_builtin", libclang_rt_path),
             ("target_flags", target_flags),
+            ("compiler_flags", compiler_flags),
             ("linker_flags", linker_flags),
+            ("rtti_toggle", rtti_toggle),
         ],
-    )
-
-    # Write the toolchain config.
-    _cc_toolchain_config(
-        name = "%s_config" % name,
-        toolchain_identifier = toolchain_identifier,
-        shared_library_crtbegin = _crt.shared_library_crtbegin,
-        shared_library_crtend = _crt.shared_library_crtend,
-        **common_toolchain_config
     )
 
     _cc_toolchain_config(
@@ -318,12 +326,8 @@ def android_cc_toolchain(
     native.filegroup(
         name = "%s_linker_binaries" % name,
         srcs = native.glob([
-            # Linking shared libraries uses clang++, which symlinks to clang.
-            clang_version_directory + "/bin/clang*",
-        ]) + [
-            clang_version_directory + "/bin/lld",
-            clang_version_directory + "/bin/ld.lld",
-        ],
+            clang_version_directory + "/bin/*",
+        ]),
     )
 
     native.filegroup(
@@ -368,37 +372,64 @@ def android_cc_toolchain(
         toolchain_identifier = toolchain_identifier + "_nocrt",
     )
 
-    native.filegroup(
-        name = "%s_crt_libs" % name,
-        srcs = [
-            _crt.shared_library_crtbegin,
-            _crt.shared_library_crtend,
-        ],
-    )
+    if crt:
+        # Write the toolchain config.
+        _cc_toolchain_config(
+            name = "%s_config" % name,
+            toolchain_identifier = toolchain_identifier,
+            shared_library_crtbegin = _bionic_crt.shared_library_crtbegin,
+            shared_library_crtend = _bionic_crt.shared_library_crtend,
+            shared_binary_crtbegin = _bionic_crt.shared_binary_crtbegin,
+            static_binary_crtbegin = _bionic_crt.static_binary_crtbegin,
+            binary_crtend = _bionic_crt.binary_crtend,
+            **common_toolchain_config
+        )
 
-    native.filegroup(
-        name = "%s_linker_files_with_crt" % name,
-        srcs = [
-            "%s_linker_files" % name,
-            "%s_crt_libs" % name,
-        ],
-    )
+        native.filegroup(
+            name = "%s_crt_libs" % name,
+            srcs = [
+                _bionic_crt.shared_library_crtbegin,
+                _bionic_crt.shared_library_crtend,
+                _bionic_crt.shared_binary_crtbegin,
+                _bionic_crt.static_binary_crtbegin,
+                _bionic_crt.binary_crtend,
+            ],
+        )
 
-    # Create the actual cc_toolchain.
-    # The dependency on //:empty is intentional; it's necessary so that Bazel
-    # can parse .d files correctly (see the comment in $TOP/BUILD)
-    native.cc_toolchain(
-        name = name,
-        all_files = "%s_all_files" % name,
-        as_files = "//:empty",  # Note the "//" prefix, see comment above
-        ar_files = "%s_ar_files" % name,
-        compiler_files = "%s_compiler_files" % name,
-        dwp_files = ":empty",
-        linker_files = "%s_linker_files_with_crt" % name,
-        objcopy_files = ":empty",
-        strip_files = ":empty",
-        supports_param_files = 0,
-        toolchain_config = ":%s_config" % name,
-        toolchain_identifier = toolchain_identifier,
-        exec_transition_for_inputs = False,
-    )
+        native.filegroup(
+            name = "%s_linker_files_with_crt" % name,
+            srcs = [
+                "%s_linker_files" % name,
+                "%s_crt_libs" % name,
+            ],
+        )
+
+        # Create the actual cc_toolchain.
+        # The dependency on //:empty is intentional; it's necessary so that Bazel
+        # can parse .d files correctly (see the comment in $TOP/BUILD)
+        native.cc_toolchain(
+            name = name,
+            all_files = "%s_all_files" % name,
+            as_files = "//:empty",  # Note the "//" prefix, see comment above
+            ar_files = "%s_ar_files" % name,
+            compiler_files = "%s_compiler_files" % name,
+            dwp_files = ":empty",
+            linker_files = "%s_linker_files_with_crt" % name,
+            objcopy_files = ":empty",
+            strip_files = ":empty",
+            supports_param_files = 0,
+            toolchain_config = ":%s_config" % name,
+            toolchain_identifier = toolchain_identifier,
+            exec_transition_for_inputs = False,
+        )
+    else:
+        _cc_toolchain_config(
+            name = "%s_config" % name,
+            toolchain_identifier = toolchain_identifier,
+            **common_toolchain_config
+        )
+
+        native.alias(
+            name = name,
+            actual = name + "_nocrt",
+        )
