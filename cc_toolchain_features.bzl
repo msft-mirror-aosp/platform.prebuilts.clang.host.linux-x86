@@ -14,24 +14,37 @@ load(
 load(
     ":cc_toolchain_constants.bzl",
     _actions = "actions",
-    _flags = "flags",
-    _generated_constants = "generated_constants",
+    _c_std_versions = "c_std_versions",
     _cpp_std_versions = "cpp_std_versions",
+    _flags = "flags",
+    _default_c_std_version = "default_c_std_version",
     _default_cpp_std_version = "default_cpp_std_version",
+    _generated_constants = "generated_constants",
 )
 
-def _get_cpp_std_feature():
+def _get_c_std_features():
     features = []
     features.append(feature(
         # The default cpp_std feature. Remember to disable
-        # this feature if enabling the others.
+        # this feature if enabling another cpp_std feature.
         name = "cpp_std_default",
         enabled = True,
         implies = [_default_cpp_std_version],
     ))
+    features.append(feature(
+        # The default c_std feature. Remember to disable
+        # this feature if enabling another cpp_std feature.
+        name = "c_std_default",
+        enabled = True,
+        implies = [_default_c_std_version],
+    ))
     features.extend([
         feature(name = std_version, provides = ['cpp_std'])
         for std_version in _cpp_std_versions
+    ])
+    features.extend([
+        feature(name = std_version, provides = ['c_std'])
+        for std_version in _c_std_versions
     ])
     features.append(feature(
         name = "cpp_std_flag",
@@ -53,6 +66,28 @@ def _get_cpp_std_feature():
                 ]
             )
             for std_version in _cpp_std_versions
+        ],
+    ))
+    features.append(feature(
+        name = "c_std_flag",
+        enabled = True,
+        # Create the -std flag group for each of the std versions,
+        # enabled with with_feature_set.
+        flag_sets = [
+            flag_set(
+                actions = [_actions.c_compile],
+                flag_groups = [
+                    flag_group(
+                        flags = ["-std=" + std_version],
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        features = [std_version],
+                    )
+                ]
+            )
+            for std_version in _c_std_versions
         ],
     ))
     return features
@@ -83,7 +118,6 @@ def _compiler_flag_features(flags = [], os_is_device = False):
 
     # Default C compile action only flags (No C++)
     c_only_flags = []
-    c_only_flags.extend(_flags.c_compiler_flags)
     c_only_flags.extend(_generated_constants.CommonGlobalConlyflags)
 
     # Flags that only apply in the external/ directory.
@@ -190,20 +224,21 @@ def _compiler_flag_features(flags = [], os_is_device = False):
             ),
         ],
     ))
-    features.append(feature(
-        name = "c_compiler_flags",
-        enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = [_actions.c_compile],
-                flag_groups = [
-                    flag_group(
-                        flags = c_only_flags,
-                    ),
-                ],
-            ),
-        ],
-    ))
+    if c_only_flags:
+        features.append(feature(
+            name = "c_compiler_flags",
+            enabled = True,
+            flag_sets = [
+                flag_set(
+                    actions = [_actions.c_compile],
+                    flag_groups = [
+                        flag_group(
+                            flags = c_only_flags,
+                        ),
+                    ],
+                ),
+            ],
+        ))
 
     # The user_compile_flags feature is used by Bazel to add --copt, --conlyopt,
     # and --cxxopt values. Any features added above this call will thus appear
@@ -1199,11 +1234,11 @@ def get_features(
         # Explicitly depend on a subset of legacy configs:
         _get_legacy_features_begin(),
 
-        # get_cpp_std_feature must come before _compiler_flag_features and user
+        # get_c_std_features must come before _compiler_flag_features and user
         # compile flags, as build targets may use copts/cflags to explicitly
-        # change the -std version to overwrite the defaults or cpp_std attribute
+        # change the -std version to overwrite the defaults or c{,pp}_std attribute
         # value.
-        _get_cpp_std_feature(),
+        _get_c_std_features(),
         _compiler_flag_features(target_flags + compile_only_flags, os_is_device),
         _rpath_features(os_is_device, arch_is_64_bit),
         _rtti_features(rtti_toggle),
