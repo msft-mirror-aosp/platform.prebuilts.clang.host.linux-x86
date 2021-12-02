@@ -840,30 +840,9 @@ llvm_host_defaults {
     name: "llvm-build-host-tools-defaults",
 }
 
-// Export libLLVM shared library
+// Export libclang-cpp shared library
 llvm_host_prebuilt_library_shared {
-    name: "libLLVM_host",
-    sanitize: {
-        never: true,
-    },
-    compile_multilib: "64",
-    shared_libs: [
-        "libc++_host",
-        "libxml2_host",
-    ],
-}
-
-llvm_host_prebuilt_library_shared {
-    name: "libxml2_host",
-    compile_multilib: "64",
-    sanitize: {
-        never: true,
-    },
-}
-
-// Export libclang_cxx shared library
-llvm_host_prebuilt_library_shared {
-    name: "libclang_cxx_host",
+    name: "libclang-cpp_host",
     sanitize: {
         never: true,
     },
