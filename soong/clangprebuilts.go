@@ -30,12 +30,9 @@ import (
 	"android/soong/genrule"
 )
 
-const libLLVMSoFormat = "libLLVM-%sgit.so"
-const libclangSoFormat = "libclang.so.%sgit"
-const libclangCxxSoFormat = "libclang_cxx.so.%sgit"
+const libclangCppSoFormat = "libclang-cpp.so.%sgit"
 const libcxxSoName = "libc++.so.1"
 const libcxxabiSoName = "libc++abi.so.1"
-const libxml2SoName = "libxml2.so.2.9.12"
 
 var (
 	// Files included in the llvm-tools filegroup in ../Android.bp
@@ -106,21 +103,13 @@ func getHostLibrary(ctx android.LoadHookContext) string {
 		config.ClangDefaultShortVersion)
 
 	switch ctx.ModuleName() {
-	case "prebuilt_libLLVM_host":
+	case "prebuilt_libclang-cpp_host":
 		versionStr := trimVersionNumbers(releaseVersion, 1)
-		return fmt.Sprintf(libLLVMSoFormat, versionStr)
-	case "prebuilt_libclang_host":
-		versionStr := trimVersionNumbers(releaseVersion, 1)
-		return fmt.Sprintf(libclangSoFormat, versionStr)
-	case "prebuilt_libclang_cxx_host":
-		versionStr := trimVersionNumbers(releaseVersion, 1)
-		return fmt.Sprintf(libclangCxxSoFormat, versionStr)
+		return fmt.Sprintf(libclangCppSoFormat, versionStr)
 	case "prebuilt_libc++_host":
 		return libcxxSoName
 	case "prebuilt_libc++abi_host":
 		return libcxxabiSoName
-	case "prebuilt_libxml2_host":
-		return libxml2SoName
 	default:
 		ctx.ModuleErrorf("unsupported host LLVM module: " + ctx.ModuleName())
 		return ""
@@ -326,8 +315,6 @@ func llvmDarwinFileGroup(ctx android.LoadHookContext) {
 	libName := strings.TrimSuffix(ctx.ModuleName(), "_darwin")
 	if libName == "libc++" || libName == "libc++abi" {
 		libName += ".1"
-	} else if libName == "libxml2" {
-		libName += ".2.9.12"
 	}
 	lib := path.Join(clangDir, "lib64", libName+".dylib")
 
