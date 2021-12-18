@@ -558,8 +558,6 @@ __movsq(unsigned long long *__dst, unsigned long long const *__src, size_t __n) 
                        :
                        : "memory");
 }
-static __inline__ void __DEFAULT_FN_ATTRS __stosq(unsigned __int64 *__dst,
-                                                  unsigned __int64 __x,
 static __inline__ void __DEFAULT_FN_ATTRS
 __stosq(unsigned __int64 *__dst, unsigned __int64 __x, size_t __n) {
   __asm__ __volatile__("rep stosq" : "+D"(__dst), "+c"(__n) : "a"(__x)
