@@ -27,6 +27,8 @@ libclang_dir := $(LLVM_PREBUILTS_VERSION)/lib64/clang/$(LLVM_RELEASE_VERSION)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := asan-test
+LOCAL_LICENSE_KINDS := SPDX-license-identifier-Apache-2.0 SPDX-license-identifier-BSD SPDX-license-identifier-GPL SPDX-license-identifier-LGPL SPDX-license-identifier-MIT SPDX-license-identifier-NCSA SPDX-license-identifier-PSF-2.0 SPDX-license-identifier-Zlib legacy_unencumbered
+LOCAL_LICENSE_CONDITIONS := notice restricted unencumbered
 LOCAL_SRC_FILES := $(LLVM_PREBUILTS_VERSION)/test/arm/bin/asan_test
 LOCAL_MODULE_CLASS := EXECUTABLES
 LOCAL_MODULE_SUFFIX :=
@@ -39,6 +41,8 @@ include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := asan-test
+LOCAL_LICENSE_KINDS := SPDX-license-identifier-Apache-2.0 SPDX-license-identifier-BSD SPDX-license-identifier-GPL SPDX-license-identifier-LGPL SPDX-license-identifier-MIT SPDX-license-identifier-NCSA SPDX-license-identifier-PSF-2.0 SPDX-license-identifier-Zlib legacy_unencumbered
+LOCAL_LICENSE_CONDITIONS := notice restricted unencumbered
 LOCAL_SRC_FILES := $(LLVM_PREBUILTS_VERSION)/test/aarch64/bin/asan_test
 LOCAL_MODULE_CLASS := EXECUTABLES
 LOCAL_MODULE_SUFFIX :=
@@ -51,6 +55,8 @@ include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := asan-test
+LOCAL_LICENSE_KINDS := SPDX-license-identifier-Apache-2.0 SPDX-license-identifier-BSD SPDX-license-identifier-GPL SPDX-license-identifier-LGPL SPDX-license-identifier-MIT SPDX-license-identifier-NCSA SPDX-license-identifier-PSF-2.0 SPDX-license-identifier-Zlib legacy_unencumbered
+LOCAL_LICENSE_CONDITIONS := notice restricted unencumbered
 LOCAL_SRC_FILES := $(LLVM_PREBUILTS_VERSION)/test/i686/bin/asan_test
 LOCAL_MODULE_CLASS := EXECUTABLES
 LOCAL_MODULE_SUFFIX :=
