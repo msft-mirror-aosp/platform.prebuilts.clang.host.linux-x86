@@ -179,6 +179,11 @@ def _compiler_flag_features(flags = [], os_is_device = False):
                         flags = non_external_flags,
                     ),
                 ],
+                with_features = [
+                    with_feature_set(
+                        not_features = ["external_compiler_flags"],
+                    ),
+                ],
             ),
         ],
     ))
@@ -239,6 +244,25 @@ def _compiler_flag_features(flags = [], os_is_device = False):
                 ),
             ],
         ))
+    features.append(feature(
+        name = "external_compiler_flags",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = _actions.compile,
+                flag_groups = [
+                    flag_group(
+                        flags = _generated_constants.ExternalCflags,
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        not_features = ["non_external_compiler_flags"],
+                    ),
+                ],
+            ),
+        ],
+    ))
 
     # The user_compile_flags feature is used by Bazel to add --copt, --conlyopt,
     # and --cxxopt values. Any features added above this call will thus appear
