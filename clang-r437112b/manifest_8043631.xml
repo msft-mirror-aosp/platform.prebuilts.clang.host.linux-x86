@@ -11,7 +11,7 @@
 
   <project path="toolchain/llvm-project" name="toolchain/llvm-project" revision="8671348b81b95fc603505dfc881b45103bee1731" />
 
-  <project path="toolchain/llvm_android" name="toolchain/llvm_android" revision="4d06a59351a9c6d2258a477a418e2aa3e32c4385" />
+  <project path="toolchain/llvm_android" name="toolchain/llvm_android" revision="563b6d01b304f17cdfa2c38a1b7add4a3b05b54a" />
 
   <project path="external/toolchain-utils" name="platform/external/toolchain-utils" revision="f103b9f78baa21b4edf25d5dd5a1226b6c0ff159" />
 
@@ -47,13 +47,13 @@
 
   <project path="prebuilts/python/windows-x86" name="platform/prebuilts/python/windows-x86" clone-depth="1" revision="aa4729084a5524e27ee8259d712daf52a08a6068" />
 
-  <project path="prebuilts/clang/host/darwin-x86" name="platform/prebuilts/clang/host/darwin-x86" clone-depth="1" revision="d1c03aac18661c5e1b08b8f8561f946b60021867" />
+  <project path="prebuilts/clang/host/darwin-x86" name="platform/prebuilts/clang/host/darwin-x86" clone-depth="1" revision="f8d9d9baf355fc15b8559e54ee86866440fd074d" />
 
   <project path="prebuilts/clang/host/darwin-universal" name="platform/prebuilts/clang/host/darwin-universal" clone-depth="1" revision="592f071af1df99cb463ff5b670cd383efd49a6e1" />
 
-  <project path="prebuilts/clang/host/linux-x86" name="platform/prebuilts/clang/host/linux-x86" clone-depth="1" revision="95f0a504cb15846db217b50e7df1dd8c75147d94" />
+  <project path="prebuilts/clang/host/linux-x86" name="platform/prebuilts/clang/host/linux-x86" clone-depth="1" revision="c90b04007c907374ae91aeea338b25168d793ef0" />
 
-  <project path="prebuilts/clang/host/windows-x86" name="platform/prebuilts/clang/host/windows-x86" clone-depth="1" revision="e3a1482026a82a4ff0312cb87e9631f935e58a69" />
+  <project path="prebuilts/clang/host/windows-x86" name="platform/prebuilts/clang/host/windows-x86" clone-depth="1" revision="2dfbc43588687d8d6a2ee6d13614a362a493cdb9" />
 
   <project path="toolchain/prebuilts/ndk/r23" name="toolchain/prebuilts/ndk/r23" revision="c99c7c9153e9b2f02e6b05dd852b150ab0dded0e" />
 </manifest>
