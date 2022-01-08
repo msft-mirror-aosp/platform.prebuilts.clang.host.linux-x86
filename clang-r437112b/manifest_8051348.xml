@@ -11,9 +11,9 @@
 
   <project path="toolchain/llvm-project" name="toolchain/llvm-project" revision="8671348b81b95fc603505dfc881b45103bee1731" />
 
-  <project path="toolchain/llvm_android" name="toolchain/llvm_android" revision="563b6d01b304f17cdfa2c38a1b7add4a3b05b54a" />
+  <project path="toolchain/llvm_android" name="toolchain/llvm_android" revision="d44962eed2aeb16bc01679f7b7a46b33a0a6ce25" />
 
-  <project path="external/toolchain-utils" name="platform/external/toolchain-utils" revision="f103b9f78baa21b4edf25d5dd5a1226b6c0ff159" />
+  <project path="external/toolchain-utils" name="platform/external/toolchain-utils" revision="7bc245bad95c6f4c15bc3f819f61312705b59a5a" />
 
   <project path="prebuilts/gcc/darwin-x86/host/headers" name="platform/prebuilts/gcc/darwin-x86/host/headers" groups="pdk,darwin" clone-depth="1" revision="4ac4f7cc41cf3c9e36fc3d6cf37fd1cfa9587a68" />
 
@@ -47,13 +47,13 @@
 
   <project path="prebuilts/python/windows-x86" name="platform/prebuilts/python/windows-x86" clone-depth="1" revision="aa4729084a5524e27ee8259d712daf52a08a6068" />
 
-  <project path="prebuilts/clang/host/darwin-x86" name="platform/prebuilts/clang/host/darwin-x86" clone-depth="1" revision="f8d9d9baf355fc15b8559e54ee86866440fd074d" />
+  <project path="prebuilts/clang/host/darwin-x86" name="platform/prebuilts/clang/host/darwin-x86" clone-depth="1" revision="720f4f61691ff238965caf8eea0fe3b0e8715851" />
 
   <project path="prebuilts/clang/host/darwin-universal" name="platform/prebuilts/clang/host/darwin-universal" clone-depth="1" revision="592f071af1df99cb463ff5b670cd383efd49a6e1" />
 
-  <project path="prebuilts/clang/host/linux-x86" name="platform/prebuilts/clang/host/linux-x86" clone-depth="1" revision="c90b04007c907374ae91aeea338b25168d793ef0" />
+  <project path="prebuilts/clang/host/linux-x86" name="platform/prebuilts/clang/host/linux-x86" clone-depth="1" revision="0ae4ec14479aec8e2f3761ce92c9fbba166cac4b" />
 
-  <project path="prebuilts/clang/host/windows-x86" name="platform/prebuilts/clang/host/windows-x86" clone-depth="1" revision="2dfbc43588687d8d6a2ee6d13614a362a493cdb9" />
+  <project path="prebuilts/clang/host/windows-x86" name="platform/prebuilts/clang/host/windows-x86" clone-depth="1" revision="0c32b4c499372c2eaccd7aa487c7a0f020747f29" />
 
   <project path="toolchain/prebuilts/ndk/r23" name="toolchain/prebuilts/ndk/r23" revision="c99c7c9153e9b2f02e6b05dd852b150ab0dded0e" />
 </manifest>
