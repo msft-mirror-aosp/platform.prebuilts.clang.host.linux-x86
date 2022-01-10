@@ -37,6 +37,7 @@ LLVM Users
   * Look for "clang-" in [ndk/toolchains.py](https://android.googlesource.com/platform/ndk/+/refs/heads/master/ndk/toolchains.py)
 
 * [**Trusty**](https://source.android.com/security/trusty/)
+  * [Trusty manifest](https://android.googlesource.com/trusty/manifest/+/refs/heads/master/default.xml#81) pins the SHA for prebuilts/clang/host/linux-x86.  It's ok to remove these prebuilts.
   * LINUX_CLANG_BINDIR: clang-r433403
   * CLANG_BINDIR: clang-r416183c1
   * Look for "clang-" in [vendor/google/aosp/scripts/envsetup.sh](https://android.googlesource.com/trusty/vendor/google/aosp/+/master/scripts/envsetup.sh).
