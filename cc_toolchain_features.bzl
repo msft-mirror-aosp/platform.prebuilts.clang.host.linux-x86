@@ -615,6 +615,23 @@ def _toolchain_include_feature(system_includes = []):
         ],
     )
 
+def _stub_library_feature():
+    return feature(
+        name = "stub_library",
+        enabled = False,
+        flag_sets = [
+            flag_set(
+                actions = [_actions.c_compile],
+                flag_groups = [
+                    flag_group(
+                        # Ensures that the stub libraries are always compiled with default visibility
+                        flags = _generated_constants.StubLibraryCompilerFlags + ["-fvisibility=default"],
+                    ),
+                ],
+            ),
+        ],
+    )
+
 def _flatten(xs):
     ret = []
     for x in xs:
@@ -1281,6 +1298,8 @@ def get_features(
         _pack_dynamic_relocations_features(os_is_device),
         # System include directories features
         _toolchain_include_feature(system_includes = builtin_include_dirs),
+        # Compiling stub.c sources to stub libraries
+        _stub_library_feature(),
         _get_legacy_features_end(),
 
         # This must always come last.
