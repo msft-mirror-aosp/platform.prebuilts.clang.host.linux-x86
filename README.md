@@ -27,7 +27,7 @@ LLVM Users
     * [AOSP Code Search link](https://cs.android.com/android/platform/superproject/+/master:build/soong/cc/config/global.go?q=RSClangVersion)
 
 * [**Android Linux Kernel**](http://go/android-systems)
-  * Currently clang-r437112
+  * Currently clang-r437112b
   * Look for "clang-" in [mainline build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android-mainline/build.config.common).
   * Look for "clang-" in [android13-5.10 build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android13-5.10/build.config.common)
   * Internal LLVM developers should look in the partner gerrit for more kernel configurations.
@@ -37,6 +37,7 @@ LLVM Users
   * Look for "clang-" in [ndk/toolchains.py](https://android.googlesource.com/platform/ndk/+/refs/heads/master/ndk/toolchains.py)
 
 * [**Trusty**](https://source.android.com/security/trusty/)
+  * [Trusty manifest](https://android.googlesource.com/trusty/manifest/+/refs/heads/master/default.xml#81) pins the SHA for prebuilts/clang/host/linux-x86.  It's ok to remove these prebuilts.
   * LINUX_CLANG_BINDIR: clang-r433403
   * CLANG_BINDIR: clang-r416183c1
   * Look for "clang-" in [vendor/google/aosp/scripts/envsetup.sh](https://android.googlesource.com/trusty/vendor/google/aosp/+/master/scripts/envsetup.sh).
@@ -70,6 +71,11 @@ LLVM Users
   * Currently clang-r437112b
   * Look for "clang-r" in [toolchain/llvm_android/constants.py](https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/master/constants.py)
   * Note the chicken & egg paradox of a self hosting bootstrapping compiler; this can only be updated AFTER a new prebuilt is checked in.
+
+* **Android Studio / Android Game Development Extension**
+  * Currently clang-r437112b
+  * Look in [lldb-utils/config/clang.version](https://googleplex-android.git.corp.google.com/platform/external/lldb-utils/+/refs/heads/lldb-master-dev/config/clang.version)
+
 
 
 Prebuilt Versions
