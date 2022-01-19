@@ -29,18 +29,11 @@ import (
 	"android/soong/genrule"
 )
 
-const libclangCppSoFormat = "libclang-cpp.so.%sgit"
+const libLLVMSoFormat = "libLLVM-%ssvn.so"
+const libclangSoFormat = "libclang.so.%ssvn"
+const libclangCxxSoFormat = "libclang_cxx.so.%ssvn"
 const libcxxSoName = "libc++.so.1"
 const libcxxabiSoName = "libc++abi.so.1"
-
-var (
-	// Files included in the llvm-tools filegroup in ../Android.bp
-	llvmToolsFiles = []string{
-		"bin/llvm-symbolizer",
-		"bin/llvm-cxxfilt",
-		"lib64/libc++.so.1",
-	}
-)
 
 // This module is used to generate libfuzzer, libomp static libraries and
 // libclang_rt.* shared libraries. When LLVM_PREBUILTS_VERSION and
@@ -57,14 +50,12 @@ func init() {
 		libClangRtPrebuiltLibrarySharedFactory)
 	android.RegisterModuleType("libclang_rt_prebuilt_library_static",
 		libClangRtPrebuiltLibraryStaticFactory)
-	android.RegisterModuleType("libclang_rt_prebuilt_object",
-		libClangRtPrebuiltObjectFactory)
+	android.RegisterModuleType("libclang_rt_llndk_library",
+		libClangRtLLndkLibraryFactory)
 	android.RegisterModuleType("llvm_darwin_filegroup",
 		llvmDarwinFileGroupFactory)
 	android.RegisterModuleType("clang_builtin_headers",
 		clangBuiltinHeadersFactory)
-	android.RegisterModuleType("llvm_tools_filegroup",
-		llvmToolsFilegroupFactory)
 }
 
 func getClangPrebuiltDir(ctx android.LoadHookContext) string {
@@ -97,9 +88,15 @@ func getHostLibrary(ctx android.LoadHookContext) string {
 		config.ClangDefaultShortVersion)
 
 	switch ctx.ModuleName() {
-	case "prebuilt_libclang-cpp_host":
+	case "prebuilt_libLLVM_host":
 		versionStr := trimVersionNumbers(releaseVersion, 1)
-		return fmt.Sprintf(libclangCppSoFormat, versionStr)
+		return fmt.Sprintf(libLLVMSoFormat, versionStr)
+	case "prebuilt_libclang_host":
+		versionStr := trimVersionNumbers(releaseVersion, 1)
+		return fmt.Sprintf(libclangSoFormat, versionStr)
+	case "prebuilt_libclang_cxx_host":
+		versionStr := trimVersionNumbers(releaseVersion, 1)
+		return fmt.Sprintf(libclangCxxSoFormat, versionStr)
 	case "prebuilt_libc++_host":
 		return libcxxSoName
 	case "prebuilt_libc++abi_host":
@@ -165,12 +162,6 @@ type archProps struct {
 	Android_x86_64 struct {
 		Srcs []string
 	}
-	Linux_bionic_arm64 struct {
-		Srcs []string
-	}
-	Linux_bionic_x86_64 struct {
-		Srcs []string
-	}
 }
 
 func llvmPrebuiltLibraryStatic(ctx android.LoadHookContext) {
@@ -193,15 +184,11 @@ func llvmPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 	p.Target.Android_arm64.Srcs = []string{path.Join(libDir, "aarch64", name)}
 	p.Target.Android_x86.Srcs = []string{path.Join(libDir, "i386", name)}
 	p.Target.Android_x86_64.Srcs = []string{path.Join(libDir, "x86_64", name)}
-	p.Target.Linux_bionic_arm64.Srcs = []string{path.Join(libDir, "aarch64", name)}
-	p.Target.Linux_bionic_x86_64.Srcs = []string{path.Join(libDir, "x86_64", name)}
 	ctx.AppendProperties(p)
 }
 
 type prebuiltLibrarySharedProps struct {
-	Is_llndk *bool
-
-	Shared_libs []string
+	Has_stubs *bool
 }
 
 func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, in *prebuiltLibrarySharedProps) {
@@ -227,9 +214,6 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, in *prebuiltLi
 			Symbol_file *string
 			Versions    []string
 		}
-		Llndk struct {
-			Symbol_file *string
-		}
 	}
 
 	p := &props{}
@@ -245,10 +229,9 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, in *prebuiltLi
 	p.Pack_relocations = &disable
 	p.Stl = proptools.StringPtr("none")
 
-	if proptools.Bool(in.Is_llndk) {
-		p.Stubs.Versions = []string{"29", "10000"}
+	if proptools.Bool(in.Has_stubs) {
+		p.Stubs.Versions = []string{"10000"}
 		p.Stubs.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx))
-		p.Llndk.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx))
 	}
 
 	ctx.AppendProperties(p)
@@ -278,29 +261,13 @@ func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 	ctx.AppendProperties(p)
 }
 
-func libClangRtPrebuiltObject(ctx android.LoadHookContext) {
-	libDir := getClangResourceDir(ctx)
-
+func libClangRtLLndkLibrary(ctx android.LoadHookContext) {
 	type props struct {
-		Arch struct {
-			X86 struct {
-				Srcs []string
-			}
-			X86_64 struct {
-				Srcs []string
-			}
-		}
-		System_shared_libs []string
-		Stl                *string
+		Symbol_file *string
 	}
 
-	name := strings.TrimPrefix(ctx.ModuleName(), "prebuilt_")
-
 	p := &props{}
-	p.Arch.X86.Srcs = []string{path.Join(libDir, name+"-i386.o")}
-	p.Arch.X86_64.Srcs = []string{path.Join(libDir, name+"-x86_64.o")}
-	p.System_shared_libs = []string{}
-	p.Stl = proptools.StringPtr("none")
+	p.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx))
 	ctx.AppendProperties(p)
 }
 
@@ -325,7 +292,7 @@ func llvmDarwinFileGroup(ctx android.LoadHookContext) {
 }
 
 func llvmPrebuiltLibraryStaticFactory() android.Module {
-	module, _ := cc.NewPrebuiltStaticLibrary(android.HostAndDeviceSupported)
+	module, _ := cc.NewPrebuiltStaticLibrary(android.DeviceSupported)
 	android.AddLoadHook(module, llvmPrebuiltLibraryStatic)
 	return module.Init()
 }
@@ -352,9 +319,9 @@ func libClangRtPrebuiltLibraryStaticFactory() android.Module {
 	return module.Init()
 }
 
-func libClangRtPrebuiltObjectFactory() android.Module {
-	module := cc.NewPrebuiltObject(android.HostAndDeviceSupported)
-	android.AddLoadHook(module, libClangRtPrebuiltObject)
+func libClangRtLLndkLibraryFactory() android.Module {
+	module := cc.NewLLndkStubLibrary()
+	android.AddLoadHook(module, libClangRtLLndkLibrary)
 	return module.Init()
 }
 
@@ -403,24 +370,5 @@ func clangBuiltinHeaders(ctx android.LoadHookContext) {
 func clangBuiltinHeadersFactory() android.Module {
 	module := genrule.GenRuleFactory()
 	android.AddLoadHook(module, clangBuiltinHeaders)
-	return module
-}
-
-func llvmToolsFileGroup(ctx android.LoadHookContext) {
-	type props struct {
-		Srcs []string
-	}
-
-	p := &props{}
-	prebuiltDir := path.Join(getClangPrebuiltDir(ctx))
-	for _, src := range llvmToolsFiles {
-		p.Srcs = append(p.Srcs, path.Join(prebuiltDir, src))
-	}
-	ctx.AppendProperties(p)
-}
-
-func llvmToolsFilegroupFactory() android.Module {
-	module := android.FileGroupFactory()
-	android.AddLoadHook(module, llvmToolsFileGroup)
 	return module
 }

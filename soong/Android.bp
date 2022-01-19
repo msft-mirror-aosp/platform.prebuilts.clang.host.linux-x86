@@ -14,10 +14,6 @@
 // limitations under the License.
 //
 
-package {
-    default_applicable_licenses: ["Android-Apache-2.0"],
-}
-
 bootstrap_go_package {
     name: "soong-clang-prebuilts",
     pkgPath: "android/soong/prebuilts/clang/host/linux-x86/clangprebuilts",
