@@ -14,10 +14,6 @@ flags = struct(
     asm_compiler_flags = [
         "-D__ASSEMBLY__",
     ],
-    c_compiler_flags = [
-        # CStdVersion in cc/config/global.go
-        "-std=gnu99",
-    ],
     # ============
     # Linker flags
     # ============
@@ -103,6 +99,14 @@ cpp_std_versions = [
     "c++11",
     "c++17",
     "c++2a",
+]
+
+default_c_std_version = "gnu99"
+c_std_versions = [
+    "gnu11",
+    "gnu99",
+    "c11",
+    "c99",
 ]
 
 # Added by linker.go for non-bionic, non-musl, non-windows toolchains.
