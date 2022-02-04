@@ -179,6 +179,11 @@ def _compiler_flag_features(flags = [], os_is_device = False):
                         flags = non_external_flags,
                     ),
                 ],
+                with_features = [
+                    with_feature_set(
+                        not_features = ["external_compiler_flags"],
+                    ),
+                ],
             ),
         ],
     ))
@@ -239,6 +244,25 @@ def _compiler_flag_features(flags = [], os_is_device = False):
                 ),
             ],
         ))
+    features.append(feature(
+        name = "external_compiler_flags",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = _actions.compile,
+                flag_groups = [
+                    flag_group(
+                        flags = _generated_constants.ExternalCflags,
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        not_features = ["non_external_compiler_flags"],
+                    ),
+                ],
+            ),
+        ],
+    ))
 
     # The user_compile_flags feature is used by Bazel to add --copt, --conlyopt,
     # and --cxxopt values. Any features added above this call will thus appear
@@ -585,6 +609,23 @@ def _toolchain_include_feature(system_includes = []):
                 flag_groups = [
                     flag_group(
                         flags = flags,
+                    ),
+                ],
+            ),
+        ],
+    )
+
+def _stub_library_feature():
+    return feature(
+        name = "stub_library",
+        enabled = False,
+        flag_sets = [
+            flag_set(
+                actions = [_actions.c_compile],
+                flag_groups = [
+                    flag_group(
+                        # Ensures that the stub libraries are always compiled with default visibility
+                        flags = _generated_constants.StubLibraryCompilerFlags + ["-fvisibility=default"],
                     ),
                 ],
             ),
@@ -1257,6 +1298,8 @@ def get_features(
         _pack_dynamic_relocations_features(os_is_device),
         # System include directories features
         _toolchain_include_feature(system_includes = builtin_include_dirs),
+        # Compiling stub.c sources to stub libraries
+        _stub_library_feature(),
         _get_legacy_features_end(),
 
         # This must always come last.
