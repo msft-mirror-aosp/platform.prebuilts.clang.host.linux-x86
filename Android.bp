@@ -465,8 +465,9 @@ cc_defaults {
     enabled: false,
     vendor_available: true,
     product_available: true,
-    ramdisk_available: false,
-    vendor_ramdisk_available: false,
+    recovery_available: true,
+    double_loadable: true,
+    native_bridge_supported: true,
 }
 
 libclang_rt_prebuilt_library_static {
@@ -779,232 +780,16 @@ libclang_rt_prebuilt_library_static {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-cc_defaults {
-    name: "libclang_rt.scudo-android-default",
-    defaults: ["libclang_rt-prebuilt-default"],
-    sdk_version: "minimum",
-    enabled: false,
-    vendor_available: true,
-    product_available: true,
-    ramdisk_available: false,
-    vendor_ramdisk_available: false,
-    vndk: {
-        enabled: true,
-    },
-}
-
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.scudo-arm-android",
-    defaults: ["libclang_rt.scudo-android-default"],
-    sdk_version: "24",
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    arch: {
-        arm: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.scudo-aarch64-android",
-    defaults: ["libclang_rt.scudo-android-default"],
-    check_elf_files: false,  // Bypass circular dependency between libc++
+libclang_rt_prebuilt_object {
+    name: "clang_rt.crtbegin",
     host_supported: true,
-    arch: {
-        arm64: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.scudo-i686-android",
-    defaults: ["libclang_rt.scudo-android-default"],
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    arch: {
-        x86: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.scudo-x86_64-android",
-    defaults: ["libclang_rt.scudo-android-default"],
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    arch: {
-        x86_64: {
-            enabled: true,
-        },
-    },
-}
-
-///////////////////////////////////////////////////////////////////////////////
-cc_defaults {
-    name: "libclang_rt.scudo-android.static-default",
     defaults: ["libclang_rt-prebuilt-default"],
-    enabled: false,
-    vendor_available: true,
-    product_available: true,
-    ramdisk_available: false,
-    vendor_ramdisk_available: false,
-    sanitize: {
-        never: true,
-    },
 }
 
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.scudo-arm-android.static",
-    defaults: ["libclang_rt.scudo-android.static-default"],
-    arch: {
-        arm: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.scudo-aarch64-android.static",
-    defaults: ["libclang_rt.scudo-android.static-default"],
+libclang_rt_prebuilt_object {
+    name: "clang_rt.crtend",
     host_supported: true,
-    arch: {
-        arm64: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.scudo-i686-android.static",
-    defaults: ["libclang_rt.scudo-android.static-default"],
-    arch: {
-        x86: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.scudo-x86_64-android.static",
-    defaults: ["libclang_rt.scudo-android.static-default"],
-    arch: {
-        x86_64: {
-            enabled: true,
-        },
-    },
-}
-
-///////////////////////////////////////////////////////////////////////////////
-cc_defaults {
-    name: "libclang_rt.scudo_minimal-android-default",
     defaults: ["libclang_rt-prebuilt-default"],
-    sdk_version: "23",
-    enabled: false,
-    vendor_available: true,
-    product_available: true,
-    ramdisk_available: false,
-    vendor_ramdisk_available: false,
-    vndk: {
-        enabled: true,
-    },
-    shared_libs: ["libc", "libdl", "liblog"],
-}
-
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.scudo_minimal-arm-android",
-    defaults: ["libclang_rt.scudo_minimal-android-default"],
-    sdk_version: "24",
-    arch: {
-        arm: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.scudo_minimal-aarch64-android",
-    defaults: ["libclang_rt.scudo_minimal-android-default"],
-    host_supported: true,
-    arch: {
-        arm64: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.scudo_minimal-i686-android",
-    defaults: ["libclang_rt.scudo_minimal-android-default"],
-    arch: {
-        x86: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.scudo_minimal-x86_64-android",
-    defaults: ["libclang_rt.scudo_minimal-android-default"],
-    arch: {
-        x86_64: {
-            enabled: true,
-        },
-    },
-}
-
-///////////////////////////////////////////////////////////////////////////////
-cc_defaults {
-    name: "libclang_rt.scudo_minimal-android.static-default",
-    defaults: ["libclang_rt-prebuilt-default"],
-    enabled: false,
-    vendor_available: true,
-    product_available: true,
-    ramdisk_available: false,
-    vendor_ramdisk_available: false,
-    sanitize: {
-        never: true,
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.scudo_minimal-arm-android.static",
-    defaults: ["libclang_rt.scudo_minimal-android.static-default"],
-    arch: {
-        arm: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.scudo_minimal-aarch64-android.static",
-    defaults: ["libclang_rt.scudo_minimal-android.static-default"],
-    host_supported: true,
-    arch: {
-        arm64: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.scudo_minimal-i686-android.static",
-    defaults: ["libclang_rt.scudo_minimal-android.static-default"],
-    arch: {
-        x86: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.scudo_minimal-x86_64-android.static",
-    defaults: ["libclang_rt.scudo_minimal-android.static-default"],
-    arch: {
-        x86_64: {
-            enabled: true,
-        },
-    },
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1056,30 +841,9 @@ llvm_host_defaults {
     name: "llvm-build-host-tools-defaults",
 }
 
-// Export libLLVM shared library
+// Export libclang-cpp shared library
 llvm_host_prebuilt_library_shared {
-    name: "libLLVM_host",
-    sanitize: {
-        never: true,
-    },
-    compile_multilib: "64",
-    shared_libs: [
-        "libc++_host",
-        "libxml2_host",
-    ],
-}
-
-llvm_host_prebuilt_library_shared {
-    name: "libxml2_host",
-    compile_multilib: "64",
-    sanitize: {
-        never: true,
-    },
-}
-
-// Export libclang_cxx shared library
-llvm_host_prebuilt_library_shared {
-    name: "libclang_cxx_host",
+    name: "libclang-cpp_host",
     sanitize: {
         never: true,
     },
@@ -1121,6 +885,15 @@ clang_builtin_headers {
     name: "clang_builtin_headers_resources",
     tool_files: ["soong/generate_clang_builtin_headers_resources.sh"],
     out: ["clang_builtin_headers_resources.inc"],
+}
+
+// Export llvm tools as a filegroup which is packaged and available for CI
+// tests.
+llvm_tools_filegroup {
+    name: "llvm-tools",
+    visibility: ["//development/scripts:__subpackages__"],
+    // The tools and libs in the filegroup are in
+    // ./soong/clangprebuilts.go:llvmToolsFiles
 }
 
 subdirs = [
