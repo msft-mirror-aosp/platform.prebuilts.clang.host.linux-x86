@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<manifest>
+  <remote name="aosp" fetch="https://android.googlesource.com/" review="https://android.googlesource.com/" />
+
+  <default revision="master" remote="aosp" sync-j="4" />
+
+  <project path="bionic" name="platform/bionic" revision="4a85b045fd6c218141d55b9dd44ec5220ba0b674" />
+
+  <project path="toolchain/binutils" name="toolchain/binutils" revision="c19795e958ed532462948fd14b1bdfd4f6e96e03" />
+
+  <project path="toolchain/llvm-project" name="toolchain/llvm-project" revision="8671348b81b95fc603505dfc881b45103bee1731" />
+
+  <project path="toolchain/llvm_android" name="toolchain/llvm_android" revision="f867de270670f0d0c2a8d9431772871b7427b5e7" />
+
+  <project path="external/toolchain-utils" name="platform/external/toolchain-utils" revision="7bc245bad95c6f4c15bc3f819f61312705b59a5a" />
+
+  <project path="prebuilts/gcc/darwin-x86/host/headers" name="platform/prebuilts/gcc/darwin-x86/host/headers" groups="pdk,darwin" clone-depth="1" revision="4ac4f7cc41cf3c9e36fc3d6cf37fd1cfa9587a68" />
+
+  <project path="prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8" name="platform/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8" clone-depth="1" revision="6bc5c33f7f229ee25c0e8209e99bbb31beb52999" />
+
+  <project path="prebuilts/gcc/linux-x86/host/x86_64-w64-mingw32-4.8" name="platform/prebuilts/gcc/linux-x86/host/x86_64-w64-mingw32-4.8" clone-depth="1" revision="82d8129b864bd2d4fb44c9c95d2bf07d117c3460" />
+
+  <project path="prebuilts/cmake/darwin-x86" name="platform/prebuilts/cmake/darwin-x86" clone-depth="1" revision="d09ee7574f3e46668b23b3b6efebd0ea75de85b2" />
+
+  <project path="prebuilts/cmake/linux-x86" name="platform/prebuilts/cmake/linux-x86" clone-depth="1" revision="b0bbb39ad35994d10722ed60f244fe3015bdc856" />
+
+  <project path="prebuilts/build-tools" name="platform/prebuilts/build-tools" clone-depth="1" revision="948634843bf55a93d496e1004dc47a61ec6e3768" />
+
+  <project path="prebuilts/go/darwin-x86" name="platform/prebuilts/go/darwin-x86" groups="darwin,pdk,tradefed" clone-depth="1" revision="bc60c3cc0809f4fcd1dae67e1e4677d33ff252eb" />
+
+  <project path="prebuilts/go/linux-x86" name="platform/prebuilts/go/linux-x86" groups="linux,pdk,tradefed" clone-depth="1" revision="59ee7806ffe03f6860951ad60e5fc94ae6292b12" />
+
+  <project path="external/libedit" name="platform/external/libedit" revision="892b8b381ae82ac3184900d989a516854d8b1197" />
+
+  <project path="external/swig" name="platform/external/swig" revision="0ffab894f917fcbbd031eaab870fbabaefe5daaa" />
+
+  <project path="toolchain/xz" name="toolchain/xz" revision="47426872d1366c32538a8e9c8f559b03cb45b648" />
+
+  <project path="external/libxml2" name="platform/external/libxml2" revision="e9522a5d0dcb81ea729cb5149d5435664f02963d" />
+
+  <project path="external/libncurses" name="platform/external/ncurses" revision="34428ddf7f4f6a0af2285038ea1c9d9fcb108de9" />
+
+  <project path="prebuilts/python/linux-x86" name="platform/prebuilts/python/linux-x86" clone-depth="1" revision="a6d32cf2a62a6b01e9d10650439405f1120b9594" />
+
+  <project path="prebuilts/python/darwin-x86" name="platform/prebuilts/python/darwin-x86" clone-depth="1" revision="1334bd904422c078df49a7508caddef4fe336a94" />
+
+  <project path="prebuilts/python/windows-x86" name="platform/prebuilts/python/windows-x86" clone-depth="1" revision="aa4729084a5524e27ee8259d712daf52a08a6068" />
+
+  <project path="prebuilts/clang/host/darwin-x86" name="platform/prebuilts/clang/host/darwin-x86" clone-depth="1" revision="079f714eac745f92388eb8d98b2abe98efcea470" />
+
+  <project path="prebuilts/clang/host/darwin-universal" name="platform/prebuilts/clang/host/darwin-universal" clone-depth="1" revision="592f071af1df99cb463ff5b670cd383efd49a6e1" />
+
+  <project path="prebuilts/clang/host/linux-x86" name="platform/prebuilts/clang/host/linux-x86" clone-depth="1" revision="64ea0eeda920f7d9ebee086bade1963f115b0a4a" />
+
+  <project path="prebuilts/clang/host/windows-x86" name="platform/prebuilts/clang/host/windows-x86" clone-depth="1" revision="7d02d5a7950f2f7a78ec05f25d5c3eebcd0fa4b0" />
+
+  <project path="toolchain/prebuilts/ndk/r23" name="toolchain/prebuilts/ndk/r23" revision="c99c7c9153e9b2f02e6b05dd852b150ab0dded0e" />
+</manifest>
