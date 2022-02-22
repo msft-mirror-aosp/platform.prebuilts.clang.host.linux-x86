@@ -465,8 +465,9 @@ cc_defaults {
     enabled: false,
     vendor_available: true,
     product_available: true,
-    ramdisk_available: false,
-    vendor_ramdisk_available: false,
+    recovery_available: true,
+    double_loadable: true,
+    native_bridge_supported: true,
 }
 
 libclang_rt_prebuilt_library_static {
