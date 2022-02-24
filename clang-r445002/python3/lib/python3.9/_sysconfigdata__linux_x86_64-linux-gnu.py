@@ -96,9 +96,12 @@ build_time_vars = {'ABIFLAGS': '',
  'FLOAT_WORDS_BIGENDIAN': 0,
  'FLOCK_NEEDS_LIBBSD': 0,
  'GETPGRP_HAVE_ARG': 0,
- 'GITBRANCH': '',
- 'GITTAG': '',
- 'GITVERSION': '',
+ 'GITBRANCH': 'git --git-dir /tmpfs/src/git/external/python/cpython3/.git '
+              'name-rev --name-only HEAD',
+ 'GITTAG': 'git --git-dir /tmpfs/src/git/external/python/cpython3/.git '
+           'describe --all --always --dirty',
+ 'GITVERSION': 'git --git-dir /tmpfs/src/git/external/python/cpython3/.git '
+               'rev-parse --short HEAD',
  'GNULD': 'yes',
  'HAVE_ACCEPT4': 1,
  'HAVE_ACOSH': 1,
