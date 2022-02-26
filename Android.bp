@@ -131,6 +131,7 @@ libclang_rt_prebuilt_library_static {
 ///////////////////////////////////////////////////////////////////////////////
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.asan",
+    defaults: ["libclang_rt-prebuilt-default"],
     host_supported: true,
     recovery_available: true,
     native_bridge_supported: true,
@@ -142,6 +143,7 @@ libclang_rt_prebuilt_library_shared {
 ///////////////////////////////////////////////////////////////////////////////
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.ubsan_standalone",
+    defaults: ["libclang_rt-prebuilt-default"],
     host_supported: true,
     vendor_available: true,
     product_available: true,
