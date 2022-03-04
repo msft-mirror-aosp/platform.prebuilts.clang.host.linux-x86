@@ -16,9 +16,9 @@ load(
     _actions = "actions",
     _c_std_versions = "c_std_versions",
     _cpp_std_versions = "cpp_std_versions",
-    _flags = "flags",
     _default_c_std_version = "default_c_std_version",
     _default_cpp_std_version = "default_cpp_std_version",
+    _flags = "flags",
     _generated_constants = "generated_constants",
 )
 
@@ -39,11 +39,11 @@ def _get_c_std_features():
         implies = [_default_c_std_version],
     ))
     features.extend([
-        feature(name = std_version, provides = ['cpp_std'])
+        feature(name = std_version, provides = ["cpp_std"])
         for std_version in _cpp_std_versions
     ])
     features.extend([
-        feature(name = std_version, provides = ['c_std'])
+        feature(name = std_version, provides = ["c_std"])
         for std_version in _c_std_versions
     ])
     features.append(feature(
@@ -62,8 +62,8 @@ def _get_c_std_features():
                 with_features = [
                     with_feature_set(
                         features = [std_version],
-                    )
-                ]
+                    ),
+                ],
             )
             for std_version in _cpp_std_versions
         ],
@@ -84,8 +84,8 @@ def _get_c_std_features():
                 with_features = [
                     with_feature_set(
                         features = [std_version],
-                    )
-                ]
+                    ),
+                ],
             )
             for std_version in _c_std_versions
         ],
@@ -474,6 +474,7 @@ def _dynamic_linker_flag_feature(os_is_device, arch_is_64_bit):
         if arch_is_64_bit:
             dynamic_linker_path += "64"
         return _binary_linker_flag_feature(name = "dynamic_linker", flags = ["-Wl,-dynamic-linker," + dynamic_linker_path])
+
     # TODO(b/205771732, b/205772164): linux_musl and linux_bionic should
     # add "-Wl,--no-dynamic-linker".
     return []
@@ -554,7 +555,7 @@ def _rpath_features(os_is_device, arch_is_64_bit):
 
     runtime_library_search_directories_feature = feature(
         name = "runtime_library_search_directories",
-        flag_sets = runtime_library_search_directories_flag_sets
+        flag_sets = runtime_library_search_directories_flag_sets,
     )
 
     disable_rpath_feature = feature(
