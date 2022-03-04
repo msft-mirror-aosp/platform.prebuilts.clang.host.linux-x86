@@ -119,4 +119,37 @@ device_compatibility_flags_non_windows = [
 
 # Added by linker.go for non-bionic, non-musl, non-darwin toolchains.
 # Should be added to host builds to match the default behavior of device builds.
-device_compatibility_flags_non_darwin = [ "-lrt" ]
+device_compatibility_flags_non_darwin = ["-lrt"]
+
+arches = struct(
+    Arm = "arm",
+    Arm64 = "arm64",
+    X86 = "x86",
+    X86_64 = "x86_64",
+)
+
+def _variant_combinations(arch_variants = {}, cpu_variants = {}):
+    combinations = []
+    for arch in arch_variants:
+        if "" not in cpu_variants:
+            combinations.append(struct(arch_variant = arch, cpu_variant = ""))
+        for cpu in cpu_variants:
+            combinations.append(struct(arch_variant = arch, cpu_variant = cpu))
+    return combinations
+
+arch_to_variants = {
+    arches.Arm: _variant_combinations(arch_variants = _generated_constants.ArmArchVariantCflags, cpu_variants = _generated_constants.ArmCpuVariantCflags),
+    arches.Arm64: _variant_combinations(arch_variants = _generated_constants.Arm64ArchVariantCflags, cpu_variants = _generated_constants.Arm64CpuVariantCflags),
+    arches.X86: _variant_combinations(arch_variants = _generated_constants.X86ArchVariantCflags),
+    arches.X86_64: _variant_combinations(arch_variants = _generated_constants.X86_64ArchVariantCflags),
+}
+
+def arm_extra_ldflags(variant):
+    if variant.arch_variant == "armv7-a-neon":
+        if variant.cpu_variant in ("cortex-a8", ""):
+            return _generated_constants.ArmFixCortexA8LdFlags
+        else:
+            return _generated_constants.ArmNoFixCortexA8LdFlags
+    elif variant.arch_variant == "armv7-a":
+        return _generated_constants.ArmFixCortexA8LdFlags
+    return []
