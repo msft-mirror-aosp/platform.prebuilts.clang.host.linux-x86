@@ -146,6 +146,8 @@ libclang_rt_prebuilt_library_shared {
     vendor_available: true,
     product_available: true,
     recovery_available: true,
+    ramdisk_available: true,
+    vendor_ramdisk_available: true,
     double_loadable: true,
     stl: "c++_shared",
     vndk: {
