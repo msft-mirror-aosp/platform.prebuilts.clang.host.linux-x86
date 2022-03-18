@@ -15,19 +15,19 @@ load(
     ":cc_toolchain_config.bzl",
     "android_cc_toolchain",
     "clang_version",
-    "enabled_features",
     "expand_feature_flags",
-    "variant_constraints",
-    "variant_name",
 )
 load(
     ":cc_toolchain_constants.bzl",
     "arch_to_variants",
     "arches",
     "arm_extra_ldflags",
+    "enabled_features",
     "device_compatibility_flags_non_darwin",
     "device_compatibility_flags_non_windows",
     "generated_constants",
+    "variant_constraints",
+    "variant_name",
 )
 load("//build/bazel/platforms/arch/variants:constants.bzl", _arch_constants = "constants")
 
