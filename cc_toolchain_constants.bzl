@@ -119,4 +119,64 @@ device_compatibility_flags_non_windows = [
 
 # Added by linker.go for non-bionic, non-musl, non-darwin toolchains.
 # Should be added to host builds to match the default behavior of device builds.
-device_compatibility_flags_non_darwin = [ "-lrt" ]
+device_compatibility_flags_non_darwin = ["-lrt"]
+
+arches = struct(
+    Arm = "arm",
+    Arm64 = "arm64",
+    X86 = "x86",
+    X86_64 = "x86_64",
+)
+
+def _variant_combinations(arch_variants = {}, cpu_variants = {}):
+    combinations = []
+    for arch in arch_variants:
+        if "" not in cpu_variants:
+            combinations.append(struct(arch_variant = arch, cpu_variant = ""))
+        for cpu in cpu_variants:
+            combinations.append(struct(arch_variant = arch, cpu_variant = cpu))
+    return combinations
+
+arch_to_variants = {
+    arches.Arm: _variant_combinations(arch_variants = _generated_constants.ArmArchVariantCflags, cpu_variants = _generated_constants.ArmCpuVariantCflags),
+    arches.Arm64: _variant_combinations(arch_variants = _generated_constants.Arm64ArchVariantCflags, cpu_variants = _generated_constants.Arm64CpuVariantCflags),
+    arches.X86: _variant_combinations(arch_variants = _generated_constants.X86ArchVariantCflags),
+    arches.X86_64: _variant_combinations(arch_variants = _generated_constants.X86_64ArchVariantCflags),
+}
+
+def arm_extra_ldflags(variant):
+    if variant.arch_variant == "armv7-a-neon":
+        if variant.cpu_variant in ("cortex-a8", ""):
+            return _generated_constants.ArmFixCortexA8LdFlags
+        else:
+            return _generated_constants.ArmNoFixCortexA8LdFlags
+    elif variant.arch_variant == "armv7-a":
+        return _generated_constants.ArmFixCortexA8LdFlags
+    return []
+
+# enabled_features returns a list of enabled features for the given arch variant, defaults to empty list
+def enabled_features(arch_variant, arch_variant_to_features = {}):
+    if arch_variant == None:
+        arch_variant = ""
+    return arch_variant_to_features.get(arch_variant, [])
+
+# variant_name creates a name based on a variant struct with arch_variant and cpu_variant
+def variant_name(variant):
+    ret = ""
+    if variant.arch_variant:
+        ret += "_" + variant.arch_variant
+    if variant.cpu_variant:
+        ret += "_" + variant.cpu_variant
+    return ret
+
+# variant_constraints gets constraints based on variant struct and arch_variant_features
+def variant_constraints(variant, arch_variant_features = {}):
+    ret = []
+    if variant.arch_variant:
+        ret.append("//build/bazel/platforms/arch/variants:" + variant.arch_variant)
+    if variant.cpu_variant:
+        ret.append("//build/bazel/platforms/arch/variants:" + variant.cpu_variant)
+    features = enabled_features(variant.arch_variant, arch_variant_features)
+    for feature in features:
+        ret.append("//build/bazel/platforms/arch/variants:" + feature)
+    return ret
