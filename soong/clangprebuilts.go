@@ -191,6 +191,8 @@ func llvmPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 	p.Target.Android_x86_64.Srcs = []string{path.Join(libDir, "x86_64", name)}
 	p.Target.Linux_bionic_arm64.Srcs = []string{path.Join(libDir, "aarch64", name)}
 	p.Target.Linux_bionic_x86_64.Srcs = []string{path.Join(libDir, "x86_64", name)}
+	p.Target.Linux_musl_x86.Srcs = []string{path.Join(libDir, "i686-linux-musl/lib", name)}
+	p.Target.Linux_musl_x86_64.Srcs = []string{path.Join(libDir, "x86_64-linux-musl/lib", name)}
 	ctx.AppendProperties(p)
 }
 
@@ -259,9 +261,9 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, libProps *preb
 	p.Target.Glibc_x86.Stem = proptools.StringPtr(name + "-i386" + suffix)
 	p.Target.Glibc_x86_64.Srcs = []string{path.Join(libDir, name+"-x86_64"+suffix+".so")}
 	p.Target.Glibc_x86_64.Stem = proptools.StringPtr(name + "-x86_64" + suffix)
-	p.Target.Linux_musl_x86.Srcs = []string{path.Join(libDir, name+"-i386"+suffix+".so")}
+	p.Target.Linux_musl_x86.Srcs = []string{path.Join(libDir, "i686-linux-musl/lib/linux", name+"-i386"+suffix+".so")}
 	p.Target.Linux_musl_x86.Stem = proptools.StringPtr(name + "-i386" + suffix)
-	p.Target.Linux_musl_x86_64.Srcs = []string{path.Join(libDir, name+"-x86_64"+suffix+".so")}
+	p.Target.Linux_musl_x86_64.Srcs = []string{path.Join(libDir, "x86_64-linux-musl/lib/linux", name+"-x86_64"+suffix+".so")}
 	p.Target.Linux_musl_x86_64.Stem = proptools.StringPtr(name + "-x86_64" + suffix)
 
 	p.System_shared_libs = []string{}
@@ -305,8 +307,8 @@ func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext, libProps *preb
 	p.Target.Linux_bionic_x86_64.Srcs = []string{path.Join(libDir, name+"-x86_64-android"+suffix+".a")}
 	p.Target.Glibc_x86.Srcs = []string{path.Join(libDir, name+"-i386"+suffix+".a")}
 	p.Target.Glibc_x86_64.Srcs = []string{path.Join(libDir, name+"-x86_64"+suffix+".a")}
-	p.Target.Linux_musl_x86.Srcs = []string{path.Join(libDir, name+"-i386"+suffix+".a")}
-	p.Target.Linux_musl_x86_64.Srcs = []string{path.Join(libDir, name+"-x86_64"+suffix+".a")}
+	p.Target.Linux_musl_x86.Srcs = []string{path.Join(libDir, "i686-linux-musl/lib/linux", name+"-i386"+suffix+".a")}
+	p.Target.Linux_musl_x86_64.Srcs = []string{path.Join(libDir, "x86_64-linux-musl/lib/linux", name+"-x86_64"+suffix+".a")}
 	p.System_shared_libs = []string{}
 	p.No_libcrt = proptools.BoolPtr(true)
 	p.Stl = proptools.StringPtr("none")
