@@ -10,6 +10,7 @@ load(
     _bionic_crt = "bionic_crt",
     _flags = "flags",
     _generated_constants = "generated_constants",
+    _enabled_features = "enabled_features",
 )
 load(":cc_toolchain_features.bzl", "get_features")
 
@@ -76,7 +77,7 @@ def _tool_paths(clang_version_info):
     ]
 
 # Set tools used for all actions in Android's C++ builds.
-def _create_action_configs(tool_paths):
+def _create_action_configs(tool_paths, target_os):
     action_configs = []
 
     tool_name_to_tool = {}
@@ -127,6 +128,10 @@ def _create_action_configs(tool_paths):
         ],
     ))
 
+    rpath_features = []
+    if target_os not in ("android", "windows"):
+        rpath_features.append("runtime_library_search_directories")
+
     # use clang++ for dynamic linking
     # https://cs.android.com/android/_/android/platform/build/soong/+/a14b18fb31eada7b8b58ecd469691c20dcb371b3:cc/builder.go;l=790;drc=769a51cc6aa9402c1c55e978e72f528c26b6a48f
     for action_name in [_actions.cpp_link_dynamic_library, _actions.cpp_link_nodeps_dynamic_library]:
@@ -138,13 +143,12 @@ def _create_action_configs(tool_paths):
                 "shared_flag",
                 "linkstamps",
                 "output_execpath_flags",
-                "runtime_library_search_directories",
                 "library_search_directories",
                 "libraries_to_link",
                 "pic",
                 "user_link_flags",
                 "linker_param_file",
-            ],
+            ] + rpath_features,
         ))
 
     # use clang++ for linking cc executables
@@ -155,12 +159,11 @@ def _create_action_configs(tool_paths):
         implies = [
             "linkstamps",
             "output_execpath_flags",
-            "runtime_library_search_directories",
             "library_search_directories",
             "libraries_to_link",
             "user_link_flags",
             "linker_param_file",
-        ],
+        ] + rpath_features,
     ))
 
     # use llvm-ar for creating static archives
@@ -186,7 +189,7 @@ def _cc_toolchain_config_impl(ctx):
     clang_version_info = ctx.attr.clang_version[_ClangVersionInfo]
     tool_paths = _tool_paths(clang_version_info)
 
-    action_configs = _create_action_configs(tool_paths)
+    action_configs = _create_action_configs(tool_paths, ctx.attr.target_os)
 
     # This is so that Bazel doesn't validate .d files against the set of headers
     # declared in BUILD files (Blueprint files don't contain that data)
@@ -257,39 +260,12 @@ _cc_toolchain_config = rule(
     provides = [CcToolchainConfigInfo],
 )
 
-# enabled_features returns a list of enabled features for the given arch variant, defaults to empty list
-def enabled_features(arch_variant, arch_variant_to_features = {}):
-    if arch_variant == None:
-        arch_variant = ""
-    return arch_variant_to_features.get(arch_variant, [])
-
-# variant_name creates a name based on a variant struct with arch_variant and cpu_variant
-def variant_name(variant):
-    ret = ""
-    if variant.arch_variant:
-        ret += "_" + variant.arch_variant
-    if variant.cpu_variant:
-        ret += variant.cpu_variant
-    return ret
-
-# variant_constraints gets constraints based on variant struct and arch_variant_features
-def variant_constraints(variant, arch_variant_features = {}):
-    ret = []
-    if variant.arch_variant:
-        ret.append("//build/bazel/platforms/arch/variants:" + variant.arch_variant)
-    if variant.cpu_variant:
-        ret.append("//build/bazel/platforms/arch/variants:" + variant.cpu_variant)
-    features = enabled_features(variant.arch_variant, arch_variant_features)
-    for feature in features:
-        ret.append("//build/bazel/platforms/arch/variants:" + feature)
-    return ret
-
 # macro to expand feature flags for a toolchain
 # we do not pass these directly to the toolchain so the order can
 # be specified per toolchain
 def expand_feature_flags(arch_variant, arch_variant_to_features = {}, flag_map = {}):
     flags = []
-    features = enabled_features(arch_variant, arch_variant_to_features)
+    features = _enabled_features(arch_variant, arch_variant_to_features)
     for feature in features:
         flags.extend(flag_map.get(feature, []))
     return flags
