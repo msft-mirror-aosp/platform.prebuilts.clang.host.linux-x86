@@ -8,4 +8,3 @@ ld64.lld
 ld.lld
 ../lib64/clang/11.0.1/share
 ../lib64/clang/11.0.1/lib/linux
-../lib64/clang/11.0.1/include

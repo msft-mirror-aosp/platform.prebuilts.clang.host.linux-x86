@@ -34,7 +34,6 @@ const libclangSoFormat = "libclang.so.%sgit"
 const libclangCxxSoFormat = "libclang_cxx.so.%sgit"
 const libcxxSoName = "libc++.so.1"
 const libcxxabiSoName = "libc++abi.so.1"
-const libxml2SoName = "libxml2.so.2.9.10"
 
 // This module is used to generate libfuzzer, libomp static libraries and
 // libclang_rt.* shared libraries. When LLVM_PREBUILTS_VERSION and
@@ -51,6 +50,8 @@ func init() {
 		libClangRtPrebuiltLibrarySharedFactory)
 	android.RegisterModuleType("libclang_rt_prebuilt_library_static",
 		libClangRtPrebuiltLibraryStaticFactory)
+	android.RegisterModuleType("libclang_rt_llndk_library",
+		libClangRtLLndkLibraryFactory)
 	android.RegisterModuleType("llvm_darwin_filegroup",
 		llvmDarwinFileGroupFactory)
 	android.RegisterModuleType("clang_builtin_headers",
@@ -100,8 +101,6 @@ func getHostLibrary(ctx android.LoadHookContext) string {
 		return libcxxSoName
 	case "prebuilt_libc++abi_host":
 		return libcxxabiSoName
-	case "prebuilt_libxml2_host":
-		return libxml2SoName
 	default:
 		ctx.ModuleErrorf("unsupported host LLVM module: " + ctx.ModuleName())
 		return ""
@@ -163,12 +162,6 @@ type archProps struct {
 	Android_x86_64 struct {
 		Srcs []string
 	}
-	Linux_bionic_arm64 struct {
-		Srcs []string
-	}
-	Linux_bionic_x86_64 struct {
-		Srcs []string
-	}
 }
 
 func llvmPrebuiltLibraryStatic(ctx android.LoadHookContext) {
@@ -191,13 +184,11 @@ func llvmPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 	p.Target.Android_arm64.Srcs = []string{path.Join(libDir, "aarch64", name)}
 	p.Target.Android_x86.Srcs = []string{path.Join(libDir, "i386", name)}
 	p.Target.Android_x86_64.Srcs = []string{path.Join(libDir, "x86_64", name)}
-	p.Target.Linux_bionic_arm64.Srcs = []string{path.Join(libDir, "aarch64", name)}
-	p.Target.Linux_bionic_x86_64.Srcs = []string{path.Join(libDir, "x86_64", name)}
 	ctx.AppendProperties(p)
 }
 
 type prebuiltLibrarySharedProps struct {
-	Is_llndk *bool
+	Has_stubs *bool
 
 	Shared_libs []string
 }
@@ -225,9 +216,6 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, in *prebuiltLi
 			Symbol_file *string
 			Versions    []string
 		}
-		Llndk struct {
-			Symbol_file *string
-		}
 	}
 
 	p := &props{}
@@ -243,10 +231,9 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, in *prebuiltLi
 	p.Pack_relocations = &disable
 	p.Stl = proptools.StringPtr("none")
 
-	if proptools.Bool(in.Is_llndk) {
-		p.Stubs.Versions = []string{"29", "10000"}
+	if proptools.Bool(in.Has_stubs) {
+		p.Stubs.Versions = []string{"10000"}
 		p.Stubs.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx))
-		p.Llndk.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx))
 	}
 
 	ctx.AppendProperties(p)
@@ -276,13 +263,21 @@ func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 	ctx.AppendProperties(p)
 }
 
+func libClangRtLLndkLibrary(ctx android.LoadHookContext) {
+	type props struct {
+		Symbol_file *string
+	}
+
+	p := &props{}
+	p.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx))
+	ctx.AppendProperties(p)
+}
+
 func llvmDarwinFileGroup(ctx android.LoadHookContext) {
 	clangDir := getClangPrebuiltDir(ctx)
 	libName := strings.TrimSuffix(ctx.ModuleName(), "_darwin")
 	if libName == "libc++" || libName == "libc++abi" {
 		libName += ".1"
-	} else if libName == "libxml2" {
-		libName += ".2.9.10"
 	}
 	lib := path.Join(clangDir, "lib64", libName+".dylib")
 
@@ -299,7 +294,7 @@ func llvmDarwinFileGroup(ctx android.LoadHookContext) {
 }
 
 func llvmPrebuiltLibraryStaticFactory() android.Module {
-	module, _ := cc.NewPrebuiltStaticLibrary(android.HostAndDeviceSupported)
+	module, _ := cc.NewPrebuiltStaticLibrary(android.DeviceSupported)
 	android.AddLoadHook(module, llvmPrebuiltLibraryStatic)
 	return module.Init()
 }
@@ -323,6 +318,12 @@ func libClangRtPrebuiltLibrarySharedFactory() android.Module {
 func libClangRtPrebuiltLibraryStaticFactory() android.Module {
 	module, _ := cc.NewPrebuiltStaticLibrary(android.HostAndDeviceSupported)
 	android.AddLoadHook(module, libClangRtPrebuiltLibraryStatic)
+	return module.Init()
+}
+
+func libClangRtLLndkLibraryFactory() android.Module {
+	module := cc.NewLLndkStubLibrary()
+	android.AddLoadHook(module, libClangRtLLndkLibrary)
 	return module.Init()
 }
 
