@@ -70,13 +70,13 @@ func init() {
 func getClangPrebuiltDir(ctx android.LoadHookContext) string {
 	return path.Join(
 		"./",
-		ctx.AConfig().GetenvWithDefault("LLVM_PREBUILTS_VERSION", config.ClangDefaultVersion),
+		ctx.Config().GetenvWithDefault("LLVM_PREBUILTS_VERSION", config.ClangDefaultVersion),
 	)
 }
 
 func getClangResourceDir(ctx android.LoadHookContext) string {
 	clangDir := getClangPrebuiltDir(ctx)
-	releaseVersion := ctx.AConfig().GetenvWithDefault("LLVM_RELEASE_VERSION",
+	releaseVersion := ctx.Config().GetenvWithDefault("LLVM_RELEASE_VERSION",
 		config.ClangDefaultShortVersion)
 	return path.Join(clangDir, "lib64", "clang", releaseVersion, "lib", "linux")
 }
@@ -93,7 +93,7 @@ func trimVersionNumbers(ver string, retain int) string {
 }
 
 func getHostLibrary(ctx android.LoadHookContext) string {
-	releaseVersion := ctx.AConfig().GetenvWithDefault("LLVM_RELEASE_VERSION",
+	releaseVersion := ctx.Config().GetenvWithDefault("LLVM_RELEASE_VERSION",
 		config.ClangDefaultShortVersion)
 
 	switch ctx.ModuleName() {
@@ -112,7 +112,7 @@ func getHostLibrary(ctx android.LoadHookContext) string {
 
 func llvmHostPrebuiltLibraryShared(ctx android.LoadHookContext) {
 	moduleName := ctx.ModuleName()
-	enabled := ctx.AConfig().IsEnvTrue("LLVM_BUILD_HOST_TOOLS")
+	enabled := ctx.Config().IsEnvTrue("LLVM_BUILD_HOST_TOOLS")
 
 	clangDir := getClangPrebuiltDir(ctx)
 
@@ -152,25 +152,21 @@ func llvmHostPrebuiltLibraryShared(ctx android.LoadHookContext) {
 	ctx.AppendProperties(p)
 }
 
+type archInnerProps struct {
+	Srcs []string
+	Stem *string
+}
 type archProps struct {
-	Android_arm struct {
-		Srcs []string
-	}
-	Android_arm64 struct {
-		Srcs []string
-	}
-	Android_x86 struct {
-		Srcs []string
-	}
-	Android_x86_64 struct {
-		Srcs []string
-	}
-	Linux_bionic_arm64 struct {
-		Srcs []string
-	}
-	Linux_bionic_x86_64 struct {
-		Srcs []string
-	}
+	Android_arm         archInnerProps
+	Android_arm64       archInnerProps
+	Android_x86         archInnerProps
+	Android_x86_64      archInnerProps
+	Linux_bionic_arm64  archInnerProps
+	Linux_bionic_x86_64 archInnerProps
+	Glibc_x86           archInnerProps
+	Glibc_x86_64        archInnerProps
+	Linux_musl_x86      archInnerProps
+	Linux_musl_x86_64   archInnerProps
 }
 
 func llvmPrebuiltLibraryStatic(ctx android.LoadHookContext) {
@@ -195,6 +191,8 @@ func llvmPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 	p.Target.Android_x86_64.Srcs = []string{path.Join(libDir, "x86_64", name)}
 	p.Target.Linux_bionic_arm64.Srcs = []string{path.Join(libDir, "aarch64", name)}
 	p.Target.Linux_bionic_x86_64.Srcs = []string{path.Join(libDir, "x86_64", name)}
+	p.Target.Linux_musl_x86.Srcs = []string{path.Join(libDir, "i686-linux-musl/lib", name)}
+	p.Target.Linux_musl_x86_64.Srcs = []string{path.Join(libDir, "x86_64-linux-musl/lib", name)}
 	ctx.AppendProperties(p)
 }
 
@@ -204,15 +202,23 @@ type prebuiltLibrarySharedProps struct {
 	Shared_libs []string
 }
 
-func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, in *prebuiltLibrarySharedProps) {
-	if ctx.AConfig().IsEnvTrue("FORCE_BUILD_SANITIZER_SHARED_OBJECTS") {
+type prebuiltLibraryProps struct {
+	Lib_name *string
+
+	Suffix *string
+}
+
+func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, libProps *prebuiltLibraryProps,
+	sharedProps *prebuiltLibrarySharedProps) {
+
+	if ctx.Config().IsEnvTrue("FORCE_BUILD_SANITIZER_SHARED_OBJECTS") {
 		return
 	}
 
 	libDir := getClangResourceDir(ctx)
 
 	type props struct {
-		Srcs               []string
+		Target             archProps
 		System_shared_libs []string
 		No_libcrt          *bool
 		Sanitize           struct {
@@ -234,9 +240,32 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, in *prebuiltLi
 
 	p := &props{}
 
-	name := strings.TrimPrefix(ctx.ModuleName(), "prebuilt_")
+	name := proptools.StringDefault(libProps.Lib_name, strings.TrimPrefix(ctx.ModuleName(), "prebuilt_"))
+	suffix := proptools.String(libProps.Suffix)
 
-	p.Srcs = []string{path.Join(libDir, name+".so")}
+	p.Target.Android_arm.Srcs = []string{path.Join(libDir, name+"-arm-android"+suffix+".so")}
+	p.Target.Android_arm.Stem = proptools.StringPtr(name + "-arm-android" + suffix)
+	p.Target.Android_arm.Srcs = []string{path.Join(libDir, name+"-arm-android"+suffix+".so")}
+	p.Target.Android_arm.Stem = proptools.StringPtr(name + "-arm-android" + suffix)
+	p.Target.Android_arm64.Srcs = []string{path.Join(libDir, name+"-aarch64-android"+suffix+".so")}
+	p.Target.Android_arm64.Stem = proptools.StringPtr(name + "-aarch64-android" + suffix)
+	p.Target.Android_x86.Srcs = []string{path.Join(libDir, name+"-i686-android"+suffix+".so")}
+	p.Target.Android_x86.Stem = proptools.StringPtr(name + "-i686-android" + suffix)
+	p.Target.Android_x86_64.Srcs = []string{path.Join(libDir, name+"-x86_64-android"+suffix+".so")}
+	p.Target.Android_x86_64.Stem = proptools.StringPtr(name + "-x86_64-android" + suffix)
+	p.Target.Linux_bionic_arm64.Srcs = []string{path.Join(libDir, name+"-aarch64-android"+suffix+".so")}
+	p.Target.Linux_bionic_arm64.Stem = proptools.StringPtr(name + "-aarch64-android" + suffix)
+	p.Target.Linux_bionic_x86_64.Srcs = []string{path.Join(libDir, name+"-x86_64-android"+suffix+".so")}
+	p.Target.Linux_bionic_x86_64.Stem = proptools.StringPtr(name + "-x86_64-android" + suffix)
+	p.Target.Glibc_x86.Srcs = []string{path.Join(libDir, name+"-i386"+suffix+".so")}
+	p.Target.Glibc_x86.Stem = proptools.StringPtr(name + "-i386" + suffix)
+	p.Target.Glibc_x86_64.Srcs = []string{path.Join(libDir, name+"-x86_64"+suffix+".so")}
+	p.Target.Glibc_x86_64.Stem = proptools.StringPtr(name + "-x86_64" + suffix)
+	p.Target.Linux_musl_x86.Srcs = []string{path.Join(libDir, "i686-linux-musl/lib/linux", name+"-i386"+suffix+".so")}
+	p.Target.Linux_musl_x86.Stem = proptools.StringPtr(name + "-i386" + suffix)
+	p.Target.Linux_musl_x86_64.Srcs = []string{path.Join(libDir, "x86_64-linux-musl/lib/linux", name+"-x86_64"+suffix+".so")}
+	p.Target.Linux_musl_x86_64.Stem = proptools.StringPtr(name + "-x86_64" + suffix)
+
 	p.System_shared_libs = []string{}
 	p.No_libcrt = proptools.BoolPtr(true)
 	p.Sanitize.Never = proptools.BoolPtr(true)
@@ -245,7 +274,7 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, in *prebuiltLi
 	p.Pack_relocations = &disable
 	p.Stl = proptools.StringPtr("none")
 
-	if proptools.Bool(in.Is_llndk) {
+	if proptools.Bool(sharedProps.Is_llndk) {
 		p.Stubs.Versions = []string{"29", "10000"}
 		p.Stubs.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx))
 		p.Llndk.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx))
@@ -254,24 +283,32 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, in *prebuiltLi
 	ctx.AppendProperties(p)
 }
 
-func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext) {
+func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext, libProps *prebuiltLibraryProps) {
 	libDir := getClangResourceDir(ctx)
 
 	type props struct {
-		Srcs               []string
+		Target             archProps
 		System_shared_libs []string
 		No_libcrt          *bool
 		Stl                *string
 	}
 
-	name := strings.TrimPrefix(ctx.ModuleName(), "prebuilt_")
+	name := proptools.StringDefault(libProps.Lib_name, strings.TrimPrefix(ctx.ModuleName(), "prebuilt_"))
+	name = strings.TrimSuffix(name, ".static")
+	suffix := proptools.String(libProps.Suffix)
 
 	p := &props{}
-	if strings.HasSuffix(name, ".static") {
-		p.Srcs = []string{path.Join(libDir, strings.TrimSuffix(name, ".static")+".a")}
-	} else {
-		p.Srcs = []string{path.Join(libDir, name+".a")}
-	}
+
+	p.Target.Android_arm.Srcs = []string{path.Join(libDir, name+"-arm-android"+suffix+".a")}
+	p.Target.Android_arm64.Srcs = []string{path.Join(libDir, name+"-aarch64-android"+suffix+".a")}
+	p.Target.Android_x86.Srcs = []string{path.Join(libDir, name+"-i686-android"+suffix+".a")}
+	p.Target.Android_x86_64.Srcs = []string{path.Join(libDir, name+"-x86_64-android"+suffix+".a")}
+	p.Target.Linux_bionic_arm64.Srcs = []string{path.Join(libDir, name+"-aarch64-android"+suffix+".a")}
+	p.Target.Linux_bionic_x86_64.Srcs = []string{path.Join(libDir, name+"-x86_64-android"+suffix+".a")}
+	p.Target.Glibc_x86.Srcs = []string{path.Join(libDir, name+"-i386"+suffix+".a")}
+	p.Target.Glibc_x86_64.Srcs = []string{path.Join(libDir, name+"-x86_64"+suffix+".a")}
+	p.Target.Linux_musl_x86.Srcs = []string{path.Join(libDir, "i686-linux-musl/lib/linux", name+"-i386"+suffix+".a")}
+	p.Target.Linux_musl_x86_64.Srcs = []string{path.Join(libDir, "x86_64-linux-musl/lib/linux", name+"-x86_64"+suffix+".a")}
 	p.System_shared_libs = []string{}
 	p.No_libcrt = proptools.BoolPtr(true)
 	p.Stl = proptools.StringPtr("none")
@@ -338,17 +375,22 @@ func llvmHostPrebuiltLibrarySharedFactory() android.Module {
 
 func libClangRtPrebuiltLibrarySharedFactory() android.Module {
 	module, _ := cc.NewPrebuiltSharedLibrary(android.HostAndDeviceSupported)
-	props := &prebuiltLibrarySharedProps{}
-	module.AddProperties(props)
+	props := &prebuiltLibraryProps{}
+	sharedProps := &prebuiltLibrarySharedProps{}
+	module.AddProperties(props, sharedProps)
 	android.AddLoadHook(module, func(ctx android.LoadHookContext) {
-		libClangRtPrebuiltLibraryShared(ctx, props)
+		libClangRtPrebuiltLibraryShared(ctx, props, sharedProps)
 	})
 	return module.Init()
 }
 
 func libClangRtPrebuiltLibraryStaticFactory() android.Module {
 	module, _ := cc.NewPrebuiltStaticLibrary(android.HostAndDeviceSupported)
-	android.AddLoadHook(module, libClangRtPrebuiltLibraryStatic)
+	props := &prebuiltLibraryProps{}
+	module.AddProperties(props)
+	android.AddLoadHook(module, func(ctx android.LoadHookContext) {
+		libClangRtPrebuiltLibraryStatic(ctx, props)
+	})
 	return module.Init()
 }
 
@@ -370,7 +412,7 @@ func llvmHostDefaults(ctx android.LoadHookContext) {
 	}
 
 	p := &props{}
-	if !ctx.AConfig().IsEnvTrue("LLVM_BUILD_HOST_TOOLS") {
+	if !ctx.Config().IsEnvTrue("LLVM_BUILD_HOST_TOOLS") {
 		p.Enabled = proptools.BoolPtr(false)
 	}
 	ctx.AppendProperties(p)
@@ -391,7 +433,7 @@ func clangBuiltinHeaders(ctx android.LoadHookContext) {
 	p := &props{}
 	builtinHeadersDir := path.Join(
 		getClangPrebuiltDir(ctx), "lib64", "clang",
-		ctx.AConfig().GetenvWithDefault("LLVM_RELEASE_VERSION",
+		ctx.Config().GetenvWithDefault("LLVM_RELEASE_VERSION",
 			config.ClangDefaultShortVersion), "include")
 	s := "$(location) " + path.Join(ctx.ModuleDir(), builtinHeadersDir) + " $(in) >$(out)"
 	p.Cmd = &s

@@ -153,3 +153,30 @@ def arm_extra_ldflags(variant):
     elif variant.arch_variant == "armv7-a":
         return _generated_constants.ArmFixCortexA8LdFlags
     return []
+
+# enabled_features returns a list of enabled features for the given arch variant, defaults to empty list
+def enabled_features(arch_variant, arch_variant_to_features = {}):
+    if arch_variant == None:
+        arch_variant = ""
+    return arch_variant_to_features.get(arch_variant, [])
+
+# variant_name creates a name based on a variant struct with arch_variant and cpu_variant
+def variant_name(variant):
+    ret = ""
+    if variant.arch_variant:
+        ret += "_" + variant.arch_variant
+    if variant.cpu_variant:
+        ret += "_" + variant.cpu_variant
+    return ret
+
+# variant_constraints gets constraints based on variant struct and arch_variant_features
+def variant_constraints(variant, arch_variant_features = {}):
+    ret = []
+    if variant.arch_variant:
+        ret.append("//build/bazel/platforms/arch/variants:" + variant.arch_variant)
+    if variant.cpu_variant:
+        ret.append("//build/bazel/platforms/arch/variants:" + variant.cpu_variant)
+    features = enabled_features(variant.arch_variant, arch_variant_features)
+    for feature in features:
+        ret.append("//build/bazel/platforms/arch/variants:" + feature)
+    return ret
