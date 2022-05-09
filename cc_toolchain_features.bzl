@@ -14,13 +14,67 @@ load(
 load(
     ":cc_toolchain_constants.bzl",
     _actions = "actions",
+    _arches = "arches",
     _c_std_versions = "c_std_versions",
     _cpp_std_versions = "cpp_std_versions",
-    _flags = "flags",
     _default_c_std_version = "default_c_std_version",
     _default_cpp_std_version = "default_cpp_std_version",
+    _flags = "flags",
     _generated_constants = "generated_constants",
 )
+load("@soong_injection//api_levels:api_levels.bzl", _api_levels = "api_levels")
+
+def _get_sdk_version_features(os_is_device, target_arch):
+    if not os_is_device:
+        return []
+
+    default_sdk_version = "10000"
+    sdk_feature_prefix = "sdk_version_"
+    all_sdk_versions = [default_sdk_version]
+    for level in _api_levels.values():
+        all_sdk_versions.append(str(level))
+    flag_prefix = "--target="
+    if target_arch == _arches.X86:
+        flag_prefix += "i686-linux-android"
+    elif target_arch == _arches.X86_64:
+        flag_prefix += "x86_64-linux-android"
+    elif target_arch == _arches.Arm:
+        flag_prefix += _generated_constants.ArmClangTriple
+    elif target_arch == _arches.Arm64:
+        flag_prefix += "aarch64-linux-android"
+    else:
+        fail("Unknown target arch %s" % (target_arch))
+
+    features = [feature(
+        name = "sdk_version_default",
+        enabled = True,
+        implies = [sdk_feature_prefix + default_sdk_version],
+    )]
+    features.extend([
+        feature(name = sdk_feature_prefix + sdk_version, provides = ["sdk_version"])
+        for sdk_version in all_sdk_versions
+    ])
+    features.append(feature(
+        name = "sdk_version_flag",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = _actions.compile + _actions.link,
+                flag_groups = [
+                    flag_group(
+                        flags = [flag_prefix + sdk_version],
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        features = [sdk_feature_prefix + sdk_version],
+                    ),
+                ],
+            )
+            for sdk_version in all_sdk_versions
+        ],
+    ))
+    return features
 
 def _get_c_std_features():
     features = []
@@ -39,11 +93,11 @@ def _get_c_std_features():
         implies = [_default_c_std_version],
     ))
     features.extend([
-        feature(name = std_version, provides = ['cpp_std'])
+        feature(name = std_version, provides = ["cpp_std"])
         for std_version in _cpp_std_versions
     ])
     features.extend([
-        feature(name = std_version, provides = ['c_std'])
+        feature(name = std_version, provides = ["c_std"])
         for std_version in _c_std_versions
     ])
     features.append(feature(
@@ -62,8 +116,8 @@ def _get_c_std_features():
                 with_features = [
                     with_feature_set(
                         features = [std_version],
-                    )
-                ]
+                    ),
+                ],
             )
             for std_version in _cpp_std_versions
         ],
@@ -84,8 +138,8 @@ def _get_c_std_features():
                 with_features = [
                     with_feature_set(
                         features = [std_version],
-                    )
-                ]
+                    ),
+                ],
             )
             for std_version in _c_std_versions
         ],
@@ -474,6 +528,7 @@ def _dynamic_linker_flag_feature(os_is_device, arch_is_64_bit):
         if arch_is_64_bit:
             dynamic_linker_path += "64"
         return _binary_linker_flag_feature(name = "dynamic_linker", flags = ["-Wl,-dynamic-linker," + dynamic_linker_path])
+
     # TODO(b/205771732, b/205772164): linux_musl and linux_bionic should
     # add "-Wl,--no-dynamic-linker".
     return []
@@ -554,7 +609,7 @@ def _rpath_features(os_is_device, arch_is_64_bit):
 
     runtime_library_search_directories_feature = feature(
         name = "runtime_library_search_directories",
-        flag_sets = runtime_library_search_directories_flag_sets
+        flag_sets = runtime_library_search_directories_flag_sets,
     )
 
     disable_rpath_feature = feature(
@@ -1280,6 +1335,8 @@ def get_features(
         # change the -std version to overwrite the defaults or c{,pp}_std attribute
         # value.
         _get_c_std_features(),
+        # Features tied to sdk version
+        _get_sdk_version_features(os_is_device, target_arch),
         _compiler_flag_features(target_flags + compile_only_flags, os_is_device),
         _rpath_features(os_is_device, arch_is_64_bit),
         _rtti_features(rtti_toggle),
