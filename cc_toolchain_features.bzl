@@ -453,6 +453,7 @@ def _pack_dynamic_relocations_features(os_is_device):
                 ],
             ),
         ],
+        enabled = True,
     )
 
     # sdk version >= 28
@@ -1091,7 +1092,7 @@ def _get_legacy_features_begin():
                     ],
                 ),
             ],
-            enabled = True,
+            enabled = False,
         ),
     ]
 
