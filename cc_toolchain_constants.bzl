@@ -101,7 +101,7 @@ cpp_std_versions = [
     "c++2a",
 ]
 
-default_c_std_version = "gnu99"
+default_c_std_version = "gnu11"
 c_std_versions = [
     "gnu11",
     "gnu99",
