@@ -48,7 +48,7 @@ LLVM Users
   * Look for "clang-" in [vendor/google/aosp/scripts/envsetup.sh](https://android.googlesource.com/trusty/vendor/google/aosp/+/master/scripts/envsetup.sh).
 
 * [**Android Emulator**](https://developer.android.com/studio/run/emulator.html)
-  * Currently clang-r445002
+  * Currently clang-r450784d
   * Look for "clang-" in [external/qemu/android/build/cmake/toolchain.cmake](https://android.googlesource.com/platform/external/qemu/+/emu-master-dev/android/build/cmake/toolchain.cmake#25).
     * Note that they work out of the emu-master-dev branch.
     * [Android Code Search link](https://cs.android.com/android/platform/superproject/+/emu-master-dev:external/qemu/android/build/cmake/toolchain.cmake?q=clang-)
@@ -72,7 +72,7 @@ LLVM Users
     * Currently clang-r437112b
     * Look for "CLANG_REVISION" in [paths.py](https://android.googlesource.com/toolchain/android_rust/+/refs/heads/master/paths.py)
   * Bindgen
-    * Currently clang-r445002
+    * Currently clang-r450784d
     * Look for "bindgenClangVersion" in [bindgen.go](https://android.googlesource.com/platform/build/soong/+/refs/heads/master/rust/bindgen.go)
 
 * **Stage 1 compiler**
@@ -81,7 +81,7 @@ LLVM Users
   * Note the chicken & egg paradox of a self hosting bootstrapping compiler; this can only be updated AFTER a new prebuilt is checked in.
 
 * **Android Studio / Android Game Development Extension**
-  * Currently clang-r445002
+  * Currently clang-r450784d
   * Look in [lldb-utils/config/clang.version](https://googleplex-android.git.corp.google.com/platform/external/lldb-utils/+/refs/heads/lldb-master-dev/config/clang.version)
 
 
