@@ -290,6 +290,11 @@ cc_defaults {
 llvm_prebuilt_library_static {
     name: "libunwind",
     defaults: ["libunwind-android-default"],
+    target: {
+        musl: {
+            enabled: true,
+        },
+    },
 }
 
 llvm_prebuilt_library_static {
