@@ -38,7 +38,7 @@ LLVM Users
   * Internal LLVM developers should look in the partner gerrit for more kernel configurations.
 
 * [**NDK**](https://developer.android.com/ndk)
-  * Currently clang-r437112b
+  * Currently clang-r450784d
   * Look for "clang-" in [ndk/toolchains.py](https://android.googlesource.com/platform/ndk/+/refs/heads/master/ndk/toolchains.py)
 
 * [**Trusty**](https://source.android.com/security/trusty/)
@@ -69,7 +69,7 @@ LLVM Users
 
 * **Android Rust**
   * Toolchain
-    * Currently clang-r437112b
+    * Currently clang-r450784e
     * Look for "CLANG_REVISION" in [paths.py](https://android.googlesource.com/toolchain/android_rust/+/refs/heads/master/paths.py)
   * Bindgen
     * Currently clang-r450784d
