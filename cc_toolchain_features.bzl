@@ -18,7 +18,13 @@ load(
     _c_std_versions = "c_std_versions",
     _cpp_std_versions = "cpp_std_versions",
     _default_c_std_version = "default_c_std_version",
+    _experimental_c_std_version = "experimental_c_std_version",
     _default_cpp_std_version = "default_cpp_std_version",
+    _experimental_cpp_std_version = "experimental_cpp_std_version",
+    _default_c_std_version_no_gnu = "default_c_std_version_no_gnu",
+    _experimental_c_std_version_no_gnu = "experimental_c_std_version_no_gnu",
+    _default_cpp_std_version_no_gnu = "default_cpp_std_version_no_gnu",
+    _experimental_cpp_std_version_no_gnu = "experimental_cpp_std_version_no_gnu",
     _flags = "flags",
     _generated_constants = "generated_constants",
 )
@@ -91,6 +97,31 @@ def _get_c_std_features():
         name = "c_std_default",
         enabled = True,
         implies = [_default_c_std_version],
+    ))
+
+    features.append(feature(
+        name = "cpp_std_default_no_gnu",
+        implies = [_default_cpp_std_version_no_gnu],
+    ))
+    features.append(feature(
+        name = "c_std_default_no_gnu",
+        implies = [_default_cpp_std_version_no_gnu],
+    ))
+    features.append(feature(
+        name = "cpp_std_experimental",
+        implies = [_experimental_cpp_std_version],
+    ))
+    features.append(feature(
+        name = "c_std_experimental",
+        implies = [_experimental_cpp_std_version],
+    ))
+    features.append(feature(
+        name = "cpp_std_experimental_no_gnu",
+        implies = [_experimental_cpp_std_version_no_gnu],
+    ))
+    features.append(feature(
+        name = "c_std_experimental_no_gnu",
+        implies = [_experimental_cpp_std_version_no_gnu],
     ))
     features.extend([
         feature(name = std_version, provides = ["cpp_std"])
