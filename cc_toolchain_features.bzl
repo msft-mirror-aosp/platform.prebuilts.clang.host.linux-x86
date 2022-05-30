@@ -23,6 +23,7 @@ load(
     _generated_constants = "generated_constants",
 )
 load("@soong_injection//api_levels:api_levels.bzl", _api_levels = "api_levels")
+load("@soong_injection//product_config:product_variables.bzl", "product_vars")
 
 def _get_sdk_version_features(os_is_device, target_arch):
     if not os_is_device:
@@ -33,6 +34,14 @@ def _get_sdk_version_features(os_is_device, target_arch):
     all_sdk_versions = [default_sdk_version]
     for level in _api_levels.values():
         all_sdk_versions.append(str(level))
+
+    # Explicitly support internal branch state where the platform sdk version has
+    # finalized, but the sdk is still active, so it's represented by a 9000-ish
+    # value in _api_levels.
+    platform_sdk_version = str(product_vars["Platform_sdk_version"])
+    if platform_sdk_version not in all_sdk_versions:
+        all_sdk_versions.append(platform_sdk_version)
+
     flag_prefix = "--target="
     if target_arch == _arches.X86:
         flag_prefix += "i686-linux-android"
