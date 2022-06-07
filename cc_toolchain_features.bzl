@@ -18,11 +18,18 @@ load(
     _c_std_versions = "c_std_versions",
     _cpp_std_versions = "cpp_std_versions",
     _default_c_std_version = "default_c_std_version",
+    _experimental_c_std_version = "experimental_c_std_version",
     _default_cpp_std_version = "default_cpp_std_version",
+    _experimental_cpp_std_version = "experimental_cpp_std_version",
+    _default_c_std_version_no_gnu = "default_c_std_version_no_gnu",
+    _experimental_c_std_version_no_gnu = "experimental_c_std_version_no_gnu",
+    _default_cpp_std_version_no_gnu = "default_cpp_std_version_no_gnu",
+    _experimental_cpp_std_version_no_gnu = "experimental_cpp_std_version_no_gnu",
     _flags = "flags",
     _generated_constants = "generated_constants",
 )
 load("@soong_injection//api_levels:api_levels.bzl", _api_levels = "api_levels")
+load("@soong_injection//product_config:product_variables.bzl", "product_vars")
 
 def _get_sdk_version_features(os_is_device, target_arch):
     if not os_is_device:
@@ -33,6 +40,14 @@ def _get_sdk_version_features(os_is_device, target_arch):
     all_sdk_versions = [default_sdk_version]
     for level in _api_levels.values():
         all_sdk_versions.append(str(level))
+
+    # Explicitly support internal branch state where the platform sdk version has
+    # finalized, but the sdk is still active, so it's represented by a 9000-ish
+    # value in _api_levels.
+    platform_sdk_version = str(product_vars["Platform_sdk_version"])
+    if platform_sdk_version not in all_sdk_versions:
+        all_sdk_versions.append(platform_sdk_version)
+
     flag_prefix = "--target="
     if target_arch == _arches.X86:
         flag_prefix += "i686-linux-android"
@@ -91,6 +106,31 @@ def _get_c_std_features():
         name = "c_std_default",
         enabled = True,
         implies = [_default_c_std_version],
+    ))
+
+    features.append(feature(
+        name = "cpp_std_default_no_gnu",
+        implies = [_default_cpp_std_version_no_gnu],
+    ))
+    features.append(feature(
+        name = "c_std_default_no_gnu",
+        implies = [_default_cpp_std_version_no_gnu],
+    ))
+    features.append(feature(
+        name = "cpp_std_experimental",
+        implies = [_experimental_cpp_std_version],
+    ))
+    features.append(feature(
+        name = "c_std_experimental",
+        implies = [_experimental_cpp_std_version],
+    ))
+    features.append(feature(
+        name = "cpp_std_experimental_no_gnu",
+        implies = [_experimental_cpp_std_version_no_gnu],
+    ))
+    features.append(feature(
+        name = "c_std_experimental_no_gnu",
+        implies = [_experimental_cpp_std_version_no_gnu],
     ))
     features.extend([
         feature(name = std_version, provides = ["cpp_std"])
