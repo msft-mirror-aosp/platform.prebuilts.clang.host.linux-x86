@@ -6,6 +6,7 @@ This top level list of features are available through the get_features function.
 load(
     "@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl",
     "feature",
+    "feature_set",
     "flag_group",
     "flag_set",
     "variable_with_value",
@@ -1134,6 +1135,35 @@ def _get_legacy_features_begin():
             ],
             enabled = False,
         ),
+        feature(
+            name = "llvm_coverage_map_format",
+            flag_sets = [
+                flag_set(
+                    actions = _actions.compile,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-fprofile-instr-generate=/data/misc/trace/clang-%%p-%%m.profraw",
+                                "-fcoverage-mapping",
+                                "-Wno-pass-failed",
+                                "-D__ANDROID_CLANG_COVERAGE__"
+                            ],
+                        ),
+                    ],
+                ),
+                flag_set(
+                    actions = [_actions.c_compile, _actions.cpp_compile],
+                    flag_groups = [flag_group(flags = ["-Wno-frame-larger-than="])],
+                ),
+                # TODO(b/233660582): support "-Wl,--wrap,open" and libprofile-clang-extras
+                flag_set(
+                    actions = _actions.link,
+                    flag_groups = [flag_group(flags = ["-fprofile-instr-generate"])],
+                ),
+            ],
+            requires = [feature_set(features = ["coverage"])],
+        ),
+        feature(name = "coverage"),
     ]
 
     return features
