@@ -53,7 +53,11 @@ def _tool_paths(clang_version_info):
         ),
         tool_path(
             name = "gcov",
-            path = "/bin/false",
+            path = clang_version_info.directory.basename + "/bin/llvm-profdata",
+        ),
+        tool_path(
+            name = "llvm-cov",
+            path = clang_version_info.directory.basename + "/bin/llvm-cov",
         ),
         tool_path(
             name = "nm",
