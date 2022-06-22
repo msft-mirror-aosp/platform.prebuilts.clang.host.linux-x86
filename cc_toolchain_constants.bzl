@@ -11,9 +11,6 @@ flags = struct(
     compiler_flags = [
         "-fPIC",
     ],
-    asm_compiler_flags = [
-        "-D__ASSEMBLY__",
-    ],
     # ============
     # Linker flags
     # ============
