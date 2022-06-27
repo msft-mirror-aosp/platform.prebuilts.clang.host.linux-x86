@@ -194,8 +194,8 @@ libclang_rt_prebuilt_library_static {
     vendor_available: true,
     product_available: true,
     host_supported: true,
-    arch: {
-        arm64: {
+    target: {
+        bionic_arm64: {
             enabled: true,
         },
     },
@@ -211,8 +211,8 @@ libclang_rt_prebuilt_library_shared {
     enabled: false,
     recovery_available: true,
     host_supported: true,
-    arch: {
-        arm64: {
+    target: {
+        bionic_arm64: {
             enabled: true,
         },
     },
