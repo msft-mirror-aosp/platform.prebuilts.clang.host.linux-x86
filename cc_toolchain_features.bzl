@@ -201,7 +201,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         compiler_flags.extend(_generated_constants.HostGlobalCflags)
 
     # Default compiler flags for assembly sources.
-    asm_only_flags = _flags.asm_compiler_flags
+    asm_only_flags = _generated_constants.CommonGlobalAsflags
 
     # Default C++ compile action only flags (No C)
     cpp_only_flags = []
