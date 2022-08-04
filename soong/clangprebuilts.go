@@ -352,8 +352,8 @@ func libClangRtPrebuiltObject(ctx android.LoadHookContext) {
 	p := &props{}
 	p.Arch.X86.Srcs = []string{path.Join(libDir, name+"-i386.o")}
 	p.Arch.X86_64.Srcs = []string{path.Join(libDir, name+"-x86_64.o")}
-	p.Arch.Arm.Srcs = []string{path.Join(libDir, name+"-arm.o")}
-	p.Arch.Arm64.Srcs = []string{path.Join(libDir, name+"-aarch64.o")}
+	p.Arch.Arm.Srcs = []string{path.Join(libDir, "arm-linux-musleabihf/lib/linux", name+"-armhf.o")}
+	p.Arch.Arm64.Srcs = []string{path.Join(libDir, "aarch64-linux-musl/lib/linux", name+"-aarch64.o")}
 	p.System_shared_libs = []string{}
 	p.Stl = proptools.StringPtr("none")
 	ctx.AppendProperties(p)
