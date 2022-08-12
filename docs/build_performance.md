@@ -20,11 +20,12 @@ with the following Python script:
 #! /usr/bin/env python3
 
 import json
+import sys
 
 total_clang_time = 0
 total_clang_tidy_time = 0
 
-with open('/tmp/rusage_bolt.txt', 'r') as rusage:
+with open(sys.argv[1], 'r') as rusage:
   for line in rusage:
     data = json.loads(line)
     if 'clang-tidy' in data['compiler']:
