@@ -95,6 +95,7 @@ _cpp_std_versions = {
     "gnu++11": True,
     "gnu++17": True,
     "gnu++2a": True,
+    "gnu++20": True,
     "c++98": True,
     "c++11": True,
     "c++17": True,
@@ -126,7 +127,6 @@ _c_std_versions[default_c_std_version_no_gnu] = True
 _c_std_versions[experimental_c_std_version_no_gnu] = True
 
 c_std_versions = [k for k in _c_std_versions.keys()]
-
 
 # Added by linker.go for non-bionic, non-musl, non-windows toolchains.
 # Should be added to host builds to match the default behavior of device builds.
