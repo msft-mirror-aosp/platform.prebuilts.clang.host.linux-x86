@@ -19,12 +19,12 @@ load(
     _c_std_versions = "c_std_versions",
     _cpp_std_versions = "cpp_std_versions",
     _default_c_std_version = "default_c_std_version",
-    _experimental_c_std_version = "experimental_c_std_version",
-    _default_cpp_std_version = "default_cpp_std_version",
-    _experimental_cpp_std_version = "experimental_cpp_std_version",
     _default_c_std_version_no_gnu = "default_c_std_version_no_gnu",
-    _experimental_c_std_version_no_gnu = "experimental_c_std_version_no_gnu",
+    _default_cpp_std_version = "default_cpp_std_version",
     _default_cpp_std_version_no_gnu = "default_cpp_std_version_no_gnu",
+    _experimental_c_std_version = "experimental_c_std_version",
+    _experimental_c_std_version_no_gnu = "experimental_c_std_version_no_gnu",
+    _experimental_cpp_std_version = "experimental_cpp_std_version",
     _experimental_cpp_std_version_no_gnu = "experimental_cpp_std_version_no_gnu",
     _flags = "flags",
     _generated_constants = "generated_constants",
@@ -187,7 +187,7 @@ def _get_c_std_features():
     ))
     return features
 
-def _compiler_flag_features(flags = [], os_is_device = False):
+def _compiler_flag_features(os_is_device, target_arch, flags = []):
     compiler_flags = []
 
     # Combine the toolchain's provided flags with the default ones.
@@ -353,6 +353,41 @@ def _compiler_flag_features(flags = [], os_is_device = False):
                 with_features = [
                     with_feature_set(
                         not_features = ["non_external_compiler_flags"],
+                    ),
+                ],
+            ),
+        ],
+    ))
+
+    features.append(feature(
+        name = "arm_isa_arm",
+        enabled = False,
+        provides = ["arm_isa"],
+        flag_sets = [
+            flag_set(
+                actions = _actions.compile,
+                flag_groups = [
+                    flag_group(
+                        flags = ["-fstrict-aliasing"],
+                    ),
+                ],
+            ),
+        ],
+    ))
+
+    features.append(feature(
+        name = "arm_isa_thumb",
+        enabled = target_arch == _arches.Arm,
+        provides = ["arm_isa"],
+        flag_sets = [
+            flag_set(
+                actions = _actions.compile,
+                flag_groups = [
+                    flag_group(
+                        flags = [
+                            "-mthumb",
+                            "-Os",
+                        ],
                     ),
                 ],
             ),
@@ -1146,7 +1181,7 @@ def _get_legacy_features_begin():
                                 "-fprofile-instr-generate=/data/misc/trace/clang-%%p-%%m.profraw",
                                 "-fcoverage-mapping",
                                 "-Wno-pass-failed",
-                                "-D__ANDROID_CLANG_COVERAGE__"
+                                "-D__ANDROID_CLANG_COVERAGE__",
                             ],
                         ),
                     ],
@@ -1408,7 +1443,7 @@ def get_features(
         _get_c_std_features(),
         # Features tied to sdk version
         _get_sdk_version_features(os_is_device, target_arch),
-        _compiler_flag_features(target_flags + compile_only_flags, os_is_device),
+        _compiler_flag_features(os_is_device, target_arch, target_flags + compile_only_flags),
         _rpath_features(os_is_device, arch_is_64_bit),
         _rtti_features(rtti_toggle),
         _use_libcrt_feature(libclang_rt_builtin),
