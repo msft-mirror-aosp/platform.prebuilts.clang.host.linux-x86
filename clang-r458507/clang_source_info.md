@@ -1,4 +1,4 @@
-Base revision: [commit](https://github.com/llvm/llvm-project/commits/commit)
+Base revision: [commit](https://github.com/llvm/llvm-project/commits/a58d0af058038595c93de961b725f86997cf8d4a)
 
 - [[BOLT] Compact legacy profiles](https://android.googlesource.com/toolchain/llvm_android/+/4d6da285cc6594fad25059f3facb267cc453d756/patches/cherry/7d7771f34d14e0108adf02a6fd0b33943afae3da.patch)
 - [42ebfa8269470e6b1fe2de996d3f1db6d142e16a.patch](https://android.googlesource.com/toolchain/llvm_android/+/4d6da285cc6594fad25059f3facb267cc453d756/patches/cherry/42ebfa8269470e6b1fe2de996d3f1db6d142e16a.patch)
