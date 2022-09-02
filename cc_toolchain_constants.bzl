@@ -11,9 +11,6 @@ flags = struct(
     compiler_flags = [
         "-fPIC",
     ],
-    asm_compiler_flags = [
-        "-D__ASSEMBLY__",
-    ],
     # ============
     # Linker flags
     # ============
@@ -89,25 +86,47 @@ bionic_crt = struct(
     binary_crtend = "//bionic/libc:crtend_android",
 )
 
-default_cpp_std_version = "gnu++17"
-cpp_std_versions = [
-    "gnu++98",
-    "gnu++11",
-    "gnu++17",
-    "gnu++2a",
-    "c++98",
-    "c++11",
-    "c++17",
-    "c++2a",
-]
+default_cpp_std_version = _generated_constants.CppStdVersion
+experimental_cpp_std_version = _generated_constants.ExperimentalCppStdVersion
+default_cpp_std_version_no_gnu = _generated_constants.CppStdVersion.replace("gnu", "c")
+experimental_cpp_std_version_no_gnu = _generated_constants.ExperimentalCppStdVersion.replace("gnu", "c")
+_cpp_std_versions = {
+    "gnu++98": True,
+    "gnu++11": True,
+    "gnu++17": True,
+    "gnu++2a": True,
+    "gnu++20": True,
+    "c++98": True,
+    "c++11": True,
+    "c++17": True,
+    "c++2a": True,
+}
+_cpp_std_versions[default_cpp_std_version] = True
+_cpp_std_versions[experimental_cpp_std_version] = True
+_cpp_std_versions[default_cpp_std_version_no_gnu] = True
+_cpp_std_versions[experimental_cpp_std_version_no_gnu] = True
 
-default_c_std_version = "gnu99"
-c_std_versions = [
-    "gnu11",
-    "gnu99",
-    "c11",
-    "c99",
-]
+cpp_std_versions = [k for k in _cpp_std_versions.keys()]
+
+default_c_std_version = _generated_constants.CStdVersion
+experimental_c_std_version = _generated_constants.ExperimentalCStdVersion
+default_c_std_version_no_gnu = _generated_constants.CStdVersion.replace("gnu", "c")
+experimental_c_std_version_no_gnu = _generated_constants.ExperimentalCStdVersion.replace("gnu", "c")
+
+_c_std_versions = {
+    "gnu99": True,
+    "gnu11": True,
+    "gnu17": True,
+    "c99": True,
+    "c11": True,
+    "c17": True,
+}
+_c_std_versions[default_c_std_version] = True
+_c_std_versions[experimental_c_std_version] = True
+_c_std_versions[default_c_std_version_no_gnu] = True
+_c_std_versions[experimental_c_std_version_no_gnu] = True
+
+c_std_versions = [k for k in _c_std_versions.keys()]
 
 # Added by linker.go for non-bionic, non-musl, non-windows toolchains.
 # Should be added to host builds to match the default behavior of device builds.

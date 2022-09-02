@@ -6,6 +6,7 @@ This top level list of features are available through the get_features function.
 load(
     "@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl",
     "feature",
+    "feature_set",
     "flag_group",
     "flag_set",
     "variable_with_value",
@@ -18,11 +19,18 @@ load(
     _c_std_versions = "c_std_versions",
     _cpp_std_versions = "cpp_std_versions",
     _default_c_std_version = "default_c_std_version",
+    _default_c_std_version_no_gnu = "default_c_std_version_no_gnu",
     _default_cpp_std_version = "default_cpp_std_version",
+    _default_cpp_std_version_no_gnu = "default_cpp_std_version_no_gnu",
+    _experimental_c_std_version = "experimental_c_std_version",
+    _experimental_c_std_version_no_gnu = "experimental_c_std_version_no_gnu",
+    _experimental_cpp_std_version = "experimental_cpp_std_version",
+    _experimental_cpp_std_version_no_gnu = "experimental_cpp_std_version_no_gnu",
     _flags = "flags",
     _generated_constants = "generated_constants",
 )
 load("@soong_injection//api_levels:api_levels.bzl", _api_levels = "api_levels")
+load("@soong_injection//product_config:product_variables.bzl", "product_vars")
 
 def _get_sdk_version_features(os_is_device, target_arch):
     if not os_is_device:
@@ -33,6 +41,14 @@ def _get_sdk_version_features(os_is_device, target_arch):
     all_sdk_versions = [default_sdk_version]
     for level in _api_levels.values():
         all_sdk_versions.append(str(level))
+
+    # Explicitly support internal branch state where the platform sdk version has
+    # finalized, but the sdk is still active, so it's represented by a 9000-ish
+    # value in _api_levels.
+    platform_sdk_version = str(product_vars["Platform_sdk_version"])
+    if platform_sdk_version not in all_sdk_versions:
+        all_sdk_versions.append(platform_sdk_version)
+
     flag_prefix = "--target="
     if target_arch == _arches.X86:
         flag_prefix += "i686-linux-android"
@@ -92,6 +108,31 @@ def _get_c_std_features():
         enabled = True,
         implies = [_default_c_std_version],
     ))
+
+    features.append(feature(
+        name = "cpp_std_default_no_gnu",
+        implies = [_default_cpp_std_version_no_gnu],
+    ))
+    features.append(feature(
+        name = "c_std_default_no_gnu",
+        implies = [_default_cpp_std_version_no_gnu],
+    ))
+    features.append(feature(
+        name = "cpp_std_experimental",
+        implies = [_experimental_cpp_std_version],
+    ))
+    features.append(feature(
+        name = "c_std_experimental",
+        implies = [_experimental_cpp_std_version],
+    ))
+    features.append(feature(
+        name = "cpp_std_experimental_no_gnu",
+        implies = [_experimental_cpp_std_version_no_gnu],
+    ))
+    features.append(feature(
+        name = "c_std_experimental_no_gnu",
+        implies = [_experimental_cpp_std_version_no_gnu],
+    ))
     features.extend([
         feature(name = std_version, provides = ["cpp_std"])
         for std_version in _cpp_std_versions
@@ -146,7 +187,7 @@ def _get_c_std_features():
     ))
     return features
 
-def _compiler_flag_features(flags = [], os_is_device = False):
+def _compiler_flag_features(os_is_device, target_arch, flags = []):
     compiler_flags = []
 
     # Combine the toolchain's provided flags with the default ones.
@@ -160,7 +201,7 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         compiler_flags.extend(_generated_constants.HostGlobalCflags)
 
     # Default compiler flags for assembly sources.
-    asm_only_flags = _flags.asm_compiler_flags
+    asm_only_flags = _generated_constants.CommonGlobalAsflags
 
     # Default C++ compile action only flags (No C)
     cpp_only_flags = []
@@ -318,6 +359,41 @@ def _compiler_flag_features(flags = [], os_is_device = False):
         ],
     ))
 
+    features.append(feature(
+        name = "arm_isa_arm",
+        enabled = False,
+        provides = ["arm_isa"],
+        flag_sets = [
+            flag_set(
+                actions = _actions.compile,
+                flag_groups = [
+                    flag_group(
+                        flags = ["-fstrict-aliasing"],
+                    ),
+                ],
+            ),
+        ],
+    ))
+
+    features.append(feature(
+        name = "arm_isa_thumb",
+        enabled = target_arch == _arches.Arm,
+        provides = ["arm_isa"],
+        flag_sets = [
+            flag_set(
+                actions = _actions.compile,
+                flag_groups = [
+                    flag_group(
+                        flags = [
+                            "-mthumb",
+                            "-Os",
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    ))
+
     # The user_compile_flags feature is used by Bazel to add --copt, --conlyopt,
     # and --cxxopt values. Any features added above this call will thus appear
     # earlier in the commandline than the user opts (so users could override
@@ -453,6 +529,7 @@ def _pack_dynamic_relocations_features(os_is_device):
                 ],
             ),
         ],
+        enabled = True,
     )
 
     # sdk version >= 28
@@ -1091,8 +1168,37 @@ def _get_legacy_features_begin():
                     ],
                 ),
             ],
-            enabled = True,
+            enabled = False,
         ),
+        feature(
+            name = "llvm_coverage_map_format",
+            flag_sets = [
+                flag_set(
+                    actions = _actions.compile,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-fprofile-instr-generate=/data/misc/trace/clang-%%p-%%m.profraw",
+                                "-fcoverage-mapping",
+                                "-Wno-pass-failed",
+                                "-D__ANDROID_CLANG_COVERAGE__",
+                            ],
+                        ),
+                    ],
+                ),
+                flag_set(
+                    actions = [_actions.c_compile, _actions.cpp_compile],
+                    flag_groups = [flag_group(flags = ["-Wno-frame-larger-than="])],
+                ),
+                # TODO(b/233660582): support "-Wl,--wrap,open" and libprofile-clang-extras
+                flag_set(
+                    actions = _actions.link,
+                    flag_groups = [flag_group(flags = ["-fprofile-instr-generate"])],
+                ),
+            ],
+            requires = [feature_set(features = ["coverage"])],
+        ),
+        feature(name = "coverage"),
     ]
 
     return features
@@ -1337,7 +1443,7 @@ def get_features(
         _get_c_std_features(),
         # Features tied to sdk version
         _get_sdk_version_features(os_is_device, target_arch),
-        _compiler_flag_features(target_flags + compile_only_flags, os_is_device),
+        _compiler_flag_features(os_is_device, target_arch, target_flags + compile_only_flags),
         _rpath_features(os_is_device, arch_is_64_bit),
         _rtti_features(rtti_toggle),
         _use_libcrt_feature(libclang_rt_builtin),

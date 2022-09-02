@@ -53,7 +53,11 @@ def _tool_paths(clang_version_info):
         ),
         tool_path(
             name = "gcov",
-            path = "/bin/false",
+            path = clang_version_info.directory.basename + "/bin/llvm-profdata",
+        ),
+        tool_path(
+            name = "llvm-cov",
+            path = clang_version_info.directory.basename + "/bin/llvm-cov",
         ),
         tool_path(
             name = "nm",
@@ -191,9 +195,7 @@ def _cc_toolchain_config_impl(ctx):
 
     action_configs = _create_action_configs(tool_paths, ctx.attr.target_os)
 
-    # This is so that Bazel doesn't validate .d files against the set of headers
-    # declared in BUILD files (Blueprint files don't contain that data)
-    builtin_include_dirs = ["/"]
+    builtin_include_dirs = []
     builtin_include_dirs.extend(clang_version_info.includes)
 
     # b/186035856: Do not add anything to this list.
@@ -218,6 +220,14 @@ def _cc_toolchain_config_impl(ctx):
         crt_files,
         ctx.attr.rtti_toggle,
     )
+
+    # This is so that Bazel doesn't validate .d files against the set of headers
+    # declared in BUILD files (Blueprint files don't contain that data). %workspace%/
+    # will be replaced with the empty string by Bazel (essentially making it relative
+    # to the build directory), so Bazel will skip the validations of all the headers
+    # in .d files. For details please see CppCompileAction.validateInclude. We add
+    # %workspace% after calling get_features so it won't be exposed as an -isystem flag.
+    builtin_include_dirs.append("%workspace%/")
 
     return cc_common.create_cc_toolchain_config_info(
         ctx = ctx,

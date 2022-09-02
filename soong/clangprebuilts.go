@@ -167,6 +167,8 @@ type archProps struct {
 	Glibc_x86_64        archInnerProps
 	Linux_musl_x86      archInnerProps
 	Linux_musl_x86_64   archInnerProps
+	Linux_musl_arm      archInnerProps
+	Linux_musl_arm64    archInnerProps
 }
 
 func llvmPrebuiltLibraryStatic(ctx android.LoadHookContext) {
@@ -191,6 +193,10 @@ func llvmPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 	p.Target.Android_x86_64.Srcs = []string{path.Join(libDir, "x86_64", name)}
 	p.Target.Linux_bionic_arm64.Srcs = []string{path.Join(libDir, "aarch64", name)}
 	p.Target.Linux_bionic_x86_64.Srcs = []string{path.Join(libDir, "x86_64", name)}
+	p.Target.Linux_musl_x86.Srcs = []string{path.Join(libDir, "i686-linux-musl/lib", name)}
+	p.Target.Linux_musl_x86_64.Srcs = []string{path.Join(libDir, "x86_64-linux-musl/lib", name)}
+	p.Target.Linux_musl_arm.Srcs = []string{path.Join(libDir, "arm-linux-musleabihf/lib", name)}
+	p.Target.Linux_musl_arm64.Srcs = []string{path.Join(libDir, "aarch64-linux-musl/lib", name)}
 	ctx.AppendProperties(p)
 }
 
@@ -259,10 +265,14 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, libProps *preb
 	p.Target.Glibc_x86.Stem = proptools.StringPtr(name + "-i386" + suffix)
 	p.Target.Glibc_x86_64.Srcs = []string{path.Join(libDir, name+"-x86_64"+suffix+".so")}
 	p.Target.Glibc_x86_64.Stem = proptools.StringPtr(name + "-x86_64" + suffix)
-	p.Target.Linux_musl_x86.Srcs = []string{path.Join(libDir, name+"-i386"+suffix+".so")}
+	p.Target.Linux_musl_x86.Srcs = []string{path.Join(libDir, "i686-linux-musl/lib/linux", name+"-i386"+suffix+".so")}
 	p.Target.Linux_musl_x86.Stem = proptools.StringPtr(name + "-i386" + suffix)
-	p.Target.Linux_musl_x86_64.Srcs = []string{path.Join(libDir, name+"-x86_64"+suffix+".so")}
+	p.Target.Linux_musl_x86_64.Srcs = []string{path.Join(libDir, "x86_64-linux-musl/lib/linux", name+"-x86_64"+suffix+".so")}
 	p.Target.Linux_musl_x86_64.Stem = proptools.StringPtr(name + "-x86_64" + suffix)
+	p.Target.Linux_musl_arm.Srcs = []string{path.Join(libDir, "arm-linux-musleabihf/lib/linux", name+"-armhf"+suffix+".so")}
+	p.Target.Linux_musl_arm.Stem = proptools.StringPtr(name + "-armhf" + suffix)
+	p.Target.Linux_musl_arm64.Srcs = []string{path.Join(libDir, "aarch64-linux-musl/lib/linux", name+"-aarch64"+suffix+".so")}
+	p.Target.Linux_musl_arm64.Stem = proptools.StringPtr(name + "-aarch64" + suffix)
 
 	p.System_shared_libs = []string{}
 	p.No_libcrt = proptools.BoolPtr(true)
@@ -305,8 +315,10 @@ func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext, libProps *preb
 	p.Target.Linux_bionic_x86_64.Srcs = []string{path.Join(libDir, name+"-x86_64-android"+suffix+".a")}
 	p.Target.Glibc_x86.Srcs = []string{path.Join(libDir, name+"-i386"+suffix+".a")}
 	p.Target.Glibc_x86_64.Srcs = []string{path.Join(libDir, name+"-x86_64"+suffix+".a")}
-	p.Target.Linux_musl_x86.Srcs = []string{path.Join(libDir, name+"-i386"+suffix+".a")}
-	p.Target.Linux_musl_x86_64.Srcs = []string{path.Join(libDir, name+"-x86_64"+suffix+".a")}
+	p.Target.Linux_musl_x86.Srcs = []string{path.Join(libDir, "i686-linux-musl/lib/linux", name+"-i386"+suffix+".a")}
+	p.Target.Linux_musl_x86_64.Srcs = []string{path.Join(libDir, "x86_64-linux-musl/lib/linux", name+"-x86_64"+suffix+".a")}
+	p.Target.Linux_musl_arm.Srcs = []string{path.Join(libDir, "arm-linux-musleabihf/lib/linux", name+"-armhf"+suffix+".a")}
+	p.Target.Linux_musl_arm64.Srcs = []string{path.Join(libDir, "aarch64-linux-musl/lib/linux", name+"-aarch64"+suffix+".a")}
 	p.System_shared_libs = []string{}
 	p.No_libcrt = proptools.BoolPtr(true)
 	p.Stl = proptools.StringPtr("none")
@@ -324,6 +336,12 @@ func libClangRtPrebuiltObject(ctx android.LoadHookContext) {
 			X86_64 struct {
 				Srcs []string
 			}
+			Arm struct {
+				Srcs []string
+			}
+			Arm64 struct {
+				Srcs []string
+			}
 		}
 		System_shared_libs []string
 		Stl                *string
@@ -334,6 +352,8 @@ func libClangRtPrebuiltObject(ctx android.LoadHookContext) {
 	p := &props{}
 	p.Arch.X86.Srcs = []string{path.Join(libDir, name+"-i386.o")}
 	p.Arch.X86_64.Srcs = []string{path.Join(libDir, name+"-x86_64.o")}
+	p.Arch.Arm.Srcs = []string{path.Join(libDir, "arm-linux-musleabihf/lib/linux", name+"-armhf.o")}
+	p.Arch.Arm64.Srcs = []string{path.Join(libDir, "aarch64-linux-musl/lib/linux", name+"-aarch64.o")}
 	p.System_shared_libs = []string{}
 	p.Stl = proptools.StringPtr("none")
 	ctx.AppendProperties(p)
