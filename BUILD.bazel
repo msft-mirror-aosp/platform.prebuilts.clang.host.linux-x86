@@ -6,8 +6,6 @@
 # unless you have coordinated with the team managing the Soong to Bazel
 # migration.
 
-package(default_visibility = ["//visibility:public"])
-
 # Toolchain config
 filegroup(name = "empty")
 
