@@ -94,8 +94,9 @@ _cpp_std_versions = {
     "gnu++98": True,
     "gnu++11": True,
     "gnu++17": True,
-    "gnu++2a": True,
     "gnu++20": True,
+    "gnu++2a": True,
+    "gnu++2b": True,
     "c++98": True,
     "c++11": True,
     "c++17": True,
@@ -199,3 +200,12 @@ def variant_constraints(variant, arch_variant_features = {}):
     for feature in features:
         ret.append("//build/bazel/platforms/arch/variants:" + feature)
     return ret
+
+x86_64_host_toolchains = [
+    ("cc_toolchain_x86_64_linux_host", "@bazel_tools//tools/cpp:toolchain_type"),
+    ("cc_toolchain_x86_64_linux_host_nocrt", "nocrt_toolchain"),
+]
+x86_host_toolchains = [
+    ("cc_toolchain_x86_linux_host", "@bazel_tools//tools/cpp:toolchain_type"),
+    ("cc_toolchain_x86_linux_host_nocrt", "nocrt_toolchain"),
+]
