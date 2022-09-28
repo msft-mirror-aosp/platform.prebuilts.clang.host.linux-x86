@@ -9,6 +9,8 @@ load(
     "arch_to_variants",
     "variant_constraints",
     "variant_name",
+    "x86_64_host_toolchains",
+    "x86_host_toolchains",
     _actions = "actions",
     _bionic_crt = "bionic_crt",
     _enabled_features = "enabled_features",
@@ -487,3 +489,34 @@ def toolchain_definition(arch, variant, nocrt = False):
             ":nocrt_toolchain" if nocrt else "@bazel_tools//tools/cpp:toolchain_type"
         ),
     )
+
+def cc_register_toolchains():
+    """Register cc_toolchains for device and host platforms.
+
+    This function ensures that generic (non-variant) device toolchains are
+    registered last.
+    """
+
+    toolchain_definitions = [
+        tc[0] + "_def"
+        for tc in x86_64_host_toolchains + x86_host_toolchains
+    ]
+    deferred_toolchains = []
+
+    for arch, variants in arch_to_variants.items():
+        for variant in variants:
+            if variant_name(variant) == "":
+                deferred_toolchains.append((arch, variant))
+                continue
+
+            toolchain_definitions.append(_toolchain_name(arch, variant, nocrt = False))
+            toolchain_definitions.append(_toolchain_name(arch, variant, nocrt = True))
+
+    for (arch, variant) in deferred_toolchains:
+        toolchain_definitions.append(_toolchain_name(arch, variant, nocrt = False))
+        toolchain_definitions.append(_toolchain_name(arch, variant, nocrt = True))
+
+    native.register_toolchains(*[
+        "//prebuilts/clang/host/linux-x86:" + tc
+        for tc in toolchain_definitions
+    ])
