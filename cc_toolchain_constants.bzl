@@ -14,6 +14,9 @@ flags = struct(
     # ============
     # Linker flags
     # ============
+    host_non_windows_dynamic_executable_linker_flags = [
+        "-pie",
+    ],
     bionic_linker_flags = [
         # These are the linker flags for OSes that use Bionic: LinuxBionic, Android
         "-nostdlib",

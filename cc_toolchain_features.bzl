@@ -789,10 +789,12 @@ def _static_binary_linker_flags(os_is_device):
         linker_flags.extend(_flags.bionic_static_executable_linker_flags)
     return linker_flags
 
-def _shared_binary_linker_flags(os_is_device):
+def _shared_binary_linker_flags(os_is_device, target_os):
     linker_flags = []
     if os_is_device:
         linker_flags.extend(_flags.bionic_dynamic_executable_linker_flags)
+    elif target_os != "windows":
+        linker_flags.extend(_flags.host_non_windows_dynamic_executable_linker_flags)
     return linker_flags
 
 # Legacy features moved from their hardcoded Bazel's Java implementation
@@ -1453,7 +1455,7 @@ def get_features(
         _linker_flag_feature("linker_flags", flags = linker_only_flags + _additional_linker_flags(os_is_device)),
         _undefined_symbols_feature(),
         _dynamic_linker_flag_feature(os_is_device, arch_is_64_bit),
-        _binary_linker_flag_feature("dynamic_executable", flags = _shared_binary_linker_flags(os_is_device)),
+        _binary_linker_flag_feature("dynamic_executable", flags = _shared_binary_linker_flags(os_is_device, target_os)),
         # distinct from other static flags as it can be disabled separately
         _binary_linker_flag_feature("static_flag", flags = ["-static"], enabled = False),
         # default for executables is dynamic linking
