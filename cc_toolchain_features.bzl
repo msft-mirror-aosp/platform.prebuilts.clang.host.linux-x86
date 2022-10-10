@@ -1197,10 +1197,20 @@ def _get_legacy_features_begin():
                     actions = _actions.link,
                     flag_groups = [flag_group(flags = ["-fprofile-instr-generate"])],
                 ),
+                flag_set(
+                    actions = _actions.link,
+                    flag_groups = [flag_group(flags = ["-Wl,--wrap,open"])],
+                    with_features = [
+                        with_feature_set(
+                            features = ["android_coverage_lib"],
+                        ),
+                    ],
+                ),
             ],
             requires = [feature_set(features = ["coverage"])],
         ),
         feature(name = "coverage"),
+        feature(name = "android_coverage_lib"),
     ]
 
     return features
