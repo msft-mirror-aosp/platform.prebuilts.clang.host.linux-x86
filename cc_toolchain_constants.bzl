@@ -33,6 +33,9 @@ flags = struct(
     # ===========
     # Other flags
     # ===========
+    non_darwin_archiver_flags = [
+        "--format=gnu",
+    ],
     non_external_defines = [
         # These defines should only apply to targets which are not under
         # @external/. This can be controlled by adding "-non_external_compiler_flags"
