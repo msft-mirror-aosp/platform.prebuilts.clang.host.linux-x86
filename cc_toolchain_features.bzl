@@ -187,7 +187,7 @@ def _get_c_std_features():
     ))
     return features
 
-def _compiler_flag_features(os_is_device, target_arch, flags = []):
+def _compiler_flag_features(os_is_device, target_arch, target_os, flags = []):
     compiler_flags = []
 
     # Combine the toolchain's provided flags with the default ones.
@@ -433,6 +433,30 @@ def _compiler_flag_features(os_is_device, target_arch, flags = []):
             ),
         ],
     ))
+
+    if target_os != "darwin":
+        # These cannot be overriden by the user.
+        features.append(feature(
+            name = "no_override_clang_external_global_copts",
+            enabled = True,
+            flag_sets = [
+                flag_set(
+                    # We want this to apply to all actions except assembly
+                    # primarily to match Soong's semantics
+                    actions = [a for a in _actions.compile if a not in _actions.assemble],
+                    flag_groups = [
+                        flag_group(
+                            flags = _generated_constants.NoOverrideExternalGlobalCflags,
+                        ),
+                    ],
+                ),
+            ],
+            requires = [
+                feature_set(features = [
+                    "external_compiler_flags",
+                ]),
+            ],
+        ))
 
     return features
 
@@ -1455,7 +1479,7 @@ def get_features(
         _get_c_std_features(),
         # Features tied to sdk version
         _get_sdk_version_features(os_is_device, target_arch),
-        _compiler_flag_features(os_is_device, target_arch, target_flags + compile_only_flags),
+        _compiler_flag_features(os_is_device, target_arch, target_os, target_flags + compile_only_flags),
         _rpath_features(os_is_device, arch_is_64_bit),
         _rtti_features(rtti_toggle),
         _use_libcrt_feature(libclang_rt_builtin),
