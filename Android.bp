@@ -251,6 +251,19 @@ libclang_rt_prebuilt_library_static {
     },
 }
 
+///////////////////////////////////////////////////////////////////////////////
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.fuzzer_interceptors",
+    defaults: ["libclang_rt-prebuilt-default"],
+    sdk_version: "minimum",
+    host_supported: true,
+    recovery_available: true,
+    vendor_available: true,
+    product_available: true,
+    ramdisk_available: false,
+    vendor_ramdisk_available: false,
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 libclang_rt_prebuilt_object {

@@ -187,7 +187,7 @@ def _get_c_std_features():
     ))
     return features
 
-def _compiler_flag_features(os_is_device, target_arch, flags = []):
+def _compiler_flag_features(os_is_device, target_arch, target_os, flags = []):
     compiler_flags = []
 
     # Combine the toolchain's provided flags with the default ones.
@@ -433,6 +433,30 @@ def _compiler_flag_features(os_is_device, target_arch, flags = []):
             ),
         ],
     ))
+
+    if target_os != "darwin":
+        # These cannot be overriden by the user.
+        features.append(feature(
+            name = "no_override_clang_external_global_copts",
+            enabled = True,
+            flag_sets = [
+                flag_set(
+                    # We want this to apply to all actions except assembly
+                    # primarily to match Soong's semantics
+                    actions = [a for a in _actions.compile if a not in _actions.assemble],
+                    flag_groups = [
+                        flag_group(
+                            flags = _generated_constants.NoOverrideExternalGlobalCflags,
+                        ),
+                    ],
+                ),
+            ],
+            requires = [
+                feature_set(features = [
+                    "external_compiler_flags",
+                ]),
+            ],
+        ))
 
     return features
 
@@ -722,6 +746,9 @@ def _flag_feature(name, actions = None, flags = None, enabled = True):
 def _linker_flag_feature(name, flags = [], enabled = True):
     return _flag_feature(name, actions = _actions.link, flags = flags, enabled = enabled)
 
+def _archiver_flag_feature(name, flags = [], enabled = True):
+    return _flag_feature(name, actions = _actions.archive, flags = flags, enabled = enabled)
+
 def _binary_linker_flag_feature(name, flags = [], enabled = True):
     return _flag_feature(name, actions = [_actions.cpp_link_executable], flags = flags, enabled = enabled)
 
@@ -772,6 +799,12 @@ def _flatten(xs):
         else:
             ret.append(x)
     return ret
+
+def _additional_archiver_flags(target_os):
+    archiver_flags = []
+    if target_os != "darwin":
+        archiver_flags.extend(_flags.non_darwin_archiver_flags)
+    return archiver_flags
 
 # Additional linker flags that are dependent on a host or device target.
 def _additional_linker_flags(os_is_device):
@@ -1007,7 +1040,7 @@ def _get_legacy_features_begin():
                     actions = ["c++-link-static-library"],
                     flag_groups = [
                         flag_group(
-                            flags = ["rcsD"],
+                            flags = ["crsPD"],
                         ),
                         flag_group(
                             expand_if_available = "output_execpath",
@@ -1455,7 +1488,7 @@ def get_features(
         _get_c_std_features(),
         # Features tied to sdk version
         _get_sdk_version_features(os_is_device, target_arch),
-        _compiler_flag_features(os_is_device, target_arch, target_flags + compile_only_flags),
+        _compiler_flag_features(os_is_device, target_arch, target_os, target_flags + compile_only_flags),
         _rpath_features(os_is_device, arch_is_64_bit),
         _rtti_features(rtti_toggle),
         _use_libcrt_feature(libclang_rt_builtin),
@@ -1463,6 +1496,7 @@ def get_features(
         _linker_flag_feature("linker_target_flags", flags = target_flags),
         # Link-only flags.
         _linker_flag_feature("linker_flags", flags = linker_only_flags + _additional_linker_flags(os_is_device)),
+        _archiver_flag_feature("additional_archiver_flags", flags = _additional_archiver_flags(target_os)),
         _undefined_symbols_feature(),
         _dynamic_linker_flag_feature(os_is_device, arch_is_64_bit),
         _binary_linker_flag_feature("dynamic_executable", flags = _shared_binary_linker_flags(os_is_device, target_os)),
