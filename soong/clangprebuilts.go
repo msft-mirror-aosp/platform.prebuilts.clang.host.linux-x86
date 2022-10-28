@@ -190,8 +190,7 @@ func llvmPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 
 	p.Target.Android_arm.Srcs = []string{path.Join(libDir, "arm", name)}
 	p.Target.Android_arm64.Srcs = []string{path.Join(libDir, "aarch64", name)}
-	// TODO(b/250918230): switch this to use real riscv64 prebuilts once they are available
-	p.Target.Android_riscv64.Srcs = []string{path.Join(libDir, "aarch64", name)}
+	p.Target.Android_riscv64.Srcs = []string{path.Join(libDir, "riscv64", name)}
 	p.Target.Android_x86.Srcs = []string{path.Join(libDir, "i386", name)}
 	p.Target.Android_x86_64.Srcs = []string{path.Join(libDir, "x86_64", name)}
 	p.Target.Linux_bionic_arm64.Srcs = []string{path.Join(libDir, "aarch64", name)}
@@ -256,9 +255,8 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, libProps *preb
 	p.Target.Android_arm.Stem = proptools.StringPtr(name + "-arm-android" + suffix)
 	p.Target.Android_arm64.Srcs = []string{path.Join(libDir, name+"-aarch64-android"+suffix+".so")}
 	p.Target.Android_arm64.Stem = proptools.StringPtr(name + "-aarch64-android" + suffix)
-	// TODO(b/250918230): switch this to use real riscv64 prebuilts once they are available
-	p.Target.Android_riscv64.Srcs = []string{path.Join(libDir, name+"-aarch64-android"+suffix+".so")}
-	p.Target.Android_riscv64.Stem = proptools.StringPtr(name + "-aarch64-android" + suffix)
+	p.Target.Android_riscv64.Srcs = []string{path.Join(libDir, name+"-riscv64-android"+suffix+".so")}
+	p.Target.Android_riscv64.Stem = proptools.StringPtr(name + "-riscv64-android" + suffix)
 	p.Target.Android_x86.Srcs = []string{path.Join(libDir, name+"-i686-android"+suffix+".so")}
 	p.Target.Android_x86.Stem = proptools.StringPtr(name + "-i686-android" + suffix)
 	p.Target.Android_x86_64.Srcs = []string{path.Join(libDir, name+"-x86_64-android"+suffix+".so")}
@@ -315,8 +313,7 @@ func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext, libProps *preb
 
 	p.Target.Android_arm.Srcs = []string{path.Join(libDir, name+"-arm-android"+suffix+".a")}
 	p.Target.Android_arm64.Srcs = []string{path.Join(libDir, name+"-aarch64-android"+suffix+".a")}
-	// TODO(b/250918230): switch this to use real riscv64 prebuilts once they are available
-	p.Target.Android_riscv64.Srcs = []string{path.Join(libDir, name+"-aarch64-android"+suffix+".a")}
+	p.Target.Android_riscv64.Srcs = []string{path.Join(libDir, name+"-riscv64-android"+suffix+".a")}
 	p.Target.Android_x86.Srcs = []string{path.Join(libDir, name+"-i686-android"+suffix+".a")}
 	p.Target.Android_x86_64.Srcs = []string{path.Join(libDir, name+"-x86_64-android"+suffix+".a")}
 	p.Target.Linux_bionic_arm64.Srcs = []string{path.Join(libDir, name+"-aarch64-android"+suffix+".a")}
@@ -350,9 +347,6 @@ func libClangRtPrebuiltObject(ctx android.LoadHookContext) {
 			Arm64 struct {
 				Srcs []string
 			}
-			Riscv64 struct {
-				Srcs []string
-			}
 		}
 		System_shared_libs []string
 		Stl                *string
@@ -365,8 +359,6 @@ func libClangRtPrebuiltObject(ctx android.LoadHookContext) {
 	p.Arch.X86_64.Srcs = []string{path.Join(libDir, name+"-x86_64.o")}
 	p.Arch.Arm.Srcs = []string{path.Join(libDir, "arm-unknown-linux-musleabihf/lib/linux", name+"-armhf.o")}
 	p.Arch.Arm64.Srcs = []string{path.Join(libDir, "aarch64-unknown-linux-musl/lib/linux", name+"-aarch64.o")}
-	// TODO(b/250918230): switch this to use real riscv64 prebuilts once they are available
-	p.Arch.Riscv64.Srcs = []string{path.Join(libDir, "aarch64-unknown-linux-musl/lib/linux", name+"-aarch64.o")}
 	p.System_shared_libs = []string{}
 	p.Stl = proptools.StringPtr("none")
 	ctx.AppendProperties(p)
