@@ -1106,7 +1106,7 @@ def _get_legacy_features_begin():
                                             value = "static_library",
                                         ),
                                         expand_if_true = "libraries_to_link.is_whole_archive",
-                                        flags = ["-Wl,-whole-archive"],
+                                        flags = ["-Wl,--whole-archive"],
                                     ),
                                     flag_group(
                                         expand_if_equal = variable_with_value(
@@ -1157,7 +1157,7 @@ def _get_legacy_features_begin():
                                             value = "static_library",
                                         ),
                                         expand_if_true = "libraries_to_link.is_whole_archive",
-                                        flags = ["-Wl,-no-whole-archive"],
+                                        flags = ["-Wl,--no-whole-archive"],
                                     ),
                                     flag_group(
                                         expand_if_equal = variable_with_value(
