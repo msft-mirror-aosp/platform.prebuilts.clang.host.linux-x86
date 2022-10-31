@@ -271,6 +271,16 @@ cc_import(
     "strip",
 ]]
 
+[alias(
+    name = tool,
+    actual = generated_constants.CLANG_DEFAULT_VERSION + "/bin/" + tool,
+    visibility = ["//visibility:public"],
+) for tool in [
+    "clang-tidy",
+    "clang-tidy.sh",
+    "clang-tidy.real",
+]]
+
 # Test tools used by Bazel tests.
 filegroup(
     name = "test_tools",
