@@ -1453,6 +1453,194 @@ def _link_crtend(crt_files):
         ),
     ]
 
+def _get_ubsan_features(target_os):
+    ALL_UBSAN_ACTIONS = _actions.compile + _actions.link + _actions.assemble
+
+    ubsan_features = [
+        feature(
+            name = "ubsan_integer_overflow",
+            enabled = False,
+            flag_sets = [
+                flag_set(
+                    actions = ALL_UBSAN_ACTIONS,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-fsanitize=unsigned-integer-overflow",
+                                "-fsanitize=signed-integer-overflow",
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+            implies = ["ubsan_minimal_runtime"],
+        ),
+    ]
+
+    ubsan_checks = [
+        "alignment",
+        "bool",
+        "builtin",
+        "bounds",
+        "array-bounds",
+        "local-bounds",
+        "enum",
+        "float-cast-overflow",
+        "float-divide-by-zero",
+        "function",
+        "implicit-unsigned-integer-truncation",
+        "implicit-signed-integer-truncation",
+        "implicit-integer-sign-change",
+        "integer-divide-by-zero",
+        "nonnull-attribute",
+        "null",
+        "nullability-arg",
+        "nullability-assign",
+        "nullability-return",
+        "objc-cast",
+        "object-size",
+        "pointer-overflow",
+        "return",
+        "returns-nonnull-attribute",
+        "shift",
+        "shift-base",
+        "shift-exponent",
+        "unsigned-shift-base",
+        "signed-integer-overflow",
+        "unreachable",
+        "unsigned-integer-overflow",
+        "vla-bound",
+        "vptr",
+
+        # check groups
+        "undefined",
+        "implicit-integer-truncation",
+        "implicit-integer-arithmetic-value-change",
+        "implicit-conversion",
+        "integer",
+        "nullability",
+    ]
+    ubsan_features += [
+        feature(
+            name = "ubsan_" + check_name,
+            enabled = False,
+            flag_sets = [
+                flag_set(
+                    actions = ALL_UBSAN_ACTIONS,
+                    flag_groups = [
+                        flag_group(
+                            flags = ["-fsanitize=%s" % check_name],
+                        ),
+                    ],
+                ),
+            ],
+            implies = ["ubsan_minimal_runtime"],
+        )
+        for check_name in ubsan_checks
+    ]
+
+    ubsan_features += [
+        feature(
+            name = "ubsan_minimal_runtime",
+            enabled = False,
+            flag_sets = [
+                flag_set(
+                    actions = ALL_UBSAN_ACTIONS,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-fsanitize-minimal-runtime",
+                                "-fno-sanitize-trap=integer,undefined",
+                                "-fno-sanitize-recover=integer,undefined",
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    ]
+
+    ubsan_features += [
+        feature(
+            name = "ubsan_disable_unsupported_integer_checks",
+            enabled = True,
+            flag_sets = [
+                # TODO(b/119329758): If this bug is fixed, this shouldn't be
+                #                    needed anymore
+                flag_set(
+                    actions = _actions.compile,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-fno-sanitize=implicit-integer-sign-change",
+                            ],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            features = ["ubsan_integer"],
+                            not_features = [
+                                "ubsan_implicit-integer-sign-change",
+                            ],
+                        ),
+                    ],
+                ),
+                # TODO(b/171275751): If this bug is fixed, this shouldn't be
+                #                    needed anymore
+                flag_set(
+                    actions = _actions.compile,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-fno-sanitize=unsigned-shift-base",
+                            ],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            features = ["ubsan_integer"],
+                            not_features = [
+                                "ubsan_unsigned-shift-base",
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    ]
+
+    # non-Bionic toolchain prebuilts are missing UBSan's vptr and function san.
+    # Musl toolchain prebuilts have vptr and function sanitizers, but enabling
+    # them implicitly enables RTTI which causes RTTI mismatch issues with
+    # dependencies.
+    ubsan_features += [
+        feature(
+            name = "ubsan_disable_unsupported_non_bionic_checks",
+            enabled = target_os not in ["linux_bionic", "android"],
+            flag_sets = [
+                flag_set(
+                    actions = _actions.compile,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-fno-sanitize=function,vptr",
+                            ],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            features = ["ubsan_integer_overflow"],
+                        ),
+                    ] + [
+                        with_feature_set(features = ["ubsan_" + check_name])
+                        for check_name in ubsan_checks
+                    ],
+                ),
+            ],
+        ),
+    ]
+    return ubsan_features
+
 # Create the full list of features.
 def get_features(
         target_os,
@@ -1510,7 +1698,8 @@ def get_features(
         # Compiling stub.c sources to stub libraries
         _stub_library_feature(),
         _get_legacy_features_end(),
-
+        # Sanitizers
+        _get_ubsan_features(target_os),
         # This must always come last.
         _link_crtend(crt_files),
     ]
