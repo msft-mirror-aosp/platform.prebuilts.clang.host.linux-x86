@@ -30,10 +30,6 @@ load(
     "x86_64_host_toolchains",
     "x86_host_toolchains",
 )
-load(
-    ":cc_toolchain_features_ubsan_test.bzl",
-    "cc_toolchain_features_ubsan_test_suite",
-)
 load("//build/bazel/platforms/arch/variants:constants.bzl", _arch_constants = "constants")
 
 # Different clang versions are configured here.
@@ -293,8 +289,4 @@ filegroup(
         generated_constants.CLANG_DEFAULT_VERSION + "/bin/llvm-nm",
     ],
     visibility = ["//build/bazel/tests:__subpackages__"],
-)
-
-cc_toolchain_features_ubsan_test_suite(
-    name = "cc_toolchain_features_ubsan_tests",
 )
