@@ -6,13 +6,19 @@ load(
 )
 load(
     ":cc_toolchain_constants.bzl",
+    "arch_to_variants",
+    "variant_constraints",
+    "variant_name",
+    "x86_64_host_toolchains",
+    "x86_host_toolchains",
     _actions = "actions",
     _bionic_crt = "bionic_crt",
+    _enabled_features = "enabled_features",
     _flags = "flags",
     _generated_constants = "generated_constants",
-    _enabled_features = "enabled_features",
 )
 load(":cc_toolchain_features.bzl", "get_features")
+load("//build/bazel/platforms/arch/variants:constants.bzl", _arch_constants = "constants")
 
 # Clang-specific configuration.
 _ClangVersionInfo = provider(fields = ["directory", "includes"])
@@ -447,3 +453,70 @@ def android_cc_toolchain(
             name = name,
             actual = name + "_nocrt",
         )
+
+def _toolchain_name(arch, variant, nocrt = False):
+    return "cc_toolchain_{arch}{variant}{nocrt}_def".format(
+        arch = arch,
+        variant = variant_name(variant),
+        nocrt = "_nocrt" if nocrt else "",
+    )
+
+def toolchain_definition(arch, variant, nocrt = False):
+    """Macro to create a toolchain with a standardized name
+
+    The name used here must match that used in cc_register_toolchains.
+    """
+    name = _toolchain_name(arch, variant, nocrt)
+    native.toolchain(
+        name = name,
+        exec_compatible_with = [
+            "//build/bazel/platforms/arch:x86_64",
+            "//build/bazel/platforms/os:linux",
+        ],
+        target_compatible_with = [
+            "//build/bazel/platforms/arch:%s" % arch,
+            "//build/bazel/platforms/os:android",
+        ] + variant_constraints(
+            variant,
+            _arch_constants.AndroidArchToVariantToFeatures[arch],
+        ),
+        toolchain = ":cc_toolchain_{arch}{variant}{nocrt}".format(
+            arch = arch,
+            variant = variant_name(variant),
+            nocrt = "_nocrt" if nocrt else "",
+        ),
+        toolchain_type = (
+            ":nocrt_toolchain" if nocrt else "@bazel_tools//tools/cpp:toolchain_type"
+        ),
+    )
+
+def cc_register_toolchains():
+    """Register cc_toolchains for device and host platforms.
+
+    This function ensures that generic (non-variant) device toolchains are
+    registered last.
+    """
+
+    toolchain_definitions = [
+        tc[0] + "_def"
+        for tc in x86_64_host_toolchains + x86_host_toolchains
+    ]
+    deferred_toolchains = []
+
+    for arch, variants in arch_to_variants.items():
+        for variant in variants:
+            if variant_name(variant) == "":
+                deferred_toolchains.append((arch, variant))
+                continue
+
+            toolchain_definitions.append(_toolchain_name(arch, variant, nocrt = False))
+            toolchain_definitions.append(_toolchain_name(arch, variant, nocrt = True))
+
+    for (arch, variant) in deferred_toolchains:
+        toolchain_definitions.append(_toolchain_name(arch, variant, nocrt = False))
+        toolchain_definitions.append(_toolchain_name(arch, variant, nocrt = True))
+
+    native.register_toolchains(*[
+        "//prebuilts/clang/host/linux-x86:" + tc
+        for tc in toolchain_definitions
+    ])
