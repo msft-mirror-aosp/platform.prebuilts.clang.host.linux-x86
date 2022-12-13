@@ -622,16 +622,16 @@ def _pack_dynamic_relocations_features(os_is_device):
 def _undefined_symbols_feature():
     return _linker_flag_feature("no_undefined_symbols", flags = ["-Wl,--no-undefined"], enabled = True)
 
-def _dynamic_linker_flag_feature(os_is_device, arch_is_64_bit):
-    if os_is_device:
+def _dynamic_linker_flag_feature(target_os, arch_is_64_bit):
+    if target_os == "android":
         # TODO: handle bootstrap partition, asan
         dynamic_linker_path = "/system/bin/linker"
         if arch_is_64_bit:
             dynamic_linker_path += "64"
         return _binary_linker_flag_feature(name = "dynamic_linker", flags = ["-Wl,-dynamic-linker," + dynamic_linker_path])
+    elif target_os == "linux_bionic" or target_os == "linux_musl":
+        return _binary_linker_flag_feature(name = "dynamic_linker", flags = ["-Wl,--no-dynamic-linker"])
 
-    # TODO(b/205771732, b/205772164): linux_musl and linux_bionic should
-    # add "-Wl,--no-dynamic-linker".
     return []
 
 # TODO(b/202167934): Darwin uses @loader_path in place of $ORIGIN
@@ -1786,7 +1786,7 @@ def get_features(
         _linker_flag_feature("linker_flags", flags = linker_only_flags + _additional_linker_flags(os_is_device)),
         _archiver_flag_feature("additional_archiver_flags", flags = _additional_archiver_flags(target_os)),
         _undefined_symbols_feature(),
-        _dynamic_linker_flag_feature(os_is_device, arch_is_64_bit),
+        _dynamic_linker_flag_feature(target_os, arch_is_64_bit),
         _binary_linker_flag_feature("dynamic_executable", flags = _shared_binary_linker_flags(os_is_device, target_os)),
         # distinct from other static flags as it can be disabled separately
         _binary_linker_flag_feature("static_flag", flags = ["-static"], enabled = False),
