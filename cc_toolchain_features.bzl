@@ -857,7 +857,6 @@ def _get_legacy_features_begin():
         # cs_fdo_instrument
         # cs_fdo_optimize
         # fdo_prefetch_hints
-        # autofdo
         # propeller_optimize
         #
         # Interface libraries related features:
@@ -881,6 +880,26 @@ def _get_legacy_features_begin():
         #
         # ------------------------
         #
+        feature(
+            name = "autofdo",
+            flag_sets = [
+                flag_set(
+                    actions = _actions.compile,
+                    flag_groups = [
+                        flag_group(
+                            # https://cs.android.com/android/platform/superproject/+/master:build/soong/cc/afdo.go;l=35;drc=7a8362c252b152f806fc303c414ff1418672b067
+                            flags = [
+                                "-funique-internal-linkage-names",
+                                "-fprofile-sample-accurate",
+                                "-fprofile-sample-use=%{fdo_profile_path}",
+                            ],
+                            expand_if_available = "fdo_profile_path",
+                        ),
+                    ],
+                ),
+            ],
+            provides = ["profile"],
+        ),
         # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=98;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
         feature(
             name = "dependency_file",
