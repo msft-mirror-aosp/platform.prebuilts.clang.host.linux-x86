@@ -16,7 +16,7 @@ limitations under the License.
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 load(
     "//build/bazel/rules/test_common:flags.bzl",
-    "create_action_flags_test_for_config",
+    "action_flags_test",
 )
 
 def _ubsan_integer_overflow_feature_test_impl(ctx):
@@ -37,7 +37,7 @@ def _ubsan_integer_overflow_feature_test_impl(ctx):
 
     return analysistest.end(env)
 
-ubsan_sanitizer_test = analysistest.make(
+_ubsan_sanitizer_test = analysistest.make(
     _ubsan_integer_overflow_feature_test_impl,
     attrs = {
         "expected_sanitizers": attr.string_list(
@@ -45,6 +45,16 @@ ubsan_sanitizer_test = analysistest.make(
         ),
     },
 )
+
+def ubsan_sanitizer_test(**kwargs):
+    _ubsan_sanitizer_test(
+        target_compatible_with = select({
+            # Bionic isn't ready yet
+            "@//build/bazel/platforms/os:linux_bionic": ["@platforms//:incompatible"],
+            "//conditions:default": [],
+        }),
+        **kwargs
+    )
 
 # Include these different file types to make sure that all actions types are
 # triggered
@@ -116,39 +126,35 @@ def _ubsan_disablement_test_impl(ctx):
 
     return analysistest.end(env)
 
-disablement_test_attrs = {
-    "expected_disabled_sanitizer": attr.string(
-        doc = "The sanitizer to check for disablement via -fno-sanitize=*",
-    ),
-    "disabled": attr.bool(
-        doc = "Whether the sanitizer above should be disabled explciitly",
-    ),
-}
-ubsan_disablement_test = analysistest.make(
+_ubsan_disablement_test = analysistest.make(
     _ubsan_disablement_test_impl,
-    attrs = disablement_test_attrs,
-)
-ubsan_disablement_linux_test = analysistest.make(
-    _ubsan_disablement_test_impl,
-    attrs = disablement_test_attrs,
-    config_settings = {
-        "//command_line_option:platforms": "@//build/bazel/platforms:linux_x86",
+    attrs = {
+        "expected_disabled_sanitizer": attr.string(
+            doc = "The sanitizer to check for disablement via -fno-sanitize=*",
+        ),
+        "disabled": attr.bool(
+            doc = "Whether the sanitizer above should be disabled explciitly",
+        ),
     },
 )
-ubsan_disablement_linux_bionic_test = analysistest.make(
-    _ubsan_disablement_test_impl,
-    attrs = disablement_test_attrs,
-    config_settings = {
-        "//command_line_option:platforms": "@//build/bazel/platforms:linux_bionic_x86_64",
-    },
-)
-ubsan_disablement_android_test = analysistest.make(
-    _ubsan_disablement_test_impl,
-    attrs = disablement_test_attrs,
-    config_settings = {
-        "//command_line_option:platforms": "@//build/bazel/platforms:android_x86",
-    },
-)
+
+def ubsan_disablement_linux_test(**kwargs):
+    _ubsan_disablement_test(
+        target_compatible_with = ["@//build/bazel/platforms/os:linux"],
+        **kwargs
+    )
+
+def ubsan_disablement_linux_bionic_test(**kwargs):
+    _ubsan_disablement_test(
+        target_compatible_with = ["@//build/bazel/platforms/os:linux_bionic"],
+        **kwargs
+    )
+
+def ubsan_disablement_android_test(**kwargs):
+    _ubsan_disablement_test(
+        target_compatible_with = ["@//build/bazel/platforms/os:android"],
+        **kwargs
+    )
 
 def _test_ubsan_implicit_integer_sign_change_disabled_by_default_with_integer():
     name = "ubsan_implicit_integer_sign_change_disabled_by_default_with_integer"
@@ -160,7 +166,7 @@ def _test_ubsan_implicit_integer_sign_change_disabled_by_default_with_integer():
         features = ["ubsan_integer"],
         tags = ["manual"],
     )
-    ubsan_disablement_test(
+    ubsan_disablement_linux_test(
         name = test_name,
         target_under_test = name,
         expected_disabled_sanitizer = "implicit-integer-sign-change",
@@ -182,7 +188,7 @@ def _test_ubsan_implicit_integer_sign_change_not_disabled_when_specified():
         ],
         tags = ["manual"],
     )
-    ubsan_disablement_test(
+    ubsan_disablement_linux_test(
         name = test_name,
         target_under_test = name,
         expected_disabled_sanitizer = "implicit-integer-sign-change",
@@ -200,7 +206,7 @@ def _test_ubsan_implicit_integer_sign_change_not_disabled_without_integer():
         srcs = test_srcs,
         tags = ["manual"],
     )
-    ubsan_disablement_test(
+    ubsan_disablement_linux_test(
         name = test_name,
         target_under_test = name,
         expected_disabled_sanitizer = "implicit-integer-sign-change",
@@ -219,7 +225,7 @@ def _test_ubsan_unsigned_shift_base_disabled_by_default_with_integer():
         features = ["ubsan_integer"],
         tags = ["manual"],
     )
-    ubsan_disablement_test(
+    ubsan_disablement_linux_test(
         name = test_name,
         target_under_test = name,
         expected_disabled_sanitizer = "unsigned-shift-base",
@@ -241,7 +247,7 @@ def _test_ubsan_unsigned_shift_base_not_disabled_when_specified():
         ],
         tags = ["manual"],
     )
-    ubsan_disablement_test(
+    ubsan_disablement_linux_test(
         name = test_name,
         target_under_test = name,
         expected_disabled_sanitizer = "unsigned-shift-base",
@@ -259,7 +265,7 @@ def _test_ubsan_unsigned_shift_base_not_disabled_without_integer():
         srcs = test_srcs,
         tags = ["manual"],
     )
-    ubsan_disablement_test(
+    ubsan_disablement_linux_test(
         name = test_name,
         target_under_test = name,
         expected_disabled_sanitizer = "unsigned-shift-base",
@@ -351,23 +357,31 @@ def _test_ubsan_unsupported_non_bionic_checks_not_disabled_when_no_ubsan():
 link_action_mnemonic = "CppLink"
 sanitizer_no_link_runtime_flag = "-fno-sanitize-link-runtime"
 
-action_flags_linux_test = create_action_flags_test_for_config({
-    "//command_line_option:platforms": "@//build/bazel/platforms:linux_x86_64",
-})
+def action_flags_linux_test(**kwargs):
+    action_flags_test(
+        target_compatible_with = ["@//build/bazel/platforms/os:linux"],
+        **kwargs
+    )
 
-action_flags_android_test = create_action_flags_test_for_config({
-    "//command_line_option:platforms": "@//build/bazel/platforms:android_x86_64",
-})
+def action_flags_android_test(**kwargs):
+    action_flags_test(
+        target_compatible_with = ["@//build/bazel/platforms/os:android"],
+        **kwargs
+    )
 
 # TODO(b/263787980): Uncomment when bionic toolchain is implemented
-#action_flags_linux_bionic_test = create_action_flags_test_for_config({
-#    "//command_line_option:platforms": "@//build/bazel/platforms:linux_bionic_x86_64",
-#})
+#def action_flags_linux_bionic_test(**kwargs):
+#    action_flags_test(
+#        target_compatible_with = ["@//build/bazel/platforms/os:linux_bionic"],
+#        **kwargs
+#    )
 
 # TODO(b/263787526): Uncomment when musl toolchain is implemented
-#action_flags_linux_musl_test = create_action_flags_test_for_config({
-#    "//command_line_option:platforms": "@//build/bazel/platforms:linux_musl_x86_64",
-#})
+#def action_flags_linux_musl_test(**kwargs):
+#    action_flags_test(
+#        target_compatible_with = ["@//build/bazel/platforms/os:linux_musl"],
+#        **kwargs
+#    )
 
 def _test_ubsan_no_link_runtime():
     name = "ubsan_no_link_runtime"
