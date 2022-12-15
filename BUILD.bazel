@@ -29,6 +29,7 @@ load(
     "variant_name",
     "x86_64_host_toolchains",
     "x86_host_toolchains",
+    _bionic_crt = "bionic_crt",
 )
 load(
     ":cc_toolchain_features_thinlto_test.bzl",
@@ -71,6 +72,7 @@ _LIBCLANG_RT_PREBUILT_MAP = {
         name = "cc_toolchain_x86_64" + variant_name(variant),
         clang_version = ":clang",
         clang_version_directory = generated_constants.CLANG_DEFAULT_VERSION,
+        crt = _bionic_crt,
         libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_x86_64"],
         linker_flags = generated_constants.X86_64ToolchainLdflags + generated_constants.X86_64Lldflags,
         target_arch = arches.X86_64,
@@ -93,6 +95,7 @@ _LIBCLANG_RT_PREBUILT_MAP = {
         name = "cc_toolchain_x86" + variant_name(variant),
         clang_version = ":clang",
         clang_version_directory = generated_constants.CLANG_DEFAULT_VERSION,
+        crt = _bionic_crt,
         libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_x86"],
         linker_flags = generated_constants.X86ToolchainLdflags + generated_constants.X86Lldflags,
         target_arch = arches.X86,
@@ -115,6 +118,7 @@ _LIBCLANG_RT_PREBUILT_MAP = {
         name = "cc_toolchain_arm64" + variant_name(variant),
         clang_version = ":clang",
         clang_version_directory = generated_constants.CLANG_DEFAULT_VERSION,
+        crt = _bionic_crt,
         libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_arm64"],
         linker_flags = generated_constants.Arm64CpuVariantLdflags.get(
             variant.cpu_variant,
@@ -139,6 +143,7 @@ _LIBCLANG_RT_PREBUILT_MAP = {
         name = "cc_toolchain_arm" + variant_name(variant),
         clang_version = ":clang",
         clang_version_directory = generated_constants.CLANG_DEFAULT_VERSION,
+        crt = _bionic_crt,
         libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_arm"],
         linker_flags = generated_constants.ArmLldflags + arm_extra_ldflags(variant),
         target_arch = arches.Arm,
