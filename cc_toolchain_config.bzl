@@ -12,7 +12,6 @@ load(
     "x86_64_host_toolchains",
     "x86_host_toolchains",
     _actions = "actions",
-    _bionic_crt = "bionic_crt",
     _enabled_features = "enabled_features",
     _flags = "flags",
     _generated_constants = "generated_constants",
@@ -297,7 +296,7 @@ def android_cc_toolchain(
         clang_version_directory = None,
         gcc_toolchain = None,
         # If false, the crt version and "normal" version of this toolchain are identical.
-        crt = True,
+        crt = None,
         libclang_rt_builtin = None,
         target_flags = [],
         compiler_flags = [],
@@ -397,22 +396,22 @@ def android_cc_toolchain(
         _cc_toolchain_config(
             name = "%s_config" % name,
             toolchain_identifier = toolchain_identifier,
-            shared_library_crtbegin = _bionic_crt.shared_library_crtbegin,
-            shared_library_crtend = _bionic_crt.shared_library_crtend,
-            shared_binary_crtbegin = _bionic_crt.shared_binary_crtbegin,
-            static_binary_crtbegin = _bionic_crt.static_binary_crtbegin,
-            binary_crtend = _bionic_crt.binary_crtend,
+            shared_library_crtbegin = crt.shared_library_crtbegin,
+            shared_library_crtend = crt.shared_library_crtend,
+            shared_binary_crtbegin = crt.shared_binary_crtbegin,
+            static_binary_crtbegin = crt.static_binary_crtbegin,
+            binary_crtend = crt.binary_crtend,
             **common_toolchain_config
         )
 
         native.filegroup(
             name = "%s_crt_libs" % name,
             srcs = [
-                _bionic_crt.shared_library_crtbegin,
-                _bionic_crt.shared_library_crtend,
-                _bionic_crt.shared_binary_crtbegin,
-                _bionic_crt.static_binary_crtbegin,
-                _bionic_crt.binary_crtend,
+                crt.shared_library_crtbegin,
+                crt.shared_library_crtend,
+                crt.shared_binary_crtbegin,
+                crt.static_binary_crtbegin,
+                crt.binary_crtend,
             ],
         )
 
