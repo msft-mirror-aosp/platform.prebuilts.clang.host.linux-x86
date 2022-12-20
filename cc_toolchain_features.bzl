@@ -1103,6 +1103,23 @@ def _get_legacy_features_begin():
                 ),
             ],
         ),
+        feature(
+            name = "archive_with_prebuilt_flags",
+            flag_sets = [
+                flag_set(
+                    actions = ["c++-link-static-library"],
+                    flag_groups = [
+                        flag_group(
+                            flags = ["cqsL"],
+                        ),
+                        flag_group(
+                            expand_if_available = "output_execpath",
+                            flags = ["%{output_execpath}"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
         # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=653;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
         feature(
             name = "libraries_to_link",
