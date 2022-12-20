@@ -180,7 +180,10 @@ def _create_action_configs(tool_paths, target_os):
         action_name = _actions.cpp_link_static_library,
         enabled = True,
         tools = [tool_name_to_tool["ar"]],
-        implies = ["archiver_flags"],
+        implies = [
+            "archiver_flags",
+            "linker_param_file",
+        ],
     ))
 
     # unused, but Bazel complains if there isn't an action config for strip
