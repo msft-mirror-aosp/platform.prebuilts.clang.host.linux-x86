@@ -28,9 +28,16 @@ load(
     _experimental_cpp_std_version_no_gnu = "experimental_cpp_std_version_no_gnu",
     _flags = "flags",
     _generated_constants = "generated_constants",
+    _oses = "oses",
 )
 load("@soong_injection//api_levels:api_levels.bzl", _api_levels = "api_levels")
 load("@soong_injection//product_config:product_variables.bzl", "product_vars")
+
+def is_os_device(os):
+    return os == _oses.Android
+
+def is_os_bionic(os):
+    return os == _oses.Android or os == _oses.LinuxBionic
 
 def _get_sdk_version_features(os_is_device, target_arch):
     if not os_is_device:
@@ -187,7 +194,8 @@ def _get_c_std_features():
     ))
     return features
 
-def _compiler_flag_features(os_is_device, target_arch, target_os, flags = []):
+def _compiler_flag_features(target_arch, target_os, flags = []):
+    os_is_device = is_os_device(target_os)
     compiler_flags = []
 
     # Combine the toolchain's provided flags with the default ones.
@@ -434,7 +442,7 @@ def _compiler_flag_features(os_is_device, target_arch, target_os, flags = []):
         ],
     ))
 
-    if target_os != "darwin":
+    if target_os != _oses.Darwin:
         # These cannot be overriden by the user.
         features.append(feature(
             name = "no_override_clang_external_global_copts",
@@ -499,7 +507,7 @@ def _rtti_features(rtti_toggle):
     return [rtti_flag_feature, rtti_feature]
 
 # TODO(b/202167934): Darwin does not support pack dynamic relocations
-def _pack_dynamic_relocations_features(os_is_device):
+def _pack_dynamic_relocations_features(target_os):
     pack_dynamic_relocations_feature = feature(
         name = "pack_dynamic_relocations",
         enabled = True,
@@ -526,7 +534,7 @@ def _pack_dynamic_relocations_features(os_is_device):
         enabled = False,
     )
 
-    if not os_is_device:
+    if not is_os_bionic(target_os):
         return [pack_dynamic_relocations_feature, disable_pack_relocations_feature]
 
     # sdk version >= 30
@@ -623,19 +631,19 @@ def _undefined_symbols_feature():
     return _linker_flag_feature("no_undefined_symbols", flags = ["-Wl,--no-undefined"], enabled = True)
 
 def _dynamic_linker_flag_feature(target_os, arch_is_64_bit):
-    if target_os == "android":
+    flags = []
+    if is_os_device(target_os):
         # TODO: handle bootstrap partition, asan
         dynamic_linker_path = "/system/bin/linker"
         if arch_is_64_bit:
             dynamic_linker_path += "64"
-        return _binary_linker_flag_feature(name = "dynamic_linker", flags = ["-Wl,-dynamic-linker," + dynamic_linker_path])
-    elif target_os == "linux_bionic" or target_os == "linux_musl":
-        return _binary_linker_flag_feature(name = "dynamic_linker", flags = ["-Wl,--no-dynamic-linker"])
-
-    return []
+        flags += ["-Wl,-dynamic-linker," + dynamic_linker_path]
+    elif is_os_bionic(target_os) or target_os == _oses.LinuxMusl:
+        flags += ["-Wl,--no-dynamic-linker"]
+    return _binary_linker_flag_feature(name = "dynamic_linker", flags = flags) if len(flags) else []
 
 # TODO(b/202167934): Darwin uses @loader_path in place of $ORIGIN
-def _rpath_features(os_is_device, arch_is_64_bit):
+def _rpath_features(target_os, arch_is_64_bit):
     runtime_library_search_directories_flag_sets = [
         flag_set(
             actions = _actions.link,
@@ -688,7 +696,7 @@ def _rpath_features(os_is_device, arch_is_64_bit):
         ),
     ]
 
-    if (not os_is_device) and arch_is_64_bit:
+    if (not is_os_device(target_os)) and arch_is_64_bit:
         runtime_library_search_directories_flag_sets += [flag_set(
             actions = _actions.link,
             flag_groups = [
@@ -802,7 +810,7 @@ def _flatten(xs):
 
 def _additional_archiver_flags(target_os):
     archiver_flags = []
-    if target_os != "darwin":
+    if target_os != _oses.Darwin:
         archiver_flags.extend(_flags.non_darwin_archiver_flags)
     return archiver_flags
 
@@ -822,11 +830,11 @@ def _static_binary_linker_flags(os_is_device):
         linker_flags.extend(_flags.bionic_static_executable_linker_flags)
     return linker_flags
 
-def _shared_binary_linker_flags(os_is_device, target_os):
+def _shared_binary_linker_flags(target_os):
     linker_flags = []
-    if os_is_device:
+    if is_os_device(target_os):
         linker_flags.extend(_flags.bionic_dynamic_executable_linker_flags)
-    elif target_os != "windows":
+    elif target_os != _oses.Windows:
         linker_flags.extend(_flags.host_non_windows_dynamic_executable_linker_flags)
     return linker_flags
 
@@ -1752,7 +1760,7 @@ def get_features(
         libclang_rt_builtin,
         crt_files,
         rtti_toggle):
-    os_is_device = target_os == "android"
+    os_is_device = is_os_device(target_os)
     arch_is_64_bit = target_arch.endswith("64")
 
     # Aggregate all features in order.
@@ -1776,8 +1784,8 @@ def get_features(
         _get_c_std_features(),
         # Features tied to sdk version
         _get_sdk_version_features(os_is_device, target_arch),
-        _compiler_flag_features(os_is_device, target_arch, target_os, target_flags + compile_only_flags),
-        _rpath_features(os_is_device, arch_is_64_bit),
+        _compiler_flag_features(target_arch, target_os, target_flags + compile_only_flags),
+        _rpath_features(target_os, arch_is_64_bit),
         _rtti_features(rtti_toggle),
         _use_libcrt_feature(libclang_rt_builtin),
         # Shared compile/link flags that should also be part of the link actions.
@@ -1787,12 +1795,12 @@ def get_features(
         _archiver_flag_feature("additional_archiver_flags", flags = _additional_archiver_flags(target_os)),
         _undefined_symbols_feature(),
         _dynamic_linker_flag_feature(target_os, arch_is_64_bit),
-        _binary_linker_flag_feature("dynamic_executable", flags = _shared_binary_linker_flags(os_is_device, target_os)),
+        _binary_linker_flag_feature("dynamic_executable", flags = _shared_binary_linker_flags(target_os)),
         # distinct from other static flags as it can be disabled separately
         _binary_linker_flag_feature("static_flag", flags = ["-static"], enabled = False),
         # default for executables is dynamic linking
         _binary_linker_flag_feature("static_executable", flags = _static_binary_linker_flags(os_is_device), enabled = False),
-        _pack_dynamic_relocations_features(os_is_device),
+        _pack_dynamic_relocations_features(target_os),
         # System include directories features
         _toolchain_include_feature(system_includes = builtin_include_dirs),
         # Compiling stub.c sources to stub libraries
