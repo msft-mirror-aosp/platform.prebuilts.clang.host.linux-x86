@@ -154,6 +154,15 @@ arches = struct(
     X86_64 = "x86_64",
 )
 
+oses = struct(
+    Android = "android",
+    LinuxGlibc = "linux_glibc",
+    LinuxBionic = "linux_bionic",
+    LinuxMusl = "linux_musl",
+    Darwin = "darwin",
+    Windows = "windows",
+)
+
 def _variant_combinations(arch_variants = {}, cpu_variants = {}):
     combinations = []
     for arch in arch_variants:
