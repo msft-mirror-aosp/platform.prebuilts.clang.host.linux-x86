@@ -6,8 +6,9 @@
 # unless you have coordinated with the team managing the Soong to Bazel
 # migration.
 
-# Toolchain config
-filegroup(name = "empty")
+"""
+Toolchain config
+"""
 
 load(
     ":cc_toolchain_config.bzl",
@@ -23,9 +24,7 @@ load(
     "arm_extra_ldflags",
     "device_compatibility_flags_non_darwin",
     "device_compatibility_flags_non_windows",
-    "enabled_features",
     "generated_constants",
-    "variant_constraints",
     "variant_name",
     "x86_64_host_toolchains",
     "x86_64_musl_host_toolchains",
@@ -33,6 +32,10 @@ load(
     "x86_musl_host_toolchains",
     _bionic_crt = "bionic_crt",
     _musl_crt = "musl_crt",
+)
+load(
+    ":cc_toolchain_features_pack_relocation_test.bzl",
+    "cc_toolchain_features_pack_relocation_test_suite",
 )
 load(
     ":cc_toolchain_features_thinlto_test.bzl",
@@ -43,6 +46,8 @@ load(
     "cc_toolchain_features_ubsan_test_suite",
 )
 load("//build/bazel/platforms/arch/variants:constants.bzl", _arch_constants = "constants")
+
+filegroup(name = "empty")
 
 # Different clang versions are configured here.
 clang_version(
@@ -393,6 +398,10 @@ filegroup(
         generated_constants.CLANG_DEFAULT_VERSION + "/bin/llvm-nm",
     ],
     visibility = ["//build/bazel/tests:__subpackages__"],
+)
+
+cc_toolchain_features_pack_relocation_test_suite(
+    name = "cc_toolchain_features_pack_relocation_tests",
 )
 
 cc_toolchain_features_lto_test_suite(
