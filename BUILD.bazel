@@ -9,6 +9,8 @@
 # Toolchain config
 filegroup(name = "empty")
 
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load("@env//:env.bzl", "env")
 load(
     ":cc_toolchain_config.bzl",
     "android_cc_toolchain",
@@ -39,6 +41,11 @@ load(
     ":cc_toolchain_features_ubsan_test.bzl",
     "cc_toolchain_features_ubsan_test_suite",
 )
+load(
+    ":cc_toolchain_features_env_based_flags_test.bzl",
+    "cc_toolchain_features_env_based_flags_test_suite",
+)
+load("//build/bazel/flags:common.bzl", "is_env_true")
 load("//build/bazel/platforms/arch/variants:constants.bzl", _arch_constants = "constants")
 
 # Different clang versions are configured here.
@@ -310,4 +317,38 @@ cc_toolchain_features_lto_test_suite(
 
 cc_toolchain_features_ubsan_test_suite(
     name = "cc_toolchain_features_ubsan_tests",
+)
+
+cc_toolchain_features_env_based_flags_test_suite(
+    name = "cc_toolchain_features_env_based_flags_tests",
+)
+
+bool_flag(
+    name = "auto_zero_initialize_env",
+    build_setting_default = is_env_true(env.get("AUTO_ZERO_INITIALIZE")),
+)
+
+bool_flag(
+    name = "auto_pattern_initialize_env",
+    build_setting_default = is_env_true(env.get("AUTO_PATTERN_INITIALIZE")),
+)
+
+bool_flag(
+    name = "auto_uninitialize_env",
+    build_setting_default = is_env_true(env.get("AUTO_UNINITIALIZE")),
+)
+
+bool_flag(
+    name = "use_ccache_env",
+    build_setting_default = is_env_true(env.get("USE_CCACHE")),
+)
+
+bool_flag(
+    name = "llvm_next_env",
+    build_setting_default = is_env_true(env.get("LLVM_NEXT")),
+)
+
+bool_flag(
+    name = "allow_unknown_warning_option_env",
+    build_setting_default = is_env_true(env.get("ALLOW_UNKNOWN_WARNING_OPTION")),
 )
