@@ -500,27 +500,37 @@ def cc_register_toolchains():
     registered last.
     """
 
-    toolchain_definitions = [
+    generic_toolchains = []
+    arch_variant_toolchains = []
+    cpu_variant_toolchains = []
+    for arch, variants in arch_to_variants.items():
+        for variant in variants:
+            if not variant.arch_variant:
+                generic_toolchains.append((arch, variant))
+            elif not variant.cpu_variant:
+                arch_variant_toolchains.append((arch, variant))
+            else:
+                cpu_variant_toolchains.append((arch, variant))
+
+    target_toolchains = [
+        _toolchain_name(arch, variant, nocrt = nocrt)
+        for nocrt in [False, True]
+        for arch, variant in (
+            # Ordering is important here: more specific toolchains must be
+            # registered before more generic toolchains
+            cpu_variant_toolchains +
+            arch_variant_toolchains +
+            generic_toolchains
+        )
+    ]
+
+    host_toolchains = [
         tc[0] + "_def"
         for tc in x86_64_host_toolchains + x86_host_toolchains +
                   x86_64_musl_host_toolchains + x86_musl_host_toolchains
     ]
-    deferred_toolchains = []
-
-    for arch, variants in arch_to_variants.items():
-        for variant in variants:
-            if variant_name(variant) == "":
-                deferred_toolchains.append((arch, variant))
-                continue
-
-            toolchain_definitions.append(_toolchain_name(arch, variant, nocrt = False))
-            toolchain_definitions.append(_toolchain_name(arch, variant, nocrt = True))
-
-    for (arch, variant) in deferred_toolchains:
-        toolchain_definitions.append(_toolchain_name(arch, variant, nocrt = False))
-        toolchain_definitions.append(_toolchain_name(arch, variant, nocrt = True))
 
     native.register_toolchains(*[
         "//prebuilts/clang/host/linux-x86:" + tc
-        for tc in toolchain_definitions
+        for tc in host_toolchains + target_toolchains
     ])
