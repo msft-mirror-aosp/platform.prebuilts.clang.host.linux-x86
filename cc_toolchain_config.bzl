@@ -10,7 +10,9 @@ load(
     "variant_constraints",
     "variant_name",
     "x86_64_host_toolchains",
+    "x86_64_musl_host_toolchains",
     "x86_host_toolchains",
+    "x86_musl_host_toolchains",
     _actions = "actions",
     _enabled_features = "enabled_features",
     _flags = "flags",
@@ -500,7 +502,8 @@ def cc_register_toolchains():
 
     toolchain_definitions = [
         tc[0] + "_def"
-        for tc in x86_64_host_toolchains + x86_host_toolchains
+        for tc in x86_64_host_toolchains + x86_host_toolchains +
+                  x86_64_musl_host_toolchains + x86_musl_host_toolchains
     ]
     deferred_toolchains = []
 
