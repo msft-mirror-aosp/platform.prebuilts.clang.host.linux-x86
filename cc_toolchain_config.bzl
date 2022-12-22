@@ -219,15 +219,9 @@ def _cc_toolchain_config_impl(ctx):
     )
 
     features = get_features(
-        ctx.attr.target_os,
-        ctx.attr.target_arch,
-        ctx.attr.target_flags,
-        ctx.attr.compiler_flags,
-        ctx.attr.linker_flags,
+        ctx,
         builtin_include_dirs,
-        ctx.file.libclang_rt_builtin,
         crt_files,
-        ctx.attr.rtti_toggle,
     )
 
     # This is so that Bazel doesn't validate .d files against the set of headers
@@ -275,6 +269,24 @@ _cc_toolchain_config = rule(
         "static_binary_crtbegin": attr.label(allow_single_file = True, cfg = "target"),
         "binary_crtend": attr.label(allow_single_file = True, cfg = "target"),
         "rtti_toggle": attr.bool(default = True),
+        "_auto_zero_initialize": attr.label(
+            default = "//prebuilts/clang/host/linux-x86:auto_zero_initialize_env",
+        ),
+        "_auto_pattern_initialize": attr.label(
+            default = "//prebuilts/clang/host/linux-x86:auto_pattern_initialize_env",
+        ),
+        "_auto_uninitialize": attr.label(
+            default = "//prebuilts/clang/host/linux-x86:auto_uninitialize_env",
+        ),
+        "_use_ccache": attr.label(
+            default = "//prebuilts/clang/host/linux-x86:use_ccache_env",
+        ),
+        "_llvm_next": attr.label(
+            default = "//prebuilts/clang/host/linux-x86:llvm_next_env",
+        ),
+        "_allow_unknown_warning_option": attr.label(
+            default = "//prebuilts/clang/host/linux-x86:allow_unknown_warning_option_env",
+        ),
     },
     provides = [CcToolchainConfigInfo],
 )
