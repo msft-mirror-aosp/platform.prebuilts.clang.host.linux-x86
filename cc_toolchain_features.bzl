@@ -3,6 +3,7 @@
 This top level list of features are available through the get_features function.
 """
 
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load(
     "@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl",
     "feature",
@@ -194,7 +195,34 @@ def _get_c_std_features():
     ))
     return features
 
-def _compiler_flag_features(target_arch, target_os, flags = []):
+def _env_based_common_global_cflags(ctx):
+    flags = []
+
+    # The logic comes from https://cs.android.com/android/platform/superproject/+/master:build/soong/cc/config/global.go;l=332;drc=af32e1ba3ffca6b552ac1ff6d14e5c3a5148cb80
+    auto_pattern_initialize = ctx.attr._auto_pattern_initialize[BuildSettingInfo].value
+    auto_uninitialize = ctx.attr._auto_uninitialize[BuildSettingInfo].value
+    if ctx.attr._auto_zero_initialize[BuildSettingInfo].value:
+        flags.extend(["-ftrivial-auto-var-init=zero", "-enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang"])
+    elif auto_pattern_initialize:
+        flags.extend(["-ftrivial-auto-var-init=pattern"])
+    elif auto_uninitialize:
+        flags.extend(["-ftrivial-auto-var-init=uninitialized"])
+    else:
+        # Default to zero initialization.
+        flags.extend(["-ftrivial-auto-var-init=zero", "-enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang"])
+
+    if ctx.attr._use_ccache[BuildSettingInfo].value or (not auto_pattern_initialize and not auto_uninitialize):
+        flags.extend(["-Wno-unused-command-line-argument"])
+
+    if ctx.attr._llvm_next[BuildSettingInfo].value:
+        flags.extend(["-Wno-error=single-bit-bitfield-constant-conversion"])
+
+    if ctx.attr._allow_unknown_warning_option[BuildSettingInfo].value:
+        flags.extend(["-Wno-error=unknown-warning-option"])
+
+    return flags
+
+def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
     os_is_device = is_os_device(target_os)
     compiler_flags = []
 
@@ -202,6 +230,7 @@ def _compiler_flag_features(target_arch, target_os, flags = []):
     compiler_flags.extend(flags)
     compiler_flags.extend(_flags.compiler_flags)
     compiler_flags.extend(_generated_constants.CommonGlobalCflags)
+    compiler_flags.extend(_env_based_common_global_cflags(ctx))
 
     if os_is_device:
         compiler_flags.extend(_generated_constants.DeviceGlobalCflags)
@@ -1768,15 +1797,17 @@ def _get_ubsan_features(target_os):
 
 # Create the full list of features.
 def get_features(
-        target_os,
-        target_arch,
-        target_flags,
-        compile_only_flags,
-        linker_only_flags,
+        ctx,
         builtin_include_dirs,
-        libclang_rt_builtin,
-        crt_files,
-        rtti_toggle):
+        crt_files):
+    target_os = ctx.attr.target_os
+    target_arch = ctx.attr.target_arch
+    target_flags = ctx.attr.target_flags
+    compile_only_flags = ctx.attr.compiler_flags
+    linker_only_flags = ctx.attr.linker_flags
+    libclang_rt_builtin = ctx.file.libclang_rt_builtin
+    rtti_toggle = ctx.attr.rtti_toggle
+
     os_is_device = is_os_device(target_os)
     arch_is_64_bit = target_arch.endswith("64")
 
@@ -1801,7 +1832,7 @@ def get_features(
         _get_c_std_features(),
         # Features tied to sdk version
         _get_sdk_version_features(os_is_device, target_arch),
-        _compiler_flag_features(target_arch, target_os, target_flags + compile_only_flags),
+        _compiler_flag_features(ctx, target_arch, target_os, target_flags + compile_only_flags),
         _rpath_features(target_os, arch_is_64_bit),
         _rtti_features(rtti_toggle),
         _use_libcrt_feature(libclang_rt_builtin),
