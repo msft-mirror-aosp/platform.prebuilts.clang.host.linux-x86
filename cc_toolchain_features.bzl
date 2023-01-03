@@ -1612,6 +1612,13 @@ def _get_ubsan_features(target_os):
 
     ubsan_features = [
         feature(
+            name = "ubsan_enabled",
+            enabled = False,
+        ),
+    ]
+
+    ubsan_features += [
+        feature(
             name = "ubsan_integer_overflow",
             enabled = False,
             flag_sets = [
@@ -1627,7 +1634,7 @@ def _get_ubsan_features(target_os):
                     ],
                 ),
             ],
-            implies = ["ubsan_minimal_runtime"],
+            implies = ["ubsan_minimal_runtime", "ubsan_enabled"],
         ),
     ]
 
@@ -1688,7 +1695,7 @@ def _get_ubsan_features(target_os):
                     ],
                 ),
             ],
-            implies = ["ubsan_minimal_runtime"],
+            implies = ["ubsan_minimal_runtime", "ubsan_enabled"],
         )
         for check_name in ubsan_checks
     ]
@@ -1770,7 +1777,7 @@ def _get_ubsan_features(target_os):
     ubsan_features += [
         feature(
             name = "ubsan_disable_unsupported_non_bionic_checks",
-            enabled = target_os not in ["linux_bionic", "android"],
+            enabled = target_os not in [_oses.LinuxBionic, _oses.Android],
             flag_sets = [
                 flag_set(
                     actions = _actions.compile,
@@ -1793,6 +1800,35 @@ def _get_ubsan_features(target_os):
             ],
         ),
     ]
+
+    ubsan_features += [
+        feature(
+            name = "ubsan_no_sanitize_link_runtime",
+            enabled = target_os in [
+                _oses.Android,
+                _oses.LinuxBionic,
+                _oses.LinuxMusl,
+            ],
+            flag_sets = [
+                flag_set(
+                    actions = _actions.link,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-fno-sanitize-link-runtime",
+                            ],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            features = ["ubsan_enabled"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    ]
+
     return ubsan_features
 
 # Create the full list of features.
