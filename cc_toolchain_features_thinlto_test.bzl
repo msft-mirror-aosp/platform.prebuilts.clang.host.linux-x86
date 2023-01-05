@@ -14,46 +14,9 @@ limitations under the License.
 """
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
-
-def _thinlto_test_impl(ctx):
-    env = analysistest.begin(ctx)
-    actions = analysistest.target_actions(env)
-
-    for action in actions:
-        if action.mnemonic in ctx.attr.expected_action_mnemonics:
-            for flag in ctx.attr.expected_flags:
-                asserts.true(
-                    env,
-                    flag in action.argv,
-                    "%s action did not contain %s flag" % (
-                        action.mnemonic,
-                        flag,
-                    ),
-                )
-        else:
-            for flag in ctx.attr.expected_flags:
-                if action.argv != None:
-                    asserts.false(
-                        env,
-                        flag in action.argv,
-                        "%s action contained unexpected flag %s" % (
-                            action.mnemonic,
-                            flag,
-                        ),
-                    )
-
-    return analysistest.end(env)
-
-thinlto_test = analysistest.make(
-    _thinlto_test_impl,
-    attrs = {
-        "expected_flags": attr.string_list(
-            doc = "Flags expected to be supplied to the command line",
-        ),
-        "expected_action_mnemonics": attr.string_list(
-            doc = "Mnemonics for the actions that should have expected_flags",
-        ),
-    },
+load(
+    "//build/bazel/rules/test_common:flags.bzl",
+    "action_flags_test",
 )
 
 # Include these different file types to make sure that all actions types are
@@ -65,6 +28,9 @@ test_srcs = [
     "blah.S",
 ]
 
+compile_action_mnemonic = "CppCompile"
+link_action_mnemonic = "CppLink"
+
 def test_thin_lto_feature():
     name = "thin_lto_feature"
     test_name = name + "_test"
@@ -75,10 +41,10 @@ def test_thin_lto_feature():
         features = ["android_thin_lto"],
         tags = ["manual"],
     )
-    thinlto_test(
+    action_flags_test(
         name = test_name,
         target_under_test = name,
-        expected_action_mnemonics = ["CppCompile", "CppLink"],
+        mnemonics_with_flags = [compile_action_mnemonic, link_action_mnemonic],
         expected_flags = [
             "-flto=thin",
             "-fsplit-lto-unit",
@@ -100,10 +66,10 @@ def test_whole_program_vtables_feature():
         ],
         tags = ["manual"],
     )
-    thinlto_test(
+    action_flags_test(
         name = test_name,
         target_under_test = name,
-        expected_action_mnemonics = ["CppLink"],
+        mnemonics_with_flags = [link_action_mnemonic],
         expected_flags = ["-fwhole-program-vtables"],
     )
 
@@ -121,10 +87,14 @@ def test_whole_program_vtables_requires_thinlto_feature():
         ],
         tags = ["manual"],
     )
-    thinlto_test(
+    action_flags_test(
         name = test_name,
         target_under_test = name,
-        expected_action_mnemonics = [],
+        mnemonics_without_flags = [
+            compile_action_mnemonic,
+            link_action_mnemonic,
+        ],
+        exclusive = False,
         expected_flags = ["-fwhole-program-vtables"],
     )
 
@@ -143,10 +113,10 @@ def test_limit_cross_tu_inline_feature():
         ],
         tags = ["manual"],
     )
-    thinlto_test(
+    action_flags_test(
         name = test_name,
         target_under_test = name,
-        expected_action_mnemonics = ["CppLink"],
+        mnemonics_with_flags = [link_action_mnemonic],
         expected_flags = ["-Wl,-plugin-opt,-import-instr-limit=5"],
     )
 
@@ -164,10 +134,14 @@ def test_limit_cross_tu_inline_requires_thinlto_feature():
         ],
         tags = ["manual"],
     )
-    thinlto_test(
+    action_flags_test(
         name = test_name,
         target_under_test = name,
-        expected_action_mnemonics = [],
+        mnemonics_without_flags = [
+            compile_action_mnemonic,
+            link_action_mnemonic,
+        ],
+        exclusive = False,
         expected_flags = ["-Wl,-plugin-opt,-import-instr-limit=5"],
     )
 
@@ -188,19 +162,23 @@ def test_disable_thin_lto():
         ],
         tags = ["manual"],
     )
-    thinlto_test(
+    action_flags_test(
         name = no_lto_flag_test_name,
         target_under_test = name,
-        expected_action_mnemonics = ["CppCompile", "CppLink"],
+        mnemonics_with_flags = [compile_action_mnemonic, link_action_mnemonic],
         expected_flags = ["-fno-lto"],
     )
 
     lto_flags_not_present_test_name = name + "_lto_flags_not_present_test"
 
-    thinlto_test(
+    action_flags_test(
         name = lto_flags_not_present_test_name,
         target_under_test = name,
-        expected_action_mnemonics = [],
+        mnemonics_without_flags = [
+            compile_action_mnemonic,
+            link_action_mnemonic,
+        ],
+        exclusive = False,
         expected_flags = [
             "-flto=thin",
             "-fsplit-lto-unit",
