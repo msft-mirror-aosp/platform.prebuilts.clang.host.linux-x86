@@ -431,6 +431,70 @@ def _test_ubsan_link_runtime_when_not_bionic_or_musl():
 
     return test_name
 
+no_undefined_flag = "-Wl,--no-undefined"
+
+def _test_no_undefined_flag_present_when_bionic_or_musl():
+    name = "no_undefined_flag_present_when_bionic_or_musl"
+
+    native.cc_binary(
+        name = name,
+        srcs = test_srcs,
+        features = ["ubsan_undefined"],
+        tags = ["manual"],
+    )
+
+    android_test_name = name + "_when_android_test"
+    test_names = [android_test_name]
+    action_flags_android_test(
+        name = android_test_name,
+        target_under_test = name,
+        mnemonics_with_flags = [link_action_mnemonic],
+        expected_flags = [no_undefined_flag],
+    )
+
+    # TODO(b/263787980): Uncomment when bionic toolchain is implemented
+    #    bionic_test_name = name + "_when_bionic_test"
+    #    test_names += [bionic_test_name]
+    #    action_flags_linux_bionic_test(
+    #        name = bionic_test_name,
+    #        target_under_test = name,
+    #        mnemonics_with_flags = [link_action_mnemonic],
+    #        expected_flags = [no_undefined_flag],
+    #    )
+
+    # TODO(b/263787526): Uncomment when musl toolchain is implemented
+    #    musl_test_name = name + "_when_musl_test"
+    #    test_names += [musl_test_name]
+    #    action_flags_musl_test(
+    #        name = musl_test_name,
+    #        target_under_test = name,
+    #        mnemonics_with_flags = [link_action_mnemonic],
+    #        expected_flags = [no_undefined_flag],
+    #    )
+
+    return test_names
+
+def _test_no_undefined_flag_absent_when_not_bionic_or_musl():
+    name = "no_undefined_flag_absent_when_not_bionic_or_musl"
+    test_name = name + "_test"
+
+    native.cc_binary(
+        name = name,
+        srcs = test_srcs,
+        features = ["ubsan_undefined"],
+        tags = ["manual"],
+    )
+
+    action_flags_linux_test(
+        name = test_name,
+        target_under_test = name,
+        mnemonics_without_flags = [link_action_mnemonic],
+        exclusive = False,
+        expected_flags = [no_undefined_flag],
+    )
+
+    return test_name
+
 def cc_toolchain_features_ubsan_test_suite(name):
     native.test_suite(
         name = name,
@@ -449,5 +513,5 @@ def cc_toolchain_features_ubsan_test_suite(name):
             _test_ubsan_unsupported_non_bionic_checks_not_disabled_when_android(),
             _test_ubsan_unsupported_non_bionic_checks_not_disabled_when_no_ubsan(),
             _test_ubsan_link_runtime_when_not_bionic_or_musl(),
-        ] + _test_ubsan_no_link_runtime(),
+        ] + _test_ubsan_no_link_runtime() + _test_no_undefined_flag_present_when_bionic_or_musl(),
     )
