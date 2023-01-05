@@ -656,8 +656,12 @@ def _pack_dynamic_relocations_features(target_os):
     ]
 
 # TODO(b/202167934): Darwin by default disallows undefined symbols, to allow, -Wl,undefined,dynamic_lookup
-def _undefined_symbols_feature():
-    return _linker_flag_feature("no_undefined_symbols", flags = ["-Wl,--no-undefined"], enabled = True)
+def _undefined_symbols_feature(target_os):
+    return _linker_flag_feature(
+        "no_undefined_symbols",
+        flags = ["-Wl,--no-undefined"],
+        enabled = is_os_bionic(target_os) or target_os == _oses.LinuxMusl,
+    )
 
 def _dynamic_linker_flag_feature(target_os, arch_is_64_bit):
     flags = []
@@ -1877,7 +1881,7 @@ def get_features(
         # Link-only flags.
         _linker_flag_feature("linker_flags", flags = linker_only_flags + _additional_linker_flags(os_is_device)),
         _archiver_flag_feature("additional_archiver_flags", flags = _additional_archiver_flags(target_os)),
-        _undefined_symbols_feature(),
+        _undefined_symbols_feature(target_os),
         _dynamic_linker_flag_feature(target_os, arch_is_64_bit),
         _binary_linker_flag_feature("dynamic_executable", flags = _shared_binary_linker_flags(target_os)),
         # distinct from other static flags as it can be disabled separately
