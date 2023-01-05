@@ -395,6 +395,7 @@ def _test_ubsan_no_link_runtime():
     #        name = bionic_test_name,
     #        target_under_test = name,
     #        mnemonics_with_flags = [link_action_mnemonic],
+    #        expected_flags = [sanitizer_no_link_runtime_flag],
     #    )
     #    test_names += [bionic_test_name]
 
