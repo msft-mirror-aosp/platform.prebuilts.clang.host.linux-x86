@@ -40,6 +40,12 @@ def is_os_device(os):
 def is_os_bionic(os):
     return os == _oses.Android or os == _oses.LinuxBionic
 
+def _sdk_version_features_between(start, end):
+    return ["sdk_version_" + str(i) for i in range(start, end + 1)]
+
+def _sdk_version_features_before(version):
+    return _sdk_version_features_between(1, version - 1)
+
 def _get_sdk_version_features(os_is_device, target_arch):
     if not os_is_device:
         return []
@@ -537,12 +543,69 @@ def _rtti_features(rtti_toggle):
 
 # TODO(b/202167934): Darwin does not support pack dynamic relocations
 def _pack_dynamic_relocations_features(target_os):
+    sht_relr_flags = flag_set(
+        actions = _actions.link,
+        flag_groups = [
+            flag_group(
+                flags = ["-Wl,--pack-dyn-relocs=android+relr"],
+            ),
+        ],
+        with_features = [
+            with_feature_set(
+                features = ["linker_flags"],
+                not_features = ["disable_pack_relocations"] + _sdk_version_features_before(30),
+            ),
+        ],
+    )
+    android_relr_flags = flag_set(
+        actions = _actions.link,
+        flag_groups = [
+            flag_group(
+                flags = ["-Wl,--pack-dyn-relocs=android+relr", "-Wl,--use-android-relr-tags"],
+            ),
+        ],
+        with_features = [
+            with_feature_set(
+                features = ["linker_flags", version],
+                not_features = ["disable_pack_relocations"],
+            )
+            for version in _sdk_version_features_between(28, 29)
+        ],
+    )
+    relocation_packer_flags = flag_set(
+        actions = _actions.link,
+        flag_groups = [
+            flag_group(
+                flags = ["-Wl,--pack-dyn-relocs=android"],
+            ),
+        ],
+        with_features = [
+            with_feature_set(
+                features = ["linker_flags", version],
+                not_features = ["disable_pack_relocations"],
+            )
+            for version in _sdk_version_features_between(23, 27)
+        ],
+    )
+
+    if is_os_bionic(target_os):
+        pack_dyn_relr_flag_sets = [
+            sht_relr_flags,
+            android_relr_flags,
+            relocation_packer_flags,
+        ]
+    else:
+        pack_dyn_relr_flag_sets = []
+
     pack_dynamic_relocations_feature = feature(
         name = "pack_dynamic_relocations",
         enabled = True,
+        flag_sets = pack_dyn_relr_flag_sets,
     )
-
     disable_pack_relocations_feature = feature(
+        # this will take precedence over the pack_dynamic_relocations feature
+        # because each flag_set in that feature explicitly disallows the
+        # disable_dynamic_relocations feature
         name = "disable_pack_relocations",
         flag_sets = [
             flag_set(
@@ -555,109 +618,24 @@ def _pack_dynamic_relocations_features(target_os):
                 with_features = [
                     with_feature_set(
                         features = ["linker_flags"],
-                        not_features = ["pack_dynamic_relocations"],
                     ),
                 ],
             ),
         ],
         enabled = False,
     )
-
-    if not is_os_bionic(target_os):
-        return [pack_dynamic_relocations_feature, disable_pack_relocations_feature]
-
-    # sdk version >= 30
-    sht_relr_feature = feature(
-        name = "sht_relr",
-        provides = ["pack_dynamic_relocations"],
-        flag_sets = [
-            flag_set(
-                actions = _actions.link,
-                flag_groups = [
-                    flag_group(
-                        flags = ["-Wl,--pack-dyn-relocs=android+relr"],
-                    ),
-                ],
-                with_features = [
-                    with_feature_set(
-                        features = ["linker_flags"],
-                        not_features = [
-                            "disable_pack_relocations",
-                            "android_relr",
-                            "relocation_packer",
-                        ],
-                    ),
-                ],
-            ),
-        ],
-        enabled = True,
-    )
-
-    # sdk version >= 28
-    android_relr_feature = feature(
-        name = "android_relr",
-        provides = ["pack_dynamic_relocations"],
-        flag_sets = [
-            flag_set(
-                actions = _actions.link,
-                flag_groups = [
-                    flag_group(
-                        flags = ["-Wl,--pack-dyn-relocs=android+relr", "-Wl,--use-android-relr-tags"],
-                    ),
-                ],
-                with_features = [
-                    with_feature_set(
-                        features = ["linker_flags"],
-                        not_features = [
-                            "disable_pack_relocations",
-                            "sht_relr",
-                            "relocation_packer",
-                        ],
-                    ),
-                ],
-            ),
-        ],
-        enabled = False,
-    )
-
-    # sdk version >= 32
-    relocation_packer_feature = feature(
-        name = "relocation_packer",
-        provides = ["pack_dynamic_relocations"],
-        flag_sets = [
-            flag_set(
-                actions = _actions.link,
-                flag_groups = [
-                    flag_group(
-                        flags = ["-Wl,--pack-dyn-relocs=android"],
-                    ),
-                ],
-                with_features = [
-                    with_feature_set(
-                        features = ["linker_flags"],
-                        not_features = [
-                            "disable_pack_relocations",
-                            "sht_relr",
-                            "android_relr",
-                        ],
-                    ),
-                ],
-            ),
-        ],
-        enabled = False,
-    )
-
     return [
         pack_dynamic_relocations_feature,
         disable_pack_relocations_feature,
-        sht_relr_feature,
-        android_relr_feature,
-        relocation_packer_feature,
     ]
 
 # TODO(b/202167934): Darwin by default disallows undefined symbols, to allow, -Wl,undefined,dynamic_lookup
-def _undefined_symbols_feature():
-    return _linker_flag_feature("no_undefined_symbols", flags = ["-Wl,--no-undefined"], enabled = True)
+def _undefined_symbols_feature(target_os):
+    return _linker_flag_feature(
+        "no_undefined_symbols",
+        flags = ["-Wl,--no-undefined"],
+        enabled = is_os_bionic(target_os) or target_os == _oses.LinuxMusl,
+    )
 
 def _dynamic_linker_flag_feature(target_os, arch_is_64_bit):
     flags = []
@@ -1877,7 +1855,7 @@ def get_features(
         # Link-only flags.
         _linker_flag_feature("linker_flags", flags = linker_only_flags + _additional_linker_flags(os_is_device)),
         _archiver_flag_feature("additional_archiver_flags", flags = _additional_archiver_flags(target_os)),
-        _undefined_symbols_feature(),
+        _undefined_symbols_feature(target_os),
         _dynamic_linker_flag_feature(target_os, arch_is_64_bit),
         _binary_linker_flag_feature("dynamic_executable", flags = _shared_binary_linker_flags(target_os)),
         # distinct from other static flags as it can be disabled separately
