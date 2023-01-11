@@ -10,7 +10,9 @@ load(
     "variant_constraints",
     "variant_name",
     "x86_64_host_toolchains",
+    "x86_64_musl_host_toolchains",
     "x86_host_toolchains",
+    "x86_musl_host_toolchains",
     _actions = "actions",
     _enabled_features = "enabled_features",
     _flags = "flags",
@@ -180,7 +182,9 @@ def _create_action_configs(tool_paths, target_os):
         action_name = _actions.cpp_link_static_library,
         enabled = True,
         tools = [tool_name_to_tool["ar"]],
-        implies = ["archiver_flags"],
+        implies = [
+            "linker_param_file",
+        ],
     ))
 
     # unused, but Bazel complains if there isn't an action config for strip
@@ -215,15 +219,9 @@ def _cc_toolchain_config_impl(ctx):
     )
 
     features = get_features(
-        ctx.attr.target_os,
-        ctx.attr.target_arch,
-        ctx.attr.target_flags,
-        ctx.attr.compiler_flags,
-        ctx.attr.linker_flags,
+        ctx,
         builtin_include_dirs,
-        ctx.file.libclang_rt_builtin,
         crt_files,
-        ctx.attr.rtti_toggle,
     )
 
     # This is so that Bazel doesn't validate .d files against the set of headers
@@ -271,6 +269,24 @@ _cc_toolchain_config = rule(
         "static_binary_crtbegin": attr.label(allow_single_file = True, cfg = "target"),
         "binary_crtend": attr.label(allow_single_file = True, cfg = "target"),
         "rtti_toggle": attr.bool(default = True),
+        "_auto_zero_initialize": attr.label(
+            default = "//prebuilts/clang/host/linux-x86:auto_zero_initialize_env",
+        ),
+        "_auto_pattern_initialize": attr.label(
+            default = "//prebuilts/clang/host/linux-x86:auto_pattern_initialize_env",
+        ),
+        "_auto_uninitialize": attr.label(
+            default = "//prebuilts/clang/host/linux-x86:auto_uninitialize_env",
+        ),
+        "_use_ccache": attr.label(
+            default = "//prebuilts/clang/host/linux-x86:use_ccache_env",
+        ),
+        "_llvm_next": attr.label(
+            default = "//prebuilts/clang/host/linux-x86:llvm_next_env",
+        ),
+        "_allow_unknown_warning_option": attr.label(
+            default = "//prebuilts/clang/host/linux-x86:allow_unknown_warning_option_env",
+        ),
     },
     provides = [CcToolchainConfigInfo],
 )
@@ -496,26 +512,37 @@ def cc_register_toolchains():
     registered last.
     """
 
-    toolchain_definitions = [
-        tc[0] + "_def"
-        for tc in x86_64_host_toolchains + x86_host_toolchains
-    ]
-    deferred_toolchains = []
-
+    generic_toolchains = []
+    arch_variant_toolchains = []
+    cpu_variant_toolchains = []
     for arch, variants in arch_to_variants.items():
         for variant in variants:
-            if variant_name(variant) == "":
-                deferred_toolchains.append((arch, variant))
-                continue
+            if not variant.arch_variant:
+                generic_toolchains.append((arch, variant))
+            elif not variant.cpu_variant:
+                arch_variant_toolchains.append((arch, variant))
+            else:
+                cpu_variant_toolchains.append((arch, variant))
 
-            toolchain_definitions.append(_toolchain_name(arch, variant, nocrt = False))
-            toolchain_definitions.append(_toolchain_name(arch, variant, nocrt = True))
+    target_toolchains = [
+        _toolchain_name(arch, variant, nocrt = nocrt)
+        for nocrt in [False, True]
+        for arch, variant in (
+            # Ordering is important here: more specific toolchains must be
+            # registered before more generic toolchains
+            cpu_variant_toolchains +
+            arch_variant_toolchains +
+            generic_toolchains
+        )
+    ]
 
-    for (arch, variant) in deferred_toolchains:
-        toolchain_definitions.append(_toolchain_name(arch, variant, nocrt = False))
-        toolchain_definitions.append(_toolchain_name(arch, variant, nocrt = True))
+    host_toolchains = [
+        tc[0] + "_def"
+        for tc in x86_64_host_toolchains + x86_host_toolchains +
+                  x86_64_musl_host_toolchains + x86_musl_host_toolchains
+    ]
 
     native.register_toolchains(*[
         "//prebuilts/clang/host/linux-x86:" + tc
-        for tc in toolchain_definitions
+        for tc in host_toolchains + target_toolchains
     ])

@@ -6,9 +6,12 @@
 # unless you have coordinated with the team managing the Soong to Bazel
 # migration.
 
-# Toolchain config
-filegroup(name = "empty")
+"""
+Toolchain config
+"""
 
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load("@env//:env.bzl", "env")
 load(
     ":cc_toolchain_config.bzl",
     "android_cc_toolchain",
@@ -23,13 +26,18 @@ load(
     "arm_extra_ldflags",
     "device_compatibility_flags_non_darwin",
     "device_compatibility_flags_non_windows",
-    "enabled_features",
     "generated_constants",
-    "variant_constraints",
     "variant_name",
     "x86_64_host_toolchains",
+    "x86_64_musl_host_toolchains",
     "x86_host_toolchains",
+    "x86_musl_host_toolchains",
     _bionic_crt = "bionic_crt",
+    _musl_crt = "musl_crt",
+)
+load(
+    ":cc_toolchain_features_pack_relocation_test.bzl",
+    "cc_toolchain_features_pack_relocation_test_suite",
 )
 load(
     ":cc_toolchain_features_thinlto_test.bzl",
@@ -39,7 +47,14 @@ load(
     ":cc_toolchain_features_ubsan_test.bzl",
     "cc_toolchain_features_ubsan_test_suite",
 )
+load(
+    ":cc_toolchain_features_env_based_flags_test.bzl",
+    "cc_toolchain_features_env_based_flags_test_suite",
+)
+load("//build/bazel/flags:common.bzl", "is_env_true")
 load("//build/bazel/platforms/arch/variants:constants.bzl", _arch_constants = "constants")
+
+filegroup(name = "empty")
 
 # Different clang versions are configured here.
 clang_version(
@@ -63,6 +78,8 @@ _LIBCLANG_RT_PREBUILT_MAP = {
     "//build/bazel/platforms/os_arch:linux_bionic_x86_64": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-x86_64-android.a",
     "//build/bazel/platforms/os_arch:linux_glibc_x86": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-i386.a",
     "//build/bazel/platforms/os_arch:linux_glibc_x86_64": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-x86_64.a",
+    "//build/bazel/platforms/os_arch:linux_musl_x86": _LIBCLANG_RT_PREFIX + "/i686-unknown-linux-musl/lib/linux/libclang_rt.builtins-i386.a",
+    "//build/bazel/platforms/os_arch:linux_musl_x86_64": _LIBCLANG_RT_PREFIX + "/x86_64-unknown-linux-musl/lib/linux/libclang_rt.builtins-x86_64.a",
     "//conditions:default": None,
 }
 
@@ -215,6 +232,56 @@ android_cc_toolchain(
     toolchain_identifier = "x86-toolchain",
 )
 
+# Toolchain to compile for the linux host with musl libc.
+android_cc_toolchain(
+    name = "cc_toolchain_x86_64_linux_musl_host",
+    clang_version = ":clang",
+    clang_version_directory = generated_constants.CLANG_DEFAULT_VERSION,
+    compiler_flags = generated_constants.LinuxCflags +
+                     generated_constants.LinuxMuslCflags +
+                     generated_constants.LinuxX8664Cflags +
+    # Added by stl.go for non-bionic toolchains.
+    [
+        "-nostdinc++",
+    ],
+    crt = _musl_crt,
+    gcc_toolchain = generated_constants.LinuxGccRoot,
+    libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:linux_musl_x86_64"],
+    linker_flags = generated_constants.LinuxMuslLdflags +
+                   generated_constants.LinuxLdflags +
+                   generated_constants.LinuxX8664Ldflags,
+    rtti_toggle = False,
+    target_arch = "x86_64",
+    target_flags = ["--target=x86_64-linux-musl"],
+    target_os = "linux_musl",
+    toolchain_identifier = "x86_64-toolchain",
+)
+
+# Toolchain to compile for the linux x86 host with musl libc.
+android_cc_toolchain(
+    name = "cc_toolchain_x86_linux_musl_host",
+    clang_version = ":clang",
+    clang_version_directory = generated_constants.CLANG_DEFAULT_VERSION,
+    compiler_flags = generated_constants.LinuxCflags +
+                     generated_constants.LinuxMuslCflags +
+                     generated_constants.LinuxX86Cflags +
+    # Added by stl.go for non-bionic toolchains.
+    [
+        "-nostdinc++",
+    ],
+    crt = _musl_crt,
+    gcc_toolchain = generated_constants.LinuxGccRoot,
+    libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:linux_musl_x86"],
+    linker_flags = generated_constants.LinuxMuslLdflags +
+                   generated_constants.LinuxLdflags +
+                   generated_constants.LinuxX86Ldflags,
+    rtti_toggle = False,
+    target_arch = "x86",
+    target_flags = ["--target=i686-linux-musl"],
+    target_os = "linux_musl",
+    toolchain_identifier = "x86-toolchain",
+)
+
 toolchain_type(name = "nocrt_toolchain")
 
 # Device toolchains
@@ -238,11 +305,11 @@ toolchain_type(name = "nocrt_toolchain")
         name = "%s_def" % toolchain_name,
         exec_compatible_with = [
             "//build/bazel/platforms/arch:x86_64",
-            "//build/bazel/platforms/os:linux",
+            "//build/bazel/platforms/os:linux_glibc",
         ],
         target_compatible_with = [
             "//build/bazel/platforms/arch:x86_64",
-            "//build/bazel/platforms/os:linux",
+            "//build/bazel/platforms/os:linux_glibc",
         ],
         toolchain = toolchain_name,
         toolchain_type = toolchain_type,
@@ -256,16 +323,52 @@ toolchain_type(name = "nocrt_toolchain")
         name = "%s_def" % toolchain_name,
         exec_compatible_with = [
             "//build/bazel/platforms/arch:x86_64",
-            "//build/bazel/platforms/os:linux",
+            "//build/bazel/platforms/os:linux_glibc",
         ],
         target_compatible_with = [
             "//build/bazel/platforms/arch:x86",
-            "//build/bazel/platforms/os:linux",
+            "//build/bazel/platforms/os:linux_glibc",
         ],
         toolchain = toolchain_name,
         toolchain_type = toolchain_type,
     )
     for (toolchain_name, toolchain_type) in x86_host_toolchains
+]
+
+# Toolchains for linux musl host (x86_64) archs
+[
+    toolchain(
+        name = "%s_def" % toolchain_name,
+        exec_compatible_with = [
+            "//build/bazel/platforms/arch:x86_64",
+            "//build/bazel/platforms/os:linux_musl",
+        ],
+        target_compatible_with = [
+            "//build/bazel/platforms/arch:x86_64",
+            "//build/bazel/platforms/os:linux_musl",
+        ],
+        toolchain = toolchain_name,
+        toolchain_type = toolchain_type,
+    )
+    for (toolchain_name, toolchain_type) in x86_64_musl_host_toolchains
+]
+
+# Toolchains for linux musl target (non-host) x86 arch
+[
+    toolchain(
+        name = "%s_def" % toolchain_name,
+        exec_compatible_with = [
+            "//build/bazel/platforms/arch:x86_64",
+            "//build/bazel/platforms/os:linux_musl",
+        ],
+        target_compatible_with = [
+            "//build/bazel/platforms/arch:x86",
+            "//build/bazel/platforms/os:linux_musl",
+        ],
+        toolchain = toolchain_name,
+        toolchain_type = toolchain_type,
+    )
+    for (toolchain_name, toolchain_type) in x86_musl_host_toolchains
 ]
 
 cc_import(
@@ -304,10 +407,48 @@ filegroup(
     visibility = ["//build/bazel/tests:__subpackages__"],
 )
 
+cc_toolchain_features_pack_relocation_test_suite(
+    name = "cc_toolchain_features_pack_relocation_tests",
+)
+
 cc_toolchain_features_lto_test_suite(
     name = "cc_toolchain_features_thinlto_tests",
 )
 
 cc_toolchain_features_ubsan_test_suite(
     name = "cc_toolchain_features_ubsan_tests",
+)
+
+cc_toolchain_features_env_based_flags_test_suite(
+    name = "cc_toolchain_features_env_based_flags_tests",
+)
+
+bool_flag(
+    name = "auto_zero_initialize_env",
+    build_setting_default = is_env_true(env.get("AUTO_ZERO_INITIALIZE")),
+)
+
+bool_flag(
+    name = "auto_pattern_initialize_env",
+    build_setting_default = is_env_true(env.get("AUTO_PATTERN_INITIALIZE")),
+)
+
+bool_flag(
+    name = "auto_uninitialize_env",
+    build_setting_default = is_env_true(env.get("AUTO_UNINITIALIZE")),
+)
+
+bool_flag(
+    name = "use_ccache_env",
+    build_setting_default = is_env_true(env.get("USE_CCACHE")),
+)
+
+bool_flag(
+    name = "llvm_next_env",
+    build_setting_default = is_env_true(env.get("LLVM_NEXT")),
+)
+
+bool_flag(
+    name = "allow_unknown_warning_option_env",
+    build_setting_default = is_env_true(env.get("ALLOW_UNKNOWN_WARNING_OPTION")),
 )

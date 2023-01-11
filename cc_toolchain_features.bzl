@@ -3,6 +3,7 @@
 This top level list of features are available through the get_features function.
 """
 
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load(
     "@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl",
     "feature",
@@ -28,9 +29,22 @@ load(
     _experimental_cpp_std_version_no_gnu = "experimental_cpp_std_version_no_gnu",
     _flags = "flags",
     _generated_constants = "generated_constants",
+    _oses = "oses",
 )
 load("@soong_injection//api_levels:api_levels.bzl", _api_levels = "api_levels")
 load("@soong_injection//product_config:product_variables.bzl", "product_vars")
+
+def is_os_device(os):
+    return os == _oses.Android
+
+def is_os_bionic(os):
+    return os == _oses.Android or os == _oses.LinuxBionic
+
+def _sdk_version_features_between(start, end):
+    return ["sdk_version_" + str(i) for i in range(start, end + 1)]
+
+def _sdk_version_features_before(version):
+    return _sdk_version_features_between(1, version - 1)
 
 def _get_sdk_version_features(os_is_device, target_arch):
     if not os_is_device:
@@ -187,13 +201,42 @@ def _get_c_std_features():
     ))
     return features
 
-def _compiler_flag_features(os_is_device, target_arch, target_os, flags = []):
+def _env_based_common_global_cflags(ctx):
+    flags = []
+
+    # The logic comes from https://cs.android.com/android/platform/superproject/+/master:build/soong/cc/config/global.go;l=332;drc=af32e1ba3ffca6b552ac1ff6d14e5c3a5148cb80
+    auto_pattern_initialize = ctx.attr._auto_pattern_initialize[BuildSettingInfo].value
+    auto_uninitialize = ctx.attr._auto_uninitialize[BuildSettingInfo].value
+    if ctx.attr._auto_zero_initialize[BuildSettingInfo].value:
+        flags.extend(["-ftrivial-auto-var-init=zero", "-enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang"])
+    elif auto_pattern_initialize:
+        flags.extend(["-ftrivial-auto-var-init=pattern"])
+    elif auto_uninitialize:
+        flags.extend(["-ftrivial-auto-var-init=uninitialized"])
+    else:
+        # Default to zero initialization.
+        flags.extend(["-ftrivial-auto-var-init=zero", "-enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang"])
+
+    if ctx.attr._use_ccache[BuildSettingInfo].value or (not auto_pattern_initialize and not auto_uninitialize):
+        flags.extend(["-Wno-unused-command-line-argument"])
+
+    if ctx.attr._llvm_next[BuildSettingInfo].value:
+        flags.extend(["-Wno-error=single-bit-bitfield-constant-conversion"])
+
+    if ctx.attr._allow_unknown_warning_option[BuildSettingInfo].value:
+        flags.extend(["-Wno-error=unknown-warning-option"])
+
+    return flags
+
+def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
+    os_is_device = is_os_device(target_os)
     compiler_flags = []
 
     # Combine the toolchain's provided flags with the default ones.
     compiler_flags.extend(flags)
     compiler_flags.extend(_flags.compiler_flags)
     compiler_flags.extend(_generated_constants.CommonGlobalCflags)
+    compiler_flags.extend(_env_based_common_global_cflags(ctx))
 
     if os_is_device:
         compiler_flags.extend(_generated_constants.DeviceGlobalCflags)
@@ -434,7 +477,7 @@ def _compiler_flag_features(os_is_device, target_arch, target_os, flags = []):
         ],
     ))
 
-    if target_os != "darwin":
+    if target_os != _oses.Darwin:
         # These cannot be overriden by the user.
         features.append(feature(
             name = "no_override_clang_external_global_copts",
@@ -499,13 +542,70 @@ def _rtti_features(rtti_toggle):
     return [rtti_flag_feature, rtti_feature]
 
 # TODO(b/202167934): Darwin does not support pack dynamic relocations
-def _pack_dynamic_relocations_features(os_is_device):
+def _pack_dynamic_relocations_features(target_os):
+    sht_relr_flags = flag_set(
+        actions = _actions.link,
+        flag_groups = [
+            flag_group(
+                flags = ["-Wl,--pack-dyn-relocs=android+relr"],
+            ),
+        ],
+        with_features = [
+            with_feature_set(
+                features = ["linker_flags"],
+                not_features = ["disable_pack_relocations"] + _sdk_version_features_before(30),
+            ),
+        ],
+    )
+    android_relr_flags = flag_set(
+        actions = _actions.link,
+        flag_groups = [
+            flag_group(
+                flags = ["-Wl,--pack-dyn-relocs=android+relr", "-Wl,--use-android-relr-tags"],
+            ),
+        ],
+        with_features = [
+            with_feature_set(
+                features = ["linker_flags", version],
+                not_features = ["disable_pack_relocations"],
+            )
+            for version in _sdk_version_features_between(28, 29)
+        ],
+    )
+    relocation_packer_flags = flag_set(
+        actions = _actions.link,
+        flag_groups = [
+            flag_group(
+                flags = ["-Wl,--pack-dyn-relocs=android"],
+            ),
+        ],
+        with_features = [
+            with_feature_set(
+                features = ["linker_flags", version],
+                not_features = ["disable_pack_relocations"],
+            )
+            for version in _sdk_version_features_between(23, 27)
+        ],
+    )
+
+    if is_os_bionic(target_os):
+        pack_dyn_relr_flag_sets = [
+            sht_relr_flags,
+            android_relr_flags,
+            relocation_packer_flags,
+        ]
+    else:
+        pack_dyn_relr_flag_sets = []
+
     pack_dynamic_relocations_feature = feature(
         name = "pack_dynamic_relocations",
         enabled = True,
+        flag_sets = pack_dyn_relr_flag_sets,
     )
-
     disable_pack_relocations_feature = feature(
+        # this will take precedence over the pack_dynamic_relocations feature
+        # because each flag_set in that feature explicitly disallows the
+        # disable_dynamic_relocations feature
         name = "disable_pack_relocations",
         flag_sets = [
             flag_set(
@@ -518,124 +618,39 @@ def _pack_dynamic_relocations_features(os_is_device):
                 with_features = [
                     with_feature_set(
                         features = ["linker_flags"],
-                        not_features = ["pack_dynamic_relocations"],
                     ),
                 ],
             ),
         ],
         enabled = False,
     )
-
-    if not os_is_device:
-        return [pack_dynamic_relocations_feature, disable_pack_relocations_feature]
-
-    # sdk version >= 30
-    sht_relr_feature = feature(
-        name = "sht_relr",
-        provides = ["pack_dynamic_relocations"],
-        flag_sets = [
-            flag_set(
-                actions = _actions.link,
-                flag_groups = [
-                    flag_group(
-                        flags = ["-Wl,--pack-dyn-relocs=android+relr"],
-                    ),
-                ],
-                with_features = [
-                    with_feature_set(
-                        features = ["linker_flags"],
-                        not_features = [
-                            "disable_pack_relocations",
-                            "android_relr",
-                            "relocation_packer",
-                        ],
-                    ),
-                ],
-            ),
-        ],
-        enabled = True,
-    )
-
-    # sdk version >= 28
-    android_relr_feature = feature(
-        name = "android_relr",
-        provides = ["pack_dynamic_relocations"],
-        flag_sets = [
-            flag_set(
-                actions = _actions.link,
-                flag_groups = [
-                    flag_group(
-                        flags = ["-Wl,--pack-dyn-relocs=android+relr", "-Wl,--use-android-relr-tags"],
-                    ),
-                ],
-                with_features = [
-                    with_feature_set(
-                        features = ["linker_flags"],
-                        not_features = [
-                            "disable_pack_relocations",
-                            "sht_relr",
-                            "relocation_packer",
-                        ],
-                    ),
-                ],
-            ),
-        ],
-        enabled = False,
-    )
-
-    # sdk version >= 32
-    relocation_packer_feature = feature(
-        name = "relocation_packer",
-        provides = ["pack_dynamic_relocations"],
-        flag_sets = [
-            flag_set(
-                actions = _actions.link,
-                flag_groups = [
-                    flag_group(
-                        flags = ["-Wl,--pack-dyn-relocs=android"],
-                    ),
-                ],
-                with_features = [
-                    with_feature_set(
-                        features = ["linker_flags"],
-                        not_features = [
-                            "disable_pack_relocations",
-                            "sht_relr",
-                            "android_relr",
-                        ],
-                    ),
-                ],
-            ),
-        ],
-        enabled = False,
-    )
-
     return [
         pack_dynamic_relocations_feature,
         disable_pack_relocations_feature,
-        sht_relr_feature,
-        android_relr_feature,
-        relocation_packer_feature,
     ]
 
 # TODO(b/202167934): Darwin by default disallows undefined symbols, to allow, -Wl,undefined,dynamic_lookup
-def _undefined_symbols_feature():
-    return _linker_flag_feature("no_undefined_symbols", flags = ["-Wl,--no-undefined"], enabled = True)
+def _undefined_symbols_feature(target_os):
+    return _linker_flag_feature(
+        "no_undefined_symbols",
+        flags = ["-Wl,--no-undefined"],
+        enabled = is_os_bionic(target_os) or target_os == _oses.LinuxMusl,
+    )
 
 def _dynamic_linker_flag_feature(target_os, arch_is_64_bit):
-    if target_os == "android":
+    flags = []
+    if is_os_device(target_os):
         # TODO: handle bootstrap partition, asan
         dynamic_linker_path = "/system/bin/linker"
         if arch_is_64_bit:
             dynamic_linker_path += "64"
-        return _binary_linker_flag_feature(name = "dynamic_linker", flags = ["-Wl,-dynamic-linker," + dynamic_linker_path])
-    elif target_os == "linux_bionic" or target_os == "linux_musl":
-        return _binary_linker_flag_feature(name = "dynamic_linker", flags = ["-Wl,--no-dynamic-linker"])
-
-    return []
+        flags += ["-Wl,-dynamic-linker," + dynamic_linker_path]
+    elif is_os_bionic(target_os) or target_os == _oses.LinuxMusl:
+        flags += ["-Wl,--no-dynamic-linker"]
+    return _binary_linker_flag_feature(name = "dynamic_linker", flags = flags) if len(flags) else []
 
 # TODO(b/202167934): Darwin uses @loader_path in place of $ORIGIN
-def _rpath_features(os_is_device, arch_is_64_bit):
+def _rpath_features(target_os, arch_is_64_bit):
     runtime_library_search_directories_flag_sets = [
         flag_set(
             actions = _actions.link,
@@ -688,7 +703,7 @@ def _rpath_features(os_is_device, arch_is_64_bit):
         ),
     ]
 
-    if (not os_is_device) and arch_is_64_bit:
+    if (not is_os_device(target_os)) and arch_is_64_bit:
         runtime_library_search_directories_flag_sets += [flag_set(
             actions = _actions.link,
             flag_groups = [
@@ -802,7 +817,7 @@ def _flatten(xs):
 
 def _additional_archiver_flags(target_os):
     archiver_flags = []
-    if target_os != "darwin":
+    if target_os != _oses.Darwin:
         archiver_flags.extend(_flags.non_darwin_archiver_flags)
     return archiver_flags
 
@@ -822,11 +837,11 @@ def _static_binary_linker_flags(os_is_device):
         linker_flags.extend(_flags.bionic_static_executable_linker_flags)
     return linker_flags
 
-def _shared_binary_linker_flags(os_is_device, target_os):
+def _shared_binary_linker_flags(target_os):
     linker_flags = []
-    if os_is_device:
+    if is_os_device(target_os):
         linker_flags.extend(_flags.bionic_dynamic_executable_linker_flags)
-    elif target_os != "windows":
+    elif target_os != _oses.Windows:
         linker_flags.extend(_flags.host_non_windows_dynamic_executable_linker_flags)
     return linker_flags
 
@@ -1090,6 +1105,23 @@ def _get_legacy_features_begin():
                             ),
                             iterate_over = "libraries_to_link.object_files",
                             flags = ["%{libraries_to_link.object_files}"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        feature(
+            name = "archive_with_prebuilt_flags",
+            flag_sets = [
+                flag_set(
+                    actions = ["c++-link-static-library"],
+                    flag_groups = [
+                        flag_group(
+                            flags = ["cqsL"],
+                        ),
+                        flag_group(
+                            expand_if_available = "output_execpath",
+                            flags = ["%{output_execpath}"],
                         ),
                     ],
                 ),
@@ -1558,6 +1590,13 @@ def _get_ubsan_features(target_os):
 
     ubsan_features = [
         feature(
+            name = "ubsan_enabled",
+            enabled = False,
+        ),
+    ]
+
+    ubsan_features += [
+        feature(
             name = "ubsan_integer_overflow",
             enabled = False,
             flag_sets = [
@@ -1573,7 +1612,7 @@ def _get_ubsan_features(target_os):
                     ],
                 ),
             ],
-            implies = ["ubsan_minimal_runtime"],
+            implies = ["ubsan_minimal_runtime", "ubsan_enabled"],
         ),
     ]
 
@@ -1634,7 +1673,7 @@ def _get_ubsan_features(target_os):
                     ],
                 ),
             ],
-            implies = ["ubsan_minimal_runtime"],
+            implies = ["ubsan_minimal_runtime", "ubsan_enabled"],
         )
         for check_name in ubsan_checks
     ]
@@ -1716,7 +1755,7 @@ def _get_ubsan_features(target_os):
     ubsan_features += [
         feature(
             name = "ubsan_disable_unsupported_non_bionic_checks",
-            enabled = target_os not in ["linux_bionic", "android"],
+            enabled = target_os not in [_oses.LinuxBionic, _oses.Android],
             flag_sets = [
                 flag_set(
                     actions = _actions.compile,
@@ -1739,20 +1778,51 @@ def _get_ubsan_features(target_os):
             ],
         ),
     ]
+
+    ubsan_features += [
+        feature(
+            name = "ubsan_no_sanitize_link_runtime",
+            enabled = target_os in [
+                _oses.Android,
+                _oses.LinuxBionic,
+                _oses.LinuxMusl,
+            ],
+            flag_sets = [
+                flag_set(
+                    actions = _actions.link,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-fno-sanitize-link-runtime",
+                            ],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            features = ["ubsan_enabled"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    ]
+
     return ubsan_features
 
 # Create the full list of features.
 def get_features(
-        target_os,
-        target_arch,
-        target_flags,
-        compile_only_flags,
-        linker_only_flags,
+        ctx,
         builtin_include_dirs,
-        libclang_rt_builtin,
-        crt_files,
-        rtti_toggle):
-    os_is_device = target_os == "android"
+        crt_files):
+    target_os = ctx.attr.target_os
+    target_arch = ctx.attr.target_arch
+    target_flags = ctx.attr.target_flags
+    compile_only_flags = ctx.attr.compiler_flags
+    linker_only_flags = ctx.attr.linker_flags
+    libclang_rt_builtin = ctx.file.libclang_rt_builtin
+    rtti_toggle = ctx.attr.rtti_toggle
+
+    os_is_device = is_os_device(target_os)
     arch_is_64_bit = target_arch.endswith("64")
 
     # Aggregate all features in order.
@@ -1776,8 +1846,8 @@ def get_features(
         _get_c_std_features(),
         # Features tied to sdk version
         _get_sdk_version_features(os_is_device, target_arch),
-        _compiler_flag_features(os_is_device, target_arch, target_os, target_flags + compile_only_flags),
-        _rpath_features(os_is_device, arch_is_64_bit),
+        _compiler_flag_features(ctx, target_arch, target_os, target_flags + compile_only_flags),
+        _rpath_features(target_os, arch_is_64_bit),
         _rtti_features(rtti_toggle),
         _use_libcrt_feature(libclang_rt_builtin),
         # Shared compile/link flags that should also be part of the link actions.
@@ -1785,14 +1855,14 @@ def get_features(
         # Link-only flags.
         _linker_flag_feature("linker_flags", flags = linker_only_flags + _additional_linker_flags(os_is_device)),
         _archiver_flag_feature("additional_archiver_flags", flags = _additional_archiver_flags(target_os)),
-        _undefined_symbols_feature(),
+        _undefined_symbols_feature(target_os),
         _dynamic_linker_flag_feature(target_os, arch_is_64_bit),
-        _binary_linker_flag_feature("dynamic_executable", flags = _shared_binary_linker_flags(os_is_device, target_os)),
+        _binary_linker_flag_feature("dynamic_executable", flags = _shared_binary_linker_flags(target_os)),
         # distinct from other static flags as it can be disabled separately
         _binary_linker_flag_feature("static_flag", flags = ["-static"], enabled = False),
         # default for executables is dynamic linking
         _binary_linker_flag_feature("static_executable", flags = _static_binary_linker_flags(os_is_device), enabled = False),
-        _pack_dynamic_relocations_features(os_is_device),
+        _pack_dynamic_relocations_features(target_os),
         # System include directories features
         _toolchain_include_feature(system_includes = builtin_include_dirs),
         # Compiling stub.c sources to stub libraries
