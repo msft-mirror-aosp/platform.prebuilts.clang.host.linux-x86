@@ -18,6 +18,11 @@ load(
     "//build/bazel/rules/test_common:flags.bzl",
     "action_flags_test",
 )
+load(
+    ":cc_toolchain_features.bzl",
+    "int_overflow_ignorelist_filename",
+    "int_overflow_ignorelist_path",
+)
 
 compile_action_mnemonic = "CppCompile"
 link_action_mnemonic = "CppLink"
@@ -48,22 +53,37 @@ test_srcs = [
 
 def _test_ubsan_integer_overflow_feature():
     name = "ubsan_integer_overflow"
-    test_name = name + "_test"
     native.cc_binary(
         name = name,
         srcs = test_srcs,
         features = ["ubsan_integer_overflow"],
         tags = ["manual"],
     )
+
+    int_overflow_test_name = name + "_test"
+    test_names = [int_overflow_test_name]
     _ubsan_sanitizer_test(
-        name = test_name,
+        name = int_overflow_test_name,
         target_under_test = name,
         expected_sanitizers = [
             "signed-integer-overflow",
             "unsigned-integer-overflow",
         ],
     )
-    return test_name
+
+    ignorelist_test_name = name + "_ignorelist_flag_test"
+    test_names += [ignorelist_test_name]
+    action_flags_test(
+        name = ignorelist_test_name,
+        target_under_test = name,
+        mnemonics_with_flags = [compile_action_mnemonic],
+        exclusive = True,
+        expected_flags = ["-fsanitize-ignorelist=%s/%s" % (
+            int_overflow_ignorelist_path,
+            int_overflow_ignorelist_filename,
+        )],
+    )
+    return test_names
 
 def _test_ubsan_misc_undefined_feature():
     name = "ubsan_misc_undefined"
@@ -502,22 +522,25 @@ def _test_no_undefined_flag_absent_when_not_bionic_or_musl():
     return test_name
 
 def cc_toolchain_features_ubsan_test_suite(name):
+    individual_tests = [
+        _test_ubsan_misc_undefined_feature(),
+        _test_ubsan_implicit_integer_sign_change_disabled_when_linux_with_integer(),
+        _test_ubsan_implicit_integer_sign_change_not_disabled_when_specified(),
+        _test_ubsan_implicit_integer_sign_change_not_disabled_without_integer(),
+        _test_ubsan_unsigned_shift_base_disabled_when_linux_with_integer(),
+        _test_ubsan_unsigned_shift_base_not_disabled_when_specified(),
+        _test_ubsan_unsigned_shift_base_not_disabled_without_integer(),
+        _test_ubsan_unsupported_non_bionic_checks_disabled_when_linux(),
+        # TODO(b/263787980): Uncomment when bionic toolchain is implemented
+        # _test_ubsan_unsupported_non_bionic_checks_not_disabled_when_linux_bionic(),
+        _test_ubsan_unsupported_non_bionic_checks_not_disabled_when_android(),
+        _test_ubsan_unsupported_non_bionic_checks_not_disabled_when_no_ubsan(),
+        _test_ubsan_link_runtime_when_not_bionic_or_musl(),
+    ]
     native.test_suite(
         name = name,
-        tests = [
-            _test_ubsan_integer_overflow_feature(),
-            _test_ubsan_misc_undefined_feature(),
-            _test_ubsan_implicit_integer_sign_change_disabled_when_linux_with_integer(),
-            _test_ubsan_implicit_integer_sign_change_not_disabled_when_specified(),
-            _test_ubsan_implicit_integer_sign_change_not_disabled_without_integer(),
-            _test_ubsan_unsigned_shift_base_disabled_when_linux_with_integer(),
-            _test_ubsan_unsigned_shift_base_not_disabled_when_specified(),
-            _test_ubsan_unsigned_shift_base_not_disabled_without_integer(),
-            _test_ubsan_unsupported_non_bionic_checks_disabled_when_linux(),
-            # TODO(b/263787980): Uncomment when bionic toolchain is implemented
-            # _test_ubsan_unsupported_non_bionic_checks_not_disabled_when_linux_bionic(),
-            _test_ubsan_unsupported_non_bionic_checks_not_disabled_when_android(),
-            _test_ubsan_unsupported_non_bionic_checks_not_disabled_when_no_ubsan(),
-            _test_ubsan_link_runtime_when_not_bionic_or_musl(),
-        ] + _test_ubsan_no_link_runtime() + _test_no_undefined_flag_present_when_bionic_or_musl(),
+        tests = individual_tests +
+                _test_ubsan_no_link_runtime() +
+                _test_no_undefined_flag_present_when_bionic_or_musl() +
+                _test_ubsan_integer_overflow_feature(),
     )

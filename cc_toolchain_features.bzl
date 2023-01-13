@@ -1585,6 +1585,9 @@ def _get_thinlto_features():
     ]
     return features
 
+int_overflow_ignorelist_path = "build/soong/cc/config"
+int_overflow_ignorelist_filename = "integer_overflow_blocklist.txt"
+
 def _get_ubsan_features(target_os):
     ALL_UBSAN_ACTIONS = _actions.compile + _actions.link + _actions.assemble
 
@@ -1607,6 +1610,19 @@ def _get_ubsan_features(target_os):
                             flags = [
                                 "-fsanitize=unsigned-integer-overflow",
                                 "-fsanitize=signed-integer-overflow",
+                            ],
+                        ),
+                    ],
+                ),
+                flag_set(
+                    actions = _actions.compile,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-fsanitize-ignorelist=%s/%s" % (
+                                    int_overflow_ignorelist_path,
+                                    int_overflow_ignorelist_filename,
+                                ),
                             ],
                         ),
                     ],
