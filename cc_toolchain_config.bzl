@@ -18,7 +18,12 @@ load(
     _flags = "flags",
     _generated_constants = "generated_constants",
 )
-load(":cc_toolchain_features.bzl", "get_features")
+load(
+    ":cc_toolchain_features.bzl",
+    "get_features",
+    "int_overflow_ignorelist_filename",
+    "int_overflow_ignorelist_path",
+)
 load("//build/bazel/platforms/arch/variants:constants.bzl", _arch_constants = "constants")
 
 # Clang-specific configuration.
@@ -375,6 +380,7 @@ def android_cc_toolchain(
         srcs = [
             "%s_compiler_binaries" % name,
             "%s_compiler_clang_includes" % name,
+            "@//%s:%s" % (int_overflow_ignorelist_path, int_overflow_ignorelist_filename),
         ],
     )
 
