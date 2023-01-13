@@ -161,7 +161,6 @@ def _create_action_configs(tool_paths, target_os):
                 "output_execpath_flags",
                 "library_search_directories",
                 "libraries_to_link",
-                "pic",
                 "user_link_flags",
                 "linker_param_file",
             ] + rpath_features,
