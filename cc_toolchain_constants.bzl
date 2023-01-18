@@ -9,7 +9,6 @@ flags = struct(
     # Compiler flags
     # =============
     compiler_flags = [
-        "-fPIC",
     ],
     # ============
     # Linker flags
