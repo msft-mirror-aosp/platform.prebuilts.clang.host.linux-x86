@@ -29,7 +29,7 @@ import (
 	"android/soong/genrule"
 )
 
-const libclangCppSoFormat = "libclang-cpp.so.%sgit"
+const libclangCppSoFormat = "libclang-cpp.so.%s"
 const libcxxSoName = "libc++.so.1"
 const libcxxabiSoName = "libc++abi.so.1"
 
