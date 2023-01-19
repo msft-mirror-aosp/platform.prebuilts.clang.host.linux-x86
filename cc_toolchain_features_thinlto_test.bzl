@@ -16,7 +16,8 @@ limitations under the License.
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 load(
     "//build/bazel/rules/test_common:flags.bzl",
-    "action_flags_test",
+    "action_flags_absent_for_mnemonic_test",
+    "action_flags_present_only_for_mnemonic_test",
 )
 
 # Include these different file types to make sure that all actions types are
@@ -41,10 +42,10 @@ def test_thin_lto_feature():
         features = ["android_thin_lto"],
         tags = ["manual"],
     )
-    action_flags_test(
+    action_flags_present_only_for_mnemonic_test(
         name = test_name,
         target_under_test = name,
-        mnemonics_with_flags = [compile_action_mnemonic, link_action_mnemonic],
+        mnemonics = [compile_action_mnemonic, link_action_mnemonic],
         expected_flags = [
             "-flto=thin",
             "-fsplit-lto-unit",
@@ -66,10 +67,10 @@ def test_whole_program_vtables_feature():
         ],
         tags = ["manual"],
     )
-    action_flags_test(
+    action_flags_present_only_for_mnemonic_test(
         name = test_name,
         target_under_test = name,
-        mnemonics_with_flags = [link_action_mnemonic],
+        mnemonics = [link_action_mnemonic],
         expected_flags = ["-fwhole-program-vtables"],
     )
 
@@ -87,15 +88,14 @@ def test_whole_program_vtables_requires_thinlto_feature():
         ],
         tags = ["manual"],
     )
-    action_flags_test(
+    action_flags_absent_for_mnemonic_test(
         name = test_name,
         target_under_test = name,
-        mnemonics_without_flags = [
+        mnemonics = [
             compile_action_mnemonic,
             link_action_mnemonic,
         ],
-        exclusive = False,
-        expected_flags = ["-fwhole-program-vtables"],
+        expected_absent_flags = ["-fwhole-program-vtables"],
     )
 
     return test_name
@@ -113,10 +113,10 @@ def test_limit_cross_tu_inline_feature():
         ],
         tags = ["manual"],
     )
-    action_flags_test(
+    action_flags_present_only_for_mnemonic_test(
         name = test_name,
         target_under_test = name,
-        mnemonics_with_flags = [link_action_mnemonic],
+        mnemonics = [link_action_mnemonic],
         expected_flags = ["-Wl,-plugin-opt,-import-instr-limit=5"],
     )
 
@@ -134,15 +134,14 @@ def test_limit_cross_tu_inline_requires_thinlto_feature():
         ],
         tags = ["manual"],
     )
-    action_flags_test(
+    action_flags_absent_for_mnemonic_test(
         name = test_name,
         target_under_test = name,
-        mnemonics_without_flags = [
+        mnemonics = [
             compile_action_mnemonic,
             link_action_mnemonic,
         ],
-        exclusive = False,
-        expected_flags = ["-Wl,-plugin-opt,-import-instr-limit=5"],
+        expected_absent_flags = ["-Wl,-plugin-opt,-import-instr-limit=5"],
     )
 
     return test_name
@@ -162,24 +161,23 @@ def test_disable_thin_lto():
         ],
         tags = ["manual"],
     )
-    action_flags_test(
+    action_flags_present_only_for_mnemonic_test(
         name = no_lto_flag_test_name,
         target_under_test = name,
-        mnemonics_with_flags = [compile_action_mnemonic, link_action_mnemonic],
+        mnemonics = [compile_action_mnemonic, link_action_mnemonic],
         expected_flags = ["-fno-lto"],
     )
 
     lto_flags_not_present_test_name = name + "_lto_flags_not_present_test"
 
-    action_flags_test(
+    action_flags_absent_for_mnemonic_test(
         name = lto_flags_not_present_test_name,
         target_under_test = name,
-        mnemonics_without_flags = [
+        mnemonics = [
             compile_action_mnemonic,
             link_action_mnemonic,
         ],
-        exclusive = False,
-        expected_flags = [
+        expected_absent_flags = [
             "-flto=thin",
             "-fsplit-lto-unit",
             "-fwhole-program-vtables",

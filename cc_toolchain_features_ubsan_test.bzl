@@ -16,7 +16,8 @@ limitations under the License.
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 load(
     "//build/bazel/rules/test_common:flags.bzl",
-    "action_flags_test",
+    "action_flags_absent_for_mnemonic_test",
+    "action_flags_present_only_for_mnemonic_test",
 )
 load(
     ":cc_toolchain_features.bzl",
@@ -32,10 +33,10 @@ def _ubsan_sanitizer_test(
         name,
         target_under_test,
         expected_sanitizers):
-    action_flags_test(
+    action_flags_present_only_for_mnemonic_test(
         name = name,
         target_under_test = target_under_test,
-        mnemonics_with_flags = [compile_action_mnemonic, link_action_mnemonic],
+        mnemonics = [compile_action_mnemonic, link_action_mnemonic],
         expected_flags = [
             ubsan_prefix_format % sanitizer
             for sanitizer in expected_sanitizers
@@ -73,11 +74,10 @@ def _test_ubsan_integer_overflow_feature():
 
     ignorelist_test_name = name + "_ignorelist_flag_test"
     test_names += [ignorelist_test_name]
-    action_flags_test(
+    action_flags_present_only_for_mnemonic_test(
         name = ignorelist_test_name,
         target_under_test = name,
-        mnemonics_with_flags = [compile_action_mnemonic],
-        exclusive = True,
+        mnemonics = [compile_action_mnemonic],
         expected_flags = ["-fsanitize-ignorelist=%s/%s" % (
             int_overflow_ignorelist_path,
             int_overflow_ignorelist_filename,
@@ -109,22 +109,21 @@ def _ubsan_disablement_test(
         target_compatible_with):
     no_sanitize_flag_prefix_format = "-fno-sanitize=%s"
     if disabled:
-        action_flags_test(
+        action_flags_present_only_for_mnemonic_test(
             name = name,
             target_under_test = target_under_test,
-            mnemonics_with_flags = [compile_action_mnemonic],
+            mnemonics = [compile_action_mnemonic],
             expected_flags = [
                 no_sanitize_flag_prefix_format % expected_disabled_sanitizer,
             ],
             target_compatible_with = target_compatible_with,
         )
     else:
-        action_flags_test(
+        action_flags_absent_for_mnemonic_test(
             name = name,
             target_under_test = target_under_test,
-            mnemonics_without_flags = [compile_action_mnemonic],
-            exclusive = False,
-            expected_flags = [
+            mnemonics = [compile_action_mnemonic],
+            expected_absent_flags = [
                 no_sanitize_flag_prefix_format % expected_disabled_sanitizer,
             ],
             target_compatible_with = target_compatible_with,
@@ -381,11 +380,10 @@ def _test_ubsan_no_link_runtime():
 
     android_test_name = name + "_when_android_test"
     test_names = [android_test_name]
-    action_flags_android_test(
+    action_flags_present_android_test(
         name = android_test_name,
         target_under_test = name,
-        mnemonics_with_flags = [link_action_mnemonic],
-        exclusive = True,
+        mnemonics = [link_action_mnemonic],
         expected_flags = [sanitizer_no_link_runtime_flag],
     )
 
@@ -394,7 +392,7 @@ def _test_ubsan_no_link_runtime():
     #    action_flags_linux_bionic_test(
     #        name = bionic_test_name,
     #        target_under_test = name,
-    #        mnemonics_with_flags = [link_action_mnemonic],
+    #        mnemonics = [link_action_mnemonic],
     #        expected_flags = [sanitizer_no_link_runtime_flag],
     #    )
     #    test_names += [bionic_test_name]
@@ -404,35 +402,61 @@ def _test_ubsan_no_link_runtime():
     #    action_flags_musl_test(
     #        name = musl_test_name,
     #        target_under_test = name,
-    #        mnemonics_with_flags = [link_action_mnemonic],
+    #        mnemonics = [link_action_mnemonic],
     #        expected_flags = [sanitizer_no_link_runtime_flag],
     #    )
     #    test_names += [musl_test_name]
 
     return test_names
 
-def action_flags_linux_test(**kwargs):
-    action_flags_test(
+def action_flags_present_linux_test(**kwargs):
+    action_flags_present_only_for_mnemonic_test(
         target_compatible_with = ["@//build/bazel/platforms/os:linux"],
         **kwargs
     )
 
-def action_flags_android_test(**kwargs):
-    action_flags_test(
+def action_flags_present_android_test(**kwargs):
+    action_flags_present_only_for_mnemonic_test(
         target_compatible_with = ["@//build/bazel/platforms/os:android"],
         **kwargs
     )
 
 # TODO(b/263787980): Uncomment when bionic toolchain is implemented
-#def action_flags_linux_bionic_test(**kwargs):
-#    action_flags_test(
+#def action_flags_present_linux_bionic_test(**kwargs):
+#    action_flags_present_only_for_mnemonic_test(
 #        target_compatible_with = ["@//build/bazel/platforms/os:linux_bionic"],
 #        **kwargs
 #    )
 
 # TODO(b/263787526): Uncomment when musl toolchain is implemented
-#def action_flags_linux_musl_test(**kwargs):
-#    action_flags_test(
+#def action_flags_present_linux_musl_test(**kwargs):
+#    action_flags_present_only_for_mnemonic_test(
+#        target_compatible_with = ["@//build/bazel/platforms/os:linux_musl"],
+#        **kwargs
+#    )
+
+def action_flags_absent_linux_test(**kwargs):
+    action_flags_absent_for_mnemonic_test(
+        target_compatible_with = ["@//build/bazel/platforms/os:linux"],
+        **kwargs
+    )
+
+def action_flags_absent_android_test(**kwargs):
+    action_flags_absent_for_mnemonic_test(
+        target_compatible_with = ["@//build/bazel/platforms/os:android"],
+        **kwargs
+    )
+
+# TODO(b/263787980): Uncomment when bionic toolchain is implemented
+#def action_flags_absent_linux_bionic_test(**kwargs):
+#    action_flags_absent_for_mnemonic_test(
+#        target_compatible_with = ["@//build/bazel/platforms/os:linux_bionic"],
+#        **kwargs
+#    )
+
+# TODO(b/263787526): Uncomment when musl toolchain is implemented
+#def action_flags_absent_linux_musl_test(**kwargs):
+#    action_flags_absent_for_mnemonic_test(
 #        target_compatible_with = ["@//build/bazel/platforms/os:linux_musl"],
 #        **kwargs
 #    )
@@ -447,12 +471,11 @@ def _test_ubsan_link_runtime_when_not_bionic_or_musl():
         tags = ["manual"],
     )
 
-    action_flags_linux_test(
+    action_flags_absent_linux_test(
         name = test_name,
         target_under_test = name,
-        mnemonics_without_flags = [link_action_mnemonic],
-        exclusive = False,
-        expected_flags = [sanitizer_no_link_runtime_flag],
+        mnemonics = [link_action_mnemonic],
+        expected_absent_flags = [sanitizer_no_link_runtime_flag],
     )
 
     return test_name
@@ -471,30 +494,30 @@ def _test_no_undefined_flag_present_when_bionic_or_musl():
 
     android_test_name = name + "_when_android_test"
     test_names = [android_test_name]
-    action_flags_android_test(
+    action_flags_present_android_test(
         name = android_test_name,
         target_under_test = name,
-        mnemonics_with_flags = [link_action_mnemonic],
+        mnemonics = [link_action_mnemonic],
         expected_flags = [no_undefined_flag],
     )
 
     # TODO(b/263787980): Uncomment when bionic toolchain is implemented
     #    bionic_test_name = name + "_when_bionic_test"
     #    test_names += [bionic_test_name]
-    #    action_flags_linux_bionic_test(
+    #    action_flags_present_linux_bionic_test(
     #        name = bionic_test_name,
     #        target_under_test = name,
-    #        mnemonics_with_flags = [link_action_mnemonic],
+    #        mnemonics = [link_action_mnemonic],
     #        expected_flags = [no_undefined_flag],
     #    )
 
     # TODO(b/263787526): Uncomment when musl toolchain is implemented
     #    musl_test_name = name + "_when_musl_test"
     #    test_names += [musl_test_name]
-    #    action_flags_musl_test(
+    #    action_flags_present_musl_test(
     #        name = musl_test_name,
     #        target_under_test = name,
-    #        mnemonics_with_flags = [link_action_mnemonic],
+    #        mnemonics = [link_action_mnemonic],
     #        expected_flags = [no_undefined_flag],
     #    )
 
@@ -511,12 +534,11 @@ def _test_no_undefined_flag_absent_when_not_bionic_or_musl():
         tags = ["manual"],
     )
 
-    action_flags_linux_test(
+    action_flags_absent_linux_test(
         name = test_name,
         target_under_test = name,
-        mnemonics_without_flags = [link_action_mnemonic],
-        exclusive = False,
-        expected_flags = [no_undefined_flag],
+        mnemonics = [link_action_mnemonic],
+        expected_absent_flags = [no_undefined_flag],
     )
 
     return test_name
