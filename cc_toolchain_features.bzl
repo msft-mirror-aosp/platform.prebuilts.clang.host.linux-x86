@@ -339,6 +339,24 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
             ),
         ],
     ))
+
+    # bpf only needs the flag below instead of all the flags in
+    # common_compiler_flags
+    features.append(feature(
+        name = "bpf_compiler_flags",
+        enabled = False,
+        flag_sets = [
+            flag_set(
+                actions = _actions.compile,
+                flag_groups = [
+                    flag_group(
+                        flags = ["-fdebug-prefix-map=/proc/self/cwd="],
+                    ),
+                ],
+            ),
+        ],
+    ))
+
     features.append(feature(
         name = "asm_compiler_flags",
         enabled = True,
