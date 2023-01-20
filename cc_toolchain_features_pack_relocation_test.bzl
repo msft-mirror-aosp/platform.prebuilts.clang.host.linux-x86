@@ -14,7 +14,11 @@ limitations under the License.
 """
 
 load("//build/bazel/rules/cc:cc_binary.bzl", "cc_binary")
-load("//build/bazel/rules/test_common:flags.bzl", "action_flags_test")
+load(
+    "//build/bazel/rules/test_common:flags.bzl",
+    "action_flags_absent_for_mnemonic_test",
+    "action_flags_present_only_for_mnemonic_test",
+)
 
 _SHT_RELR_ARGS = ["-Wl,--pack-dyn-relocs=android+relr"]
 _ANDROID_RELR_ARGS = ["-Wl,--pack-dyn-relocs=android+relr", "-Wl,--use-android-relr-tags"]
@@ -46,21 +50,20 @@ def _test_relocation_feature_flags(*, name, sdk_version, flags):
     android_test_name = name + "_android_test"
     linux_test_name = name + "_linux_test"
     target_under_test = name + "_unstripped"
-    action_flags_test(
+    action_flags_present_only_for_mnemonic_test(
         name = android_test_name,
         target_under_test = target_under_test,
-        mnemonics_with_flags = ["CppLink"],
+        mnemonics = ["CppLink"],
         expected_flags = flags,
         target_compatible_with = [
             "//build/bazel/platforms/os:android",
         ],
     )
-    action_flags_test(
+    action_flags_absent_for_mnemonic_test(
         name = linux_test_name,
         target_under_test = target_under_test,
-        mnemonics_without_flags = ["CppLink"],
-        exclusive = False,
-        expected_flags = flags,
+        mnemonics = ["CppLink"],
+        expected_absent_flags = flags,
         target_compatible_with = [
             "//build/bazel/platforms/os:linux",
         ],
@@ -75,22 +78,20 @@ def _test_no_relocation_features(*, name, sdk_version, extra_target_features = [
     android_test_name = name + "_android_test"
     linux_test_name = name + "_linux_test"
     target_under_test = name + "_unstripped"
-    action_flags_test(
+    action_flags_absent_for_mnemonic_test(
         name = android_test_name,
         target_under_test = target_under_test,
-        mnemonics_without_flags = ["CppLink"],
-        exclusive = False,
-        expected_flags = _SHT_RELR_ARGS + _ANDROID_RELR_ARGS + _RELR_PACKER_ARGS,
+        mnemonics = ["CppLink"],
+        expected_absent_flags = _SHT_RELR_ARGS + _ANDROID_RELR_ARGS + _RELR_PACKER_ARGS,
         target_compatible_with = [
             "//build/bazel/platforms/os:android",
         ],
     )
-    action_flags_test(
+    action_flags_absent_for_mnemonic_test(
         name = linux_test_name,
         target_under_test = target_under_test,
-        mnemonics_without_flags = ["CppLink"],
-        exclusive = False,
-        expected_flags = _SHT_RELR_ARGS + _ANDROID_RELR_ARGS + _RELR_PACKER_ARGS,
+        mnemonics = ["CppLink"],
+        expected_absent_flags = _SHT_RELR_ARGS + _ANDROID_RELR_ARGS + _RELR_PACKER_ARGS,
         target_compatible_with = [
             "//build/bazel/platforms/os:linux",
         ],
@@ -105,19 +106,19 @@ def _test_disable_relocation_features(*, name, sdk_version, extra_target_feature
     android_test_name = name + "_android_test"
     linux_test_name = name + "_linux_test"
     target_under_test = name + "_unstripped"
-    action_flags_test(
+    action_flags_present_only_for_mnemonic_test(
         name = android_test_name,
         target_under_test = target_under_test,
-        mnemonics_with_flags = ["CppLink"],
+        mnemonics = ["CppLink"],
         expected_flags = _DISABLE_RELOC_ARGS,
         target_compatible_with = [
             "//build/bazel/platforms/os:android",
         ],
     )
-    action_flags_test(
+    action_flags_present_only_for_mnemonic_test(
         name = linux_test_name,
         target_under_test = target_under_test,
-        mnemonics_with_flags = ["CppLink"],
+        mnemonics = ["CppLink"],
         expected_flags = _DISABLE_RELOC_ARGS,
         target_compatible_with = [
             "//build/bazel/platforms/os:linux",
