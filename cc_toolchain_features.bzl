@@ -28,7 +28,8 @@ load(
     _experimental_cpp_std_version = "experimental_cpp_std_version",
     _experimental_cpp_std_version_no_gnu = "experimental_cpp_std_version_no_gnu",
     _flags = "flags",
-    _generated_constants = "generated_constants",
+    _generated_config_constants = "generated_config_constants",
+    _generated_sanitizer_constants = "generated_sanitizer_constants",
     _oses = "oses",
 )
 load("@soong_injection//api_levels:api_levels.bzl", _api_levels = "api_levels")
@@ -69,7 +70,7 @@ def _get_sdk_version_features(os_is_device, target_arch):
     elif target_arch == _arches.X86_64:
         flag_prefix += "x86_64-linux-android"
     elif target_arch == _arches.Arm:
-        flag_prefix += _generated_constants.ArmClangTriple
+        flag_prefix += _generated_config_constants.ArmClangTriple
     elif target_arch == _arches.Arm64:
         flag_prefix += "aarch64-linux-android"
     else:
@@ -235,28 +236,28 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
     # Combine the toolchain's provided flags with the default ones.
     compiler_flags.extend(flags)
     compiler_flags.extend(_flags.compiler_flags)
-    compiler_flags.extend(_generated_constants.CommonGlobalCflags)
+    compiler_flags.extend(_generated_config_constants.CommonGlobalCflags)
     compiler_flags.extend(_env_based_common_global_cflags(ctx))
 
     if os_is_device:
-        compiler_flags.extend(_generated_constants.DeviceGlobalCflags)
+        compiler_flags.extend(_generated_config_constants.DeviceGlobalCflags)
     else:
-        compiler_flags.extend(_generated_constants.HostGlobalCflags)
+        compiler_flags.extend(_generated_config_constants.HostGlobalCflags)
 
     # Default compiler flags for assembly sources.
-    asm_only_flags = _generated_constants.CommonGlobalAsflags
+    asm_only_flags = _generated_config_constants.CommonGlobalAsflags
 
     # Default C++ compile action only flags (No C)
     cpp_only_flags = []
-    cpp_only_flags.extend(_generated_constants.CommonGlobalCppflags)
+    cpp_only_flags.extend(_generated_config_constants.CommonGlobalCppflags)
     if os_is_device:
-        cpp_only_flags.extend(_generated_constants.DeviceGlobalCppflags)
+        cpp_only_flags.extend(_generated_config_constants.DeviceGlobalCppflags)
     else:
-        cpp_only_flags.extend(_generated_constants.HostGlobalCppflags)
+        cpp_only_flags.extend(_generated_config_constants.HostGlobalCppflags)
 
     # Default C compile action only flags (No C++)
     c_only_flags = []
-    c_only_flags.extend(_generated_constants.CommonGlobalConlyflags)
+    c_only_flags.extend(_generated_config_constants.CommonGlobalConlyflags)
 
     # Flags that only apply in the external/ directory.
     non_external_flags = _flags.non_external_defines
@@ -408,7 +409,7 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
                 actions = _actions.compile,
                 flag_groups = [
                     flag_group(
-                        flags = _generated_constants.ExternalCflags,
+                        flags = _generated_config_constants.ExternalCflags,
                     ),
                 ],
                 with_features = [
@@ -488,7 +489,7 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
                 actions = [a for a in _actions.compile if a not in _actions.assemble],
                 flag_groups = [
                     flag_group(
-                        flags = _generated_constants.NoOverrideGlobalCflags,
+                        flags = _generated_config_constants.NoOverrideGlobalCflags,
                     ),
                 ],
             ),
@@ -507,7 +508,7 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
                     actions = [a for a in _actions.compile if a not in _actions.assemble],
                     flag_groups = [
                         flag_group(
-                            flags = _generated_constants.NoOverrideExternalGlobalCflags,
+                            flags = _generated_config_constants.NoOverrideExternalGlobalCflags,
                         ),
                     ],
                 ),
@@ -817,7 +818,7 @@ def _stub_library_feature():
                 flag_groups = [
                     flag_group(
                         # Ensures that the stub libraries are always compiled with default visibility
-                        flags = _generated_constants.StubLibraryCompilerFlags + ["-fvisibility=default"],
+                        flags = _generated_config_constants.StubLibraryCompilerFlags + ["-fvisibility=default"],
                     ),
                 ],
             ),
@@ -843,10 +844,10 @@ def _additional_archiver_flags(target_os):
 def _additional_linker_flags(os_is_device):
     linker_flags = []
     if os_is_device:
-        linker_flags.extend(_generated_constants.DeviceGlobalLldflags)
+        linker_flags.extend(_generated_config_constants.DeviceGlobalLldflags)
         linker_flags.extend(_flags.bionic_linker_flags)
     else:
-        linker_flags.extend(_generated_constants.HostGlobalLldflags)
+        linker_flags.extend(_generated_config_constants.HostGlobalLldflags)
     return linker_flags
 
 def _static_binary_linker_flags(os_is_device):
@@ -1603,6 +1604,40 @@ def _get_thinlto_features():
     ]
     return features
 
+def _ubsan_flag_feature(name, actions, flags):
+    return feature(
+        name = name,
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = actions,
+                flag_groups = [
+                    flag_group(
+                        flags = flags,
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        features = ["ubsan_enabled"],
+                    ),
+                ],
+            ),
+        ],
+    )
+
+def _host_or_device_specific_ubsan_feature(target_os):
+    if is_os_device(target_os):
+        return _ubsan_flag_feature(
+            "ubsan_device_only_flags",
+            _actions.compile,
+            _generated_sanitizer_constants.DeviceOnlySanitizeFlags,
+        )
+    return _ubsan_flag_feature(
+        "ubsan_host_only_flags",
+        _actions.compile,
+        _generated_sanitizer_constants.HostOnlySanitizeFlags,
+    )
+
 int_overflow_ignorelist_path = "build/soong/cc/config"
 int_overflow_ignorelist_filename = "integer_overflow_blocklist.txt"
 
@@ -1840,6 +1875,8 @@ def _get_ubsan_features(target_os):
             ],
         ),
     ]
+
+    ubsan_features += [_host_or_device_specific_ubsan_feature(target_os)]
 
     return ubsan_features
 
