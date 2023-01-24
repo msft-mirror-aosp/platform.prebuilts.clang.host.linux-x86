@@ -1,5 +1,6 @@
 load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
-load("@soong_injection//cc_toolchain:constants.bzl", _generated_constants = "constants")
+load("@soong_injection//cc_toolchain:config_constants.bzl", _generated_config_constants = "constants")
+load("@soong_injection//cc_toolchain:sanitizer_constants.bzl", _generated_sanitizer_constants = "constants")
 
 # This file uses structs to organize and control the visibility of symbols.
 
@@ -45,7 +46,8 @@ flags = struct(
 )
 
 # Generated flags dumped from Soong's cc toolchain code.
-generated_constants = _generated_constants
+generated_config_constants = _generated_config_constants
+generated_sanitizer_constants = _generated_sanitizer_constants
 
 # The set of C and C++ actions used in the Android build. There are other types
 # of actions available in ACTION_NAMES, but those are not used in
@@ -101,10 +103,10 @@ musl_crt = struct(
     binary_crtend = "//external/musl:libc_musl_crtend",
 )
 
-default_cpp_std_version = _generated_constants.CppStdVersion
-experimental_cpp_std_version = _generated_constants.ExperimentalCppStdVersion
-default_cpp_std_version_no_gnu = _generated_constants.CppStdVersion.replace("gnu", "c")
-experimental_cpp_std_version_no_gnu = _generated_constants.ExperimentalCppStdVersion.replace("gnu", "c")
+default_cpp_std_version = generated_config_constants.CppStdVersion
+experimental_cpp_std_version = generated_config_constants.ExperimentalCppStdVersion
+default_cpp_std_version_no_gnu = generated_config_constants.CppStdVersion.replace("gnu", "c")
+experimental_cpp_std_version_no_gnu = generated_config_constants.ExperimentalCppStdVersion.replace("gnu", "c")
 _cpp_std_versions = {
     "gnu++98": True,
     "gnu++11": True,
@@ -124,10 +126,10 @@ _cpp_std_versions[experimental_cpp_std_version_no_gnu] = True
 
 cpp_std_versions = [k for k in _cpp_std_versions.keys()]
 
-default_c_std_version = _generated_constants.CStdVersion
-experimental_c_std_version = _generated_constants.ExperimentalCStdVersion
-default_c_std_version_no_gnu = _generated_constants.CStdVersion.replace("gnu", "c")
-experimental_c_std_version_no_gnu = _generated_constants.ExperimentalCStdVersion.replace("gnu", "c")
+default_c_std_version = generated_config_constants.CStdVersion
+experimental_c_std_version = generated_config_constants.ExperimentalCStdVersion
+default_c_std_version_no_gnu = generated_config_constants.CStdVersion.replace("gnu", "c")
+experimental_c_std_version_no_gnu = generated_config_constants.ExperimentalCStdVersion.replace("gnu", "c")
 
 _c_std_versions = {
     "gnu99": True,
@@ -182,20 +184,20 @@ def _variant_combinations(arch_variants = {}, cpu_variants = {}):
     return combinations
 
 arch_to_variants = {
-    arches.Arm: _variant_combinations(arch_variants = _generated_constants.ArmArchVariantCflags, cpu_variants = _generated_constants.ArmCpuVariantCflags),
-    arches.Arm64: _variant_combinations(arch_variants = _generated_constants.Arm64ArchVariantCflags, cpu_variants = _generated_constants.Arm64CpuVariantCflags),
-    arches.X86: _variant_combinations(arch_variants = _generated_constants.X86ArchVariantCflags),
-    arches.X86_64: _variant_combinations(arch_variants = _generated_constants.X86_64ArchVariantCflags),
+    arches.Arm: _variant_combinations(arch_variants = generated_config_constants.ArmArchVariantCflags, cpu_variants = generated_config_constants.ArmCpuVariantCflags),
+    arches.Arm64: _variant_combinations(arch_variants = generated_config_constants.Arm64ArchVariantCflags, cpu_variants = generated_config_constants.Arm64CpuVariantCflags),
+    arches.X86: _variant_combinations(arch_variants = generated_config_constants.X86ArchVariantCflags),
+    arches.X86_64: _variant_combinations(arch_variants = generated_config_constants.X86_64ArchVariantCflags),
 }
 
 def arm_extra_ldflags(variant):
     if variant.arch_variant == "armv7-a-neon":
         if variant.cpu_variant in ("cortex-a8", ""):
-            return _generated_constants.ArmFixCortexA8LdFlags
+            return generated_config_constants.ArmFixCortexA8LdFlags
         else:
-            return _generated_constants.ArmNoFixCortexA8LdFlags
+            return generated_config_constants.ArmNoFixCortexA8LdFlags
     elif variant.arch_variant == "armv7-a":
-        return _generated_constants.ArmFixCortexA8LdFlags
+        return generated_config_constants.ArmFixCortexA8LdFlags
     return []
 
 # enabled_features returns a list of enabled features for the given arch variant, defaults to empty list

@@ -543,6 +543,105 @@ def _test_no_undefined_flag_absent_when_not_bionic_or_musl():
 
     return test_name
 
+host_only_flags = ["-fno-sanitize-recover=all"]
+
+def _test_host_only_features():
+    name = "host_only_features"
+    test_names = []
+
+    native.cc_binary(
+        name = name,
+        srcs = test_srcs,
+        features = ["ubsan_undefined"],
+        tags = ["manual"],
+    )
+
+    host_test_name = name + "_present_when_host_test"
+    test_names += [host_test_name]
+    action_flags_present_linux_test(
+        name = host_test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_flags = host_only_flags,
+    )
+
+    device_test_name = name + "_absent_when_device_test"
+    test_names += [device_test_name]
+    action_flags_absent_android_test(
+        name = device_test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_absent_flags = host_only_flags,
+    )
+
+    return test_names
+
+device_only_flags = [
+    "-fsanitize-trap=all",
+    "-ftrap-function=abort",
+]
+
+def _test_device_only_features():
+    name = "device_only_features"
+    test_names = []
+
+    native.cc_binary(
+        name = name,
+        srcs = test_srcs,
+        features = ["ubsan_undefined"],
+        tags = ["manual"],
+    )
+
+    device_test_name = name + "_present_when_device_test"
+    test_names += [device_test_name]
+    action_flags_present_android_test(
+        name = device_test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_flags = device_only_flags,
+    )
+
+    host_test_name = name + "_absent_when_host_test"
+    test_names += [host_test_name]
+    action_flags_absent_linux_test(
+        name = host_test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_absent_flags = device_only_flags,
+    )
+
+    return test_names
+
+def _test_device_only_and_host_only_features_absent_when_ubsan_disabled():
+    name = "device_only_and_host_only_features_absent_when_ubsan_disabled"
+    test_names = []
+
+    native.cc_binary(
+        name = name,
+        srcs = test_srcs,
+        tags = ["manual"],
+    )
+
+    host_test_name = name + "_host_test"
+    test_names += [host_test_name]
+    action_flags_absent_linux_test(
+        name = host_test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_absent_flags = host_only_flags,
+    )
+
+    device_test_name = name + "_device_test"
+    test_names += [device_test_name]
+    action_flags_absent_android_test(
+        name = device_test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_absent_flags = device_only_flags,
+    )
+
+    return test_names
+
 def cc_toolchain_features_ubsan_test_suite(name):
     individual_tests = [
         _test_ubsan_misc_undefined_feature(),
@@ -564,5 +663,8 @@ def cc_toolchain_features_ubsan_test_suite(name):
         tests = individual_tests +
                 _test_ubsan_no_link_runtime() +
                 _test_no_undefined_flag_present_when_bionic_or_musl() +
-                _test_ubsan_integer_overflow_feature(),
+                _test_ubsan_integer_overflow_feature() +
+                _test_host_only_features() +
+                _test_device_only_features() +
+                _test_device_only_and_host_only_features_absent_when_ubsan_disabled(),
     )
