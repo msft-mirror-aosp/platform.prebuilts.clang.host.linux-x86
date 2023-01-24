@@ -16,7 +16,7 @@ load(
     _actions = "actions",
     _enabled_features = "enabled_features",
     _flags = "flags",
-    _generated_constants = "generated_constants",
+    _generated_config_constants = "generated_config_constants",
 )
 load(
     ":cc_toolchain_features.bzl",
@@ -212,7 +212,7 @@ def _cc_toolchain_config_impl(ctx):
     builtin_include_dirs.extend(clang_version_info.includes)
 
     # b/186035856: Do not add anything to this list.
-    builtin_include_dirs.extend(_generated_constants.CommonGlobalIncludes)
+    builtin_include_dirs.extend(_generated_config_constants.CommonGlobalIncludes)
 
     crt_files = struct(
         shared_library_crtbegin = ctx.file.shared_library_crtbegin,
