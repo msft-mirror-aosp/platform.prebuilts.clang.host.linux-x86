@@ -27,6 +27,8 @@ load(
     "device_compatibility_flags_non_darwin",
     "device_compatibility_flags_non_windows",
     "generated_config_constants",
+    "libclang_rt_prebuilt_map",
+    "libclang_ubsan_minimal_rt_prebuilt_map",
     "variant_name",
     "x86_64_host_toolchains",
     "x86_64_musl_host_toolchains",
@@ -65,24 +67,6 @@ clang_version(
     ],
 )
 
-_LIBCLANG_RT_PREFIX = "%s/lib64/clang/%s/lib/linux" % (
-    generated_config_constants.CLANG_DEFAULT_VERSION,
-    generated_config_constants.CLANG_DEFAULT_SHORT_VERSION,
-)
-
-_LIBCLANG_RT_PREBUILT_MAP = {
-    "//build/bazel/platforms/os_arch:android_arm": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-arm-android.a",
-    "//build/bazel/platforms/os_arch:android_arm64": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-aarch64-android.a",
-    "//build/bazel/platforms/os_arch:android_x86": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-i686-android.a",
-    "//build/bazel/platforms/os_arch:android_x86_64": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-x86_64-android.a",
-    "//build/bazel/platforms/os_arch:linux_bionic_x86_64": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-x86_64-android.a",
-    "//build/bazel/platforms/os_arch:linux_glibc_x86": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-i386.a",
-    "//build/bazel/platforms/os_arch:linux_glibc_x86_64": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-x86_64.a",
-    "//build/bazel/platforms/os_arch:linux_musl_x86": _LIBCLANG_RT_PREFIX + "/i686-unknown-linux-musl/lib/linux/libclang_rt.builtins-i386.a",
-    "//build/bazel/platforms/os_arch:linux_musl_x86_64": _LIBCLANG_RT_PREFIX + "/x86_64-unknown-linux-musl/lib/linux/libclang_rt.builtins-x86_64.a",
-    "//conditions:default": None,
-}
-
 # x86_64 toolchain definitions
 [
     android_cc_toolchain(
@@ -90,7 +74,8 @@ _LIBCLANG_RT_PREBUILT_MAP = {
         clang_version = ":clang",
         clang_version_directory = generated_config_constants.CLANG_DEFAULT_VERSION,
         crt = _bionic_crt,
-        libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_x86_64"],
+        libclang_rt_builtin = libclang_rt_prebuilt_map["//build/bazel/platforms/os_arch:android_x86_64"],
+        libclang_rt_ubsan_minimal = libclang_ubsan_minimal_rt_prebuilt_map["//build/bazel/platforms/os_arch:android_x86_64"],
         linker_flags = generated_config_constants.X86_64ToolchainLdflags + generated_config_constants.X86_64Lldflags,
         target_arch = arches.X86_64,
         target_flags = generated_config_constants.X86_64ToolchainCflags +
@@ -113,7 +98,8 @@ _LIBCLANG_RT_PREBUILT_MAP = {
         clang_version = ":clang",
         clang_version_directory = generated_config_constants.CLANG_DEFAULT_VERSION,
         crt = _bionic_crt,
-        libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_x86"],
+        libclang_rt_builtin = libclang_rt_prebuilt_map["//build/bazel/platforms/os_arch:android_x86"],
+        libclang_rt_ubsan_minimal = libclang_ubsan_minimal_rt_prebuilt_map["//build/bazel/platforms/os_arch:android_x86"],
         linker_flags = generated_config_constants.X86ToolchainLdflags + generated_config_constants.X86Lldflags,
         target_arch = arches.X86,
         target_flags = generated_config_constants.X86ToolchainCflags +
@@ -136,7 +122,8 @@ _LIBCLANG_RT_PREBUILT_MAP = {
         clang_version = ":clang",
         clang_version_directory = generated_config_constants.CLANG_DEFAULT_VERSION,
         crt = _bionic_crt,
-        libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_arm64"],
+        libclang_rt_builtin = libclang_rt_prebuilt_map["//build/bazel/platforms/os_arch:android_arm64"],
+        libclang_rt_ubsan_minimal = libclang_ubsan_minimal_rt_prebuilt_map["//build/bazel/platforms/os_arch:android_arm64"],
         linker_flags = generated_config_constants.Arm64CpuVariantLdflags.get(
             variant.cpu_variant,
             [],
@@ -161,7 +148,8 @@ _LIBCLANG_RT_PREBUILT_MAP = {
         clang_version = ":clang",
         clang_version_directory = generated_config_constants.CLANG_DEFAULT_VERSION,
         crt = _bionic_crt,
-        libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_arm"],
+        libclang_rt_builtin = libclang_rt_prebuilt_map["//build/bazel/platforms/os_arch:android_arm"],
+        libclang_rt_ubsan_minimal = libclang_ubsan_minimal_rt_prebuilt_map["//build/bazel/platforms/os_arch:android_arm"],
         linker_flags = generated_config_constants.ArmLldflags + arm_extra_ldflags(variant),
         target_arch = arches.Arm,
         target_flags = generated_config_constants.ArmCflags +
@@ -192,7 +180,8 @@ android_cc_toolchain(
     ],
     crt = False,
     gcc_toolchain = generated_config_constants.LinuxGccRoot,
-    libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:linux_glibc_x86_64"],
+    libclang_rt_builtin = libclang_rt_prebuilt_map["//build/bazel/platforms/os_arch:linux_glibc_x86_64"],
+    libclang_rt_ubsan_minimal = libclang_ubsan_minimal_rt_prebuilt_map["//build/bazel/platforms/os_arch:linux_glibc_x86_64"],
     linker_flags = generated_config_constants.LinuxGlibcLdflags +
                    generated_config_constants.LinuxLdflags +
                    generated_config_constants.LinuxX8664Ldflags +
@@ -219,7 +208,8 @@ android_cc_toolchain(
     ],
     crt = False,
     gcc_toolchain = generated_config_constants.LinuxGccRoot,
-    libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:linux_glibc_x86"],
+    libclang_rt_builtin = libclang_rt_prebuilt_map["//build/bazel/platforms/os_arch:linux_glibc_x86"],
+    libclang_rt_ubsan_minimal = libclang_ubsan_minimal_rt_prebuilt_map["//build/bazel/platforms/os_arch:linux_glibc_x86"],
     linker_flags = generated_config_constants.LinuxGlibcLdflags +
                    generated_config_constants.LinuxLdflags +
                    generated_config_constants.LinuxX86Ldflags +
@@ -246,7 +236,8 @@ android_cc_toolchain(
     ],
     crt = _musl_crt,
     gcc_toolchain = generated_config_constants.LinuxGccRoot,
-    libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:linux_musl_x86_64"],
+    libclang_rt_builtin = libclang_rt_prebuilt_map["//build/bazel/platforms/os_arch:linux_musl_x86_64"],
+    libclang_rt_ubsan_minimal = libclang_ubsan_minimal_rt_prebuilt_map["//build/bazel/platforms/os_arch:linux_musl_x86_64"],
     linker_flags = generated_config_constants.LinuxMuslLdflags +
                    generated_config_constants.LinuxLdflags +
                    generated_config_constants.LinuxX8664Ldflags,
@@ -271,7 +262,8 @@ android_cc_toolchain(
     ],
     crt = _musl_crt,
     gcc_toolchain = generated_config_constants.LinuxGccRoot,
-    libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:linux_musl_x86"],
+    libclang_rt_builtin = libclang_rt_prebuilt_map["//build/bazel/platforms/os_arch:linux_musl_x86"],
+    libclang_rt_ubsan_minimal = libclang_ubsan_minimal_rt_prebuilt_map["//build/bazel/platforms/os_arch:linux_musl_x86"],
     linker_flags = generated_config_constants.LinuxMuslLdflags +
                    generated_config_constants.LinuxLdflags +
                    generated_config_constants.LinuxX86Ldflags,
@@ -373,7 +365,7 @@ toolchain_type(name = "nocrt_toolchain")
 
 cc_import(
     name = "libclang_rt",
-    static_library = select(_LIBCLANG_RT_PREBUILT_MAP),
+    static_library = select(libclang_rt_prebuilt_map),
 )
 
 [alias(
