@@ -1638,10 +1638,19 @@ def _host_or_device_specific_ubsan_feature(target_os):
         _generated_sanitizer_constants.HostOnlySanitizeFlags,
     )
 
+def _exclude_ubsan_rt_feature(path):
+    if not path:
+        return None
+    return _ubsan_flag_feature(
+        "ubsan_exclude_rt",
+        _actions.link,
+        ["-Wl,--exclude-libs=" + path.path],
+    )
+
 int_overflow_ignorelist_path = "build/soong/cc/config"
 int_overflow_ignorelist_filename = "integer_overflow_blocklist.txt"
 
-def _get_ubsan_features(target_os):
+def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
     ALL_UBSAN_ACTIONS = _actions.compile + _actions.link + _actions.assemble
 
     ubsan_features = [
@@ -1876,7 +1885,10 @@ def _get_ubsan_features(target_os):
         ),
     ]
 
-    ubsan_features += [_host_or_device_specific_ubsan_feature(target_os)]
+    ubsan_features += [
+        _host_or_device_specific_ubsan_feature(target_os),
+        _exclude_ubsan_rt_feature(libclang_rt_ubsan_minimal),
+    ]
 
     return ubsan_features
 
@@ -1891,6 +1903,7 @@ def get_features(
     compile_only_flags = ctx.attr.compiler_flags
     linker_only_flags = ctx.attr.linker_flags
     libclang_rt_builtin = ctx.file.libclang_rt_builtin
+    libclang_rt_ubsan_minimal = ctx.file.libclang_rt_ubsan_minimal
     rtti_toggle = ctx.attr.rtti_toggle
 
     os_is_device = is_os_device(target_os)
@@ -1942,7 +1955,7 @@ def get_features(
         # Optimization
         _get_thinlto_features(),
         # Sanitizers
-        _get_ubsan_features(target_os),
+        _get_ubsan_features(target_os, libclang_rt_ubsan_minimal),
         # This must always come last.
         _link_crtend(crt_files),
     ]
