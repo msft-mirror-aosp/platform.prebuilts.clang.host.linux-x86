@@ -16,7 +16,7 @@ load(
     _actions = "actions",
     _enabled_features = "enabled_features",
     _flags = "flags",
-    _generated_constants = "generated_constants",
+    _generated_config_constants = "generated_config_constants",
 )
 load(
     ":cc_toolchain_features.bzl",
@@ -212,7 +212,7 @@ def _cc_toolchain_config_impl(ctx):
     builtin_include_dirs.extend(clang_version_info.includes)
 
     # b/186035856: Do not add anything to this list.
-    builtin_include_dirs.extend(_generated_constants.CommonGlobalIncludes)
+    builtin_include_dirs.extend(_generated_config_constants.CommonGlobalIncludes)
 
     crt_files = struct(
         shared_library_crtbegin = ctx.file.shared_library_crtbegin,
@@ -265,6 +265,7 @@ _cc_toolchain_config = rule(
         "compiler_flags": attr.string_list(default = []),
         "linker_flags": attr.string_list(default = []),
         "libclang_rt_builtin": attr.label(allow_single_file = True),
+        "libclang_rt_ubsan_minimal": attr.label(allow_single_file = True),
         # crtbegin and crtend libraries for compiling cc_library_shared and
         # cc_binary against the Bionic runtime
         "shared_library_crtbegin": attr.label(allow_single_file = True, cfg = "target"),
@@ -318,6 +319,7 @@ def android_cc_toolchain(
         # If false, the crt version and "normal" version of this toolchain are identical.
         crt = None,
         libclang_rt_builtin = None,
+        libclang_rt_ubsan_minimal = None,
         target_flags = [],
         compiler_flags = [],
         linker_flags = [],
@@ -328,6 +330,9 @@ def android_cc_toolchain(
     if libclang_rt_builtin:
         libclang_rt_path = libclang_rt_builtin
         extra_linker_paths.append(":" + libclang_rt_path)
+    libclang_rt_ubsan_minimal_path = None
+    if libclang_rt_ubsan_minimal:
+        libclang_rt_ubsan_minimal_path = libclang_rt_ubsan_minimal
     if gcc_toolchain:
         gcc_toolchain_path = "//%s:tools" % gcc_toolchain
         extra_linker_paths.append(gcc_toolchain_path)
@@ -338,6 +343,7 @@ def android_cc_toolchain(
             ("target_arch", target_arch),
             ("clang_version", clang_version),
             ("libclang_rt_builtin", libclang_rt_path),
+            ("libclang_rt_ubsan_minimal", libclang_rt_ubsan_minimal_path),
             ("target_flags", target_flags),
             ("compiler_flags", compiler_flags),
             ("linker_flags", linker_flags),

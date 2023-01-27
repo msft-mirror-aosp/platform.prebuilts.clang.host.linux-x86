@@ -26,7 +26,9 @@ load(
     "arm_extra_ldflags",
     "device_compatibility_flags_non_darwin",
     "device_compatibility_flags_non_windows",
-    "generated_constants",
+    "generated_config_constants",
+    "libclang_rt_prebuilt_map",
+    "libclang_ubsan_minimal_rt_prebuilt_map",
     "variant_name",
     "x86_64_host_toolchains",
     "x86_64_musl_host_toolchains",
@@ -59,47 +61,30 @@ filegroup(name = "empty")
 # Different clang versions are configured here.
 clang_version(
     name = "clang",
-    directory = generated_constants.CLANG_DEFAULT_VERSION,
+    directory = generated_config_constants.CLANG_DEFAULT_VERSION,
     includes = [
-        "lib64/clang/%s/include" % generated_constants.CLANG_DEFAULT_SHORT_VERSION,
+        "lib64/clang/%s/include" % generated_config_constants.CLANG_DEFAULT_SHORT_VERSION,
     ],
 )
-
-_LIBCLANG_RT_PREFIX = "%s/lib64/clang/%s/lib/linux" % (
-    generated_constants.CLANG_DEFAULT_VERSION,
-    generated_constants.CLANG_DEFAULT_SHORT_VERSION,
-)
-
-_LIBCLANG_RT_PREBUILT_MAP = {
-    "//build/bazel/platforms/os_arch:android_arm": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-arm-android.a",
-    "//build/bazel/platforms/os_arch:android_arm64": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-aarch64-android.a",
-    "//build/bazel/platforms/os_arch:android_x86": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-i686-android.a",
-    "//build/bazel/platforms/os_arch:android_x86_64": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-x86_64-android.a",
-    "//build/bazel/platforms/os_arch:linux_bionic_x86_64": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-x86_64-android.a",
-    "//build/bazel/platforms/os_arch:linux_glibc_x86": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-i386.a",
-    "//build/bazel/platforms/os_arch:linux_glibc_x86_64": _LIBCLANG_RT_PREFIX + "/libclang_rt.builtins-x86_64.a",
-    "//build/bazel/platforms/os_arch:linux_musl_x86": _LIBCLANG_RT_PREFIX + "/i686-unknown-linux-musl/lib/linux/libclang_rt.builtins-i386.a",
-    "//build/bazel/platforms/os_arch:linux_musl_x86_64": _LIBCLANG_RT_PREFIX + "/x86_64-unknown-linux-musl/lib/linux/libclang_rt.builtins-x86_64.a",
-    "//conditions:default": None,
-}
 
 # x86_64 toolchain definitions
 [
     android_cc_toolchain(
         name = "cc_toolchain_x86_64" + variant_name(variant),
         clang_version = ":clang",
-        clang_version_directory = generated_constants.CLANG_DEFAULT_VERSION,
+        clang_version_directory = generated_config_constants.CLANG_DEFAULT_VERSION,
         crt = _bionic_crt,
-        libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_x86_64"],
-        linker_flags = generated_constants.X86_64ToolchainLdflags + generated_constants.X86_64Lldflags,
+        libclang_rt_builtin = libclang_rt_prebuilt_map["//build/bazel/platforms/os_arch:android_x86_64"],
+        libclang_rt_ubsan_minimal = libclang_ubsan_minimal_rt_prebuilt_map["//build/bazel/platforms/os_arch:android_x86_64"],
+        linker_flags = generated_config_constants.X86_64ToolchainLdflags + generated_config_constants.X86_64Lldflags,
         target_arch = arches.X86_64,
-        target_flags = generated_constants.X86_64ToolchainCflags +
-                       generated_constants.X86_64ArchVariantCflags[variant.arch_variant] +
+        target_flags = generated_config_constants.X86_64ToolchainCflags +
+                       generated_config_constants.X86_64ArchVariantCflags[variant.arch_variant] +
                        expand_feature_flags(
                            variant.arch_variant,
                            _arch_constants.AndroidArchToVariantToFeatures[arches.X86_64],
-                           generated_constants.X86_64ArchFeatureCflags,
-                       ) + generated_constants.X86_64Cflags,
+                           generated_config_constants.X86_64ArchFeatureCflags,
+                       ) + generated_config_constants.X86_64Cflags,
         target_os = "android",
         toolchain_identifier = "x86_64-toolchain",
     )
@@ -111,18 +96,19 @@ _LIBCLANG_RT_PREBUILT_MAP = {
     android_cc_toolchain(
         name = "cc_toolchain_x86" + variant_name(variant),
         clang_version = ":clang",
-        clang_version_directory = generated_constants.CLANG_DEFAULT_VERSION,
+        clang_version_directory = generated_config_constants.CLANG_DEFAULT_VERSION,
         crt = _bionic_crt,
-        libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_x86"],
-        linker_flags = generated_constants.X86ToolchainLdflags + generated_constants.X86Lldflags,
+        libclang_rt_builtin = libclang_rt_prebuilt_map["//build/bazel/platforms/os_arch:android_x86"],
+        libclang_rt_ubsan_minimal = libclang_ubsan_minimal_rt_prebuilt_map["//build/bazel/platforms/os_arch:android_x86"],
+        linker_flags = generated_config_constants.X86ToolchainLdflags + generated_config_constants.X86Lldflags,
         target_arch = arches.X86,
-        target_flags = generated_constants.X86ToolchainCflags +
-                       generated_constants.X86ArchVariantCflags[variant.arch_variant] +
+        target_flags = generated_config_constants.X86ToolchainCflags +
+                       generated_config_constants.X86ArchVariantCflags[variant.arch_variant] +
                        expand_feature_flags(
                            variant.arch_variant,
                            _arch_constants.AndroidArchToVariantToFeatures[arches.X86],
-                           generated_constants.X86ArchFeatureCflags,
-                       ) + generated_constants.X86Cflags,
+                           generated_config_constants.X86ArchFeatureCflags,
+                       ) + generated_config_constants.X86Cflags,
         target_os = "android",
         toolchain_identifier = "x86-toolchain",
     )
@@ -134,17 +120,18 @@ _LIBCLANG_RT_PREBUILT_MAP = {
     android_cc_toolchain(
         name = "cc_toolchain_arm64" + variant_name(variant),
         clang_version = ":clang",
-        clang_version_directory = generated_constants.CLANG_DEFAULT_VERSION,
+        clang_version_directory = generated_config_constants.CLANG_DEFAULT_VERSION,
         crt = _bionic_crt,
-        libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_arm64"],
-        linker_flags = generated_constants.Arm64CpuVariantLdflags.get(
+        libclang_rt_builtin = libclang_rt_prebuilt_map["//build/bazel/platforms/os_arch:android_arm64"],
+        libclang_rt_ubsan_minimal = libclang_ubsan_minimal_rt_prebuilt_map["//build/bazel/platforms/os_arch:android_arm64"],
+        linker_flags = generated_config_constants.Arm64CpuVariantLdflags.get(
             variant.cpu_variant,
             [],
-        ) + generated_constants.Arm64Lldflags,
+        ) + generated_config_constants.Arm64Lldflags,
         target_arch = arches.Arm64,
-        target_flags = generated_constants.Arm64Cflags +
-                       generated_constants.Arm64ArchVariantCflags[variant.arch_variant] +
-                       generated_constants.Arm64CpuVariantCflags.get(
+        target_flags = generated_config_constants.Arm64Cflags +
+                       generated_config_constants.Arm64ArchVariantCflags[variant.arch_variant] +
+                       generated_config_constants.Arm64CpuVariantCflags.get(
                            variant.cpu_variant,
                            [],
                        ),
@@ -159,15 +146,16 @@ _LIBCLANG_RT_PREBUILT_MAP = {
     android_cc_toolchain(
         name = "cc_toolchain_arm" + variant_name(variant),
         clang_version = ":clang",
-        clang_version_directory = generated_constants.CLANG_DEFAULT_VERSION,
+        clang_version_directory = generated_config_constants.CLANG_DEFAULT_VERSION,
         crt = _bionic_crt,
-        libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:android_arm"],
-        linker_flags = generated_constants.ArmLldflags + arm_extra_ldflags(variant),
+        libclang_rt_builtin = libclang_rt_prebuilt_map["//build/bazel/platforms/os_arch:android_arm"],
+        libclang_rt_ubsan_minimal = libclang_ubsan_minimal_rt_prebuilt_map["//build/bazel/platforms/os_arch:android_arm"],
+        linker_flags = generated_config_constants.ArmLldflags + arm_extra_ldflags(variant),
         target_arch = arches.Arm,
-        target_flags = generated_constants.ArmCflags +
-                       generated_constants.ArmToolchainCflags +
-                       generated_constants.ArmArchVariantCflags[variant.arch_variant] +
-                       generated_constants.ArmCpuVariantCflags.get(
+        target_flags = generated_config_constants.ArmCflags +
+                       generated_config_constants.ArmToolchainCflags +
+                       generated_config_constants.ArmArchVariantCflags[variant.arch_variant] +
+                       generated_config_constants.ArmCpuVariantCflags.get(
                            variant.cpu_variant,
                            [],
                        ),
@@ -182,20 +170,21 @@ _LIBCLANG_RT_PREBUILT_MAP = {
 android_cc_toolchain(
     name = "cc_toolchain_x86_64_linux_host",
     clang_version = ":clang",
-    clang_version_directory = generated_constants.CLANG_DEFAULT_VERSION,
-    compiler_flags = generated_constants.LinuxCflags +
-                     generated_constants.LinuxGlibcCflags +
-                     generated_constants.LinuxX8664Cflags +
+    clang_version_directory = generated_config_constants.CLANG_DEFAULT_VERSION,
+    compiler_flags = generated_config_constants.LinuxCflags +
+                     generated_config_constants.LinuxGlibcCflags +
+                     generated_config_constants.LinuxX8664Cflags +
     # Added by stl.go for non-bionic toolchains.
     [
         "-nostdinc++",
     ],
     crt = False,
-    gcc_toolchain = generated_constants.LinuxGccRoot,
-    libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:linux_glibc_x86_64"],
-    linker_flags = generated_constants.LinuxGlibcLdflags +
-                   generated_constants.LinuxLdflags +
-                   generated_constants.LinuxX8664Ldflags +
+    gcc_toolchain = generated_config_constants.LinuxGccRoot,
+    libclang_rt_builtin = libclang_rt_prebuilt_map["//build/bazel/platforms/os_arch:linux_glibc_x86_64"],
+    libclang_rt_ubsan_minimal = libclang_ubsan_minimal_rt_prebuilt_map["//build/bazel/platforms/os_arch:linux_glibc_x86_64"],
+    linker_flags = generated_config_constants.LinuxGlibcLdflags +
+                   generated_config_constants.LinuxLdflags +
+                   generated_config_constants.LinuxX8664Ldflags +
                    device_compatibility_flags_non_windows +
                    device_compatibility_flags_non_darwin,
     rtti_toggle = False,
@@ -209,20 +198,21 @@ android_cc_toolchain(
 android_cc_toolchain(
     name = "cc_toolchain_x86_linux_host",
     clang_version = ":clang",
-    clang_version_directory = generated_constants.CLANG_DEFAULT_VERSION,
-    compiler_flags = generated_constants.LinuxCflags +
-                     generated_constants.LinuxGlibcCflags +
-                     generated_constants.LinuxX86Cflags +
+    clang_version_directory = generated_config_constants.CLANG_DEFAULT_VERSION,
+    compiler_flags = generated_config_constants.LinuxCflags +
+                     generated_config_constants.LinuxGlibcCflags +
+                     generated_config_constants.LinuxX86Cflags +
     # Added by stl.go for non-bionic toolchains.
     [
         "-nostdinc++",
     ],
     crt = False,
-    gcc_toolchain = generated_constants.LinuxGccRoot,
-    libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:linux_glibc_x86"],
-    linker_flags = generated_constants.LinuxGlibcLdflags +
-                   generated_constants.LinuxLdflags +
-                   generated_constants.LinuxX86Ldflags +
+    gcc_toolchain = generated_config_constants.LinuxGccRoot,
+    libclang_rt_builtin = libclang_rt_prebuilt_map["//build/bazel/platforms/os_arch:linux_glibc_x86"],
+    libclang_rt_ubsan_minimal = libclang_ubsan_minimal_rt_prebuilt_map["//build/bazel/platforms/os_arch:linux_glibc_x86"],
+    linker_flags = generated_config_constants.LinuxGlibcLdflags +
+                   generated_config_constants.LinuxLdflags +
+                   generated_config_constants.LinuxX86Ldflags +
                    device_compatibility_flags_non_windows +
                    device_compatibility_flags_non_darwin,
     rtti_toggle = False,
@@ -236,20 +226,21 @@ android_cc_toolchain(
 android_cc_toolchain(
     name = "cc_toolchain_x86_64_linux_musl_host",
     clang_version = ":clang",
-    clang_version_directory = generated_constants.CLANG_DEFAULT_VERSION,
-    compiler_flags = generated_constants.LinuxCflags +
-                     generated_constants.LinuxMuslCflags +
-                     generated_constants.LinuxX8664Cflags +
+    clang_version_directory = generated_config_constants.CLANG_DEFAULT_VERSION,
+    compiler_flags = generated_config_constants.LinuxCflags +
+                     generated_config_constants.LinuxMuslCflags +
+                     generated_config_constants.LinuxX8664Cflags +
     # Added by stl.go for non-bionic toolchains.
     [
         "-nostdinc++",
     ],
     crt = _musl_crt,
-    gcc_toolchain = generated_constants.LinuxGccRoot,
-    libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:linux_musl_x86_64"],
-    linker_flags = generated_constants.LinuxMuslLdflags +
-                   generated_constants.LinuxLdflags +
-                   generated_constants.LinuxX8664Ldflags,
+    gcc_toolchain = generated_config_constants.LinuxGccRoot,
+    libclang_rt_builtin = libclang_rt_prebuilt_map["//build/bazel/platforms/os_arch:linux_musl_x86_64"],
+    libclang_rt_ubsan_minimal = libclang_ubsan_minimal_rt_prebuilt_map["//build/bazel/platforms/os_arch:linux_musl_x86_64"],
+    linker_flags = generated_config_constants.LinuxMuslLdflags +
+                   generated_config_constants.LinuxLdflags +
+                   generated_config_constants.LinuxX8664Ldflags,
     rtti_toggle = False,
     target_arch = "x86_64",
     target_flags = ["--target=x86_64-linux-musl"],
@@ -261,20 +252,21 @@ android_cc_toolchain(
 android_cc_toolchain(
     name = "cc_toolchain_x86_linux_musl_host",
     clang_version = ":clang",
-    clang_version_directory = generated_constants.CLANG_DEFAULT_VERSION,
-    compiler_flags = generated_constants.LinuxCflags +
-                     generated_constants.LinuxMuslCflags +
-                     generated_constants.LinuxX86Cflags +
+    clang_version_directory = generated_config_constants.CLANG_DEFAULT_VERSION,
+    compiler_flags = generated_config_constants.LinuxCflags +
+                     generated_config_constants.LinuxMuslCflags +
+                     generated_config_constants.LinuxX86Cflags +
     # Added by stl.go for non-bionic toolchains.
     [
         "-nostdinc++",
     ],
     crt = _musl_crt,
-    gcc_toolchain = generated_constants.LinuxGccRoot,
-    libclang_rt_builtin = _LIBCLANG_RT_PREBUILT_MAP["//build/bazel/platforms/os_arch:linux_musl_x86"],
-    linker_flags = generated_constants.LinuxMuslLdflags +
-                   generated_constants.LinuxLdflags +
-                   generated_constants.LinuxX86Ldflags,
+    gcc_toolchain = generated_config_constants.LinuxGccRoot,
+    libclang_rt_builtin = libclang_rt_prebuilt_map["//build/bazel/platforms/os_arch:linux_musl_x86"],
+    libclang_rt_ubsan_minimal = libclang_ubsan_minimal_rt_prebuilt_map["//build/bazel/platforms/os_arch:linux_musl_x86"],
+    linker_flags = generated_config_constants.LinuxMuslLdflags +
+                   generated_config_constants.LinuxLdflags +
+                   generated_config_constants.LinuxX86Ldflags,
     rtti_toggle = False,
     target_arch = "x86",
     target_flags = ["--target=i686-linux-musl"],
@@ -373,12 +365,12 @@ toolchain_type(name = "nocrt_toolchain")
 
 cc_import(
     name = "libclang_rt",
-    static_library = select(_LIBCLANG_RT_PREBUILT_MAP),
+    static_library = select(libclang_rt_prebuilt_map),
 )
 
 [alias(
     name = "llvm-%s" % tool,
-    actual = generated_constants.CLANG_DEFAULT_VERSION + "/bin/llvm-%s" % tool,
+    actual = generated_config_constants.CLANG_DEFAULT_VERSION + "/bin/llvm-%s" % tool,
     visibility = ["//visibility:public"],
 ) for tool in [
     "ar",
@@ -389,7 +381,7 @@ cc_import(
 
 [alias(
     name = tool,
-    actual = generated_constants.CLANG_DEFAULT_VERSION + "/bin/" + tool,
+    actual = generated_config_constants.CLANG_DEFAULT_VERSION + "/bin/" + tool,
     visibility = ["//visibility:public"],
 ) for tool in [
     "clang-tidy",
@@ -401,8 +393,8 @@ cc_import(
 filegroup(
     name = "test_tools",
     srcs = [
-        generated_constants.CLANG_DEFAULT_VERSION + "/bin/llvm-readelf",
-        generated_constants.CLANG_DEFAULT_VERSION + "/bin/llvm-nm",
+        generated_config_constants.CLANG_DEFAULT_VERSION + "/bin/llvm-readelf",
+        generated_config_constants.CLANG_DEFAULT_VERSION + "/bin/llvm-nm",
     ],
     visibility = ["//build/bazel/tests:__subpackages__"],
 )
