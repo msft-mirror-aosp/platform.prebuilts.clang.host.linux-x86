@@ -326,20 +326,6 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
             ),
         ],
     ))
-    features.append(feature(
-        name = "common_compiler_flags",
-        enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = _actions.compile,
-                flag_groups = [
-                    flag_group(
-                        flags = compiler_flags,
-                    ),
-                ],
-            ),
-        ],
-    ))
 
     # bpf only needs the flag below instead of all the flags in
     # common_compiler_flags
@@ -446,10 +432,23 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
                 actions = _actions.compile,
                 flag_groups = [
                     flag_group(
-                        flags = [
-                            "-mthumb",
-                            "-Os",
-                        ],
+                        flags = _generated_config_constants.ArmThumbCflags,
+                    ),
+                ],
+            ),
+        ],
+    ))
+
+    # Must follow arm_isa_thumb for flag ordering
+    features.append(feature(
+        name = "common_compiler_flags",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = _actions.compile,
+                flag_groups = [
+                    flag_group(
+                        flags = compiler_flags,
                     ),
                 ],
             ),

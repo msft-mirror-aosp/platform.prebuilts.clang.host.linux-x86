@@ -53,6 +53,10 @@ load(
     ":cc_toolchain_features_env_based_flags_test.bzl",
     "cc_toolchain_features_env_based_flags_test_suite",
 )
+load(
+    ":cc_toolchain_features_flag_order_test.bzl",
+    "cc_toolchain_features_flag_order_test_suite",
+)
 load("//build/bazel/flags:common.bzl", "is_env_true")
 load("//build/bazel/platforms/arch/variants:constants.bzl", _arch_constants = "constants")
 
@@ -413,6 +417,10 @@ cc_toolchain_features_ubsan_test_suite(
 
 cc_toolchain_features_env_based_flags_test_suite(
     name = "cc_toolchain_features_env_based_flags_tests",
+)
+
+cc_toolchain_features_flag_order_test_suite(
+    name = "cc_toolchain_features_flag_order_tests",
 )
 
 bool_flag(
