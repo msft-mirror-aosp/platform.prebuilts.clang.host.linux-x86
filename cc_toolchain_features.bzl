@@ -3,6 +3,7 @@
 This top level list of features are available through the get_features function.
 """
 
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load(
     "@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl",
     "feature",
@@ -19,18 +20,32 @@ load(
     _c_std_versions = "c_std_versions",
     _cpp_std_versions = "cpp_std_versions",
     _default_c_std_version = "default_c_std_version",
-    _experimental_c_std_version = "experimental_c_std_version",
-    _default_cpp_std_version = "default_cpp_std_version",
-    _experimental_cpp_std_version = "experimental_cpp_std_version",
     _default_c_std_version_no_gnu = "default_c_std_version_no_gnu",
-    _experimental_c_std_version_no_gnu = "experimental_c_std_version_no_gnu",
+    _default_cpp_std_version = "default_cpp_std_version",
     _default_cpp_std_version_no_gnu = "default_cpp_std_version_no_gnu",
+    _experimental_c_std_version = "experimental_c_std_version",
+    _experimental_c_std_version_no_gnu = "experimental_c_std_version_no_gnu",
+    _experimental_cpp_std_version = "experimental_cpp_std_version",
     _experimental_cpp_std_version_no_gnu = "experimental_cpp_std_version_no_gnu",
     _flags = "flags",
-    _generated_constants = "generated_constants",
+    _generated_config_constants = "generated_config_constants",
+    _generated_sanitizer_constants = "generated_sanitizer_constants",
+    _oses = "oses",
 )
 load("@soong_injection//api_levels:api_levels.bzl", _api_levels = "api_levels")
 load("@soong_injection//product_config:product_variables.bzl", "product_vars")
+
+def is_os_device(os):
+    return os == _oses.Android
+
+def is_os_bionic(os):
+    return os == _oses.Android or os == _oses.LinuxBionic
+
+def _sdk_version_features_between(start, end):
+    return ["sdk_version_" + str(i) for i in range(start, end + 1)]
+
+def _sdk_version_features_before(version):
+    return _sdk_version_features_between(1, version - 1)
 
 def _get_sdk_version_features(os_is_device, target_arch):
     if not os_is_device:
@@ -55,7 +70,7 @@ def _get_sdk_version_features(os_is_device, target_arch):
     elif target_arch == _arches.X86_64:
         flag_prefix += "x86_64-linux-android"
     elif target_arch == _arches.Arm:
-        flag_prefix += _generated_constants.ArmClangTriple
+        flag_prefix += _generated_config_constants.ArmClangTriple
     elif target_arch == _arches.Arm64:
         flag_prefix += "aarch64-linux-android"
     else:
@@ -187,33 +202,62 @@ def _get_c_std_features():
     ))
     return features
 
-def _compiler_flag_features(flags = [], os_is_device = False):
+def _env_based_common_global_cflags(ctx):
+    flags = []
+
+    # The logic comes from https://cs.android.com/android/platform/superproject/+/master:build/soong/cc/config/global.go;l=332;drc=af32e1ba3ffca6b552ac1ff6d14e5c3a5148cb80
+    auto_pattern_initialize = ctx.attr._auto_pattern_initialize[BuildSettingInfo].value
+    auto_uninitialize = ctx.attr._auto_uninitialize[BuildSettingInfo].value
+    if ctx.attr._auto_zero_initialize[BuildSettingInfo].value:
+        flags.extend(["-ftrivial-auto-var-init=zero", "-enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang"])
+    elif auto_pattern_initialize:
+        flags.extend(["-ftrivial-auto-var-init=pattern"])
+    elif auto_uninitialize:
+        flags.extend(["-ftrivial-auto-var-init=uninitialized"])
+    else:
+        # Default to zero initialization.
+        flags.extend(["-ftrivial-auto-var-init=zero", "-enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang"])
+
+    if ctx.attr._use_ccache[BuildSettingInfo].value or (not auto_pattern_initialize and not auto_uninitialize):
+        flags.extend(["-Wno-unused-command-line-argument"])
+
+    if ctx.attr._llvm_next[BuildSettingInfo].value:
+        flags.extend(["-Wno-error=single-bit-bitfield-constant-conversion"])
+
+    if ctx.attr._allow_unknown_warning_option[BuildSettingInfo].value:
+        flags.extend(["-Wno-error=unknown-warning-option"])
+
+    return flags
+
+def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
+    os_is_device = is_os_device(target_os)
     compiler_flags = []
 
     # Combine the toolchain's provided flags with the default ones.
     compiler_flags.extend(flags)
     compiler_flags.extend(_flags.compiler_flags)
-    compiler_flags.extend(_generated_constants.CommonGlobalCflags)
+    compiler_flags.extend(_generated_config_constants.CommonGlobalCflags)
+    compiler_flags.extend(_env_based_common_global_cflags(ctx))
 
     if os_is_device:
-        compiler_flags.extend(_generated_constants.DeviceGlobalCflags)
+        compiler_flags.extend(_generated_config_constants.DeviceGlobalCflags)
     else:
-        compiler_flags.extend(_generated_constants.HostGlobalCflags)
+        compiler_flags.extend(_generated_config_constants.HostGlobalCflags)
 
     # Default compiler flags for assembly sources.
-    asm_only_flags = _generated_constants.CommonGlobalAsflags
+    asm_only_flags = _generated_config_constants.CommonGlobalAsflags
 
     # Default C++ compile action only flags (No C)
     cpp_only_flags = []
-    cpp_only_flags.extend(_generated_constants.CommonGlobalCppflags)
+    cpp_only_flags.extend(_generated_config_constants.CommonGlobalCppflags)
     if os_is_device:
-        cpp_only_flags.extend(_generated_constants.DeviceGlobalCppflags)
+        cpp_only_flags.extend(_generated_config_constants.DeviceGlobalCppflags)
     else:
-        cpp_only_flags.extend(_generated_constants.HostGlobalCppflags)
+        cpp_only_flags.extend(_generated_config_constants.HostGlobalCppflags)
 
     # Default C compile action only flags (No C++)
     c_only_flags = []
-    c_only_flags.extend(_generated_constants.CommonGlobalConlyflags)
+    c_only_flags.extend(_generated_config_constants.CommonGlobalConlyflags)
 
     # Flags that only apply in the external/ directory.
     non_external_flags = _flags.non_external_defines
@@ -282,20 +326,24 @@ def _compiler_flag_features(flags = [], os_is_device = False):
             ),
         ],
     ))
+
+    # bpf only needs the flag below instead of all the flags in
+    # common_compiler_flags
     features.append(feature(
-        name = "common_compiler_flags",
-        enabled = True,
+        name = "bpf_compiler_flags",
+        enabled = False,
         flag_sets = [
             flag_set(
                 actions = _actions.compile,
                 flag_groups = [
                     flag_group(
-                        flags = compiler_flags,
+                        flags = ["-fdebug-prefix-map=/proc/self/cwd="],
                     ),
                 ],
             ),
         ],
     ))
+
     features.append(feature(
         name = "asm_compiler_flags",
         enabled = True,
@@ -347,12 +395,60 @@ def _compiler_flag_features(flags = [], os_is_device = False):
                 actions = _actions.compile,
                 flag_groups = [
                     flag_group(
-                        flags = _generated_constants.ExternalCflags,
+                        flags = _generated_config_constants.ExternalCflags,
                     ),
                 ],
                 with_features = [
                     with_feature_set(
                         not_features = ["non_external_compiler_flags"],
+                    ),
+                ],
+            ),
+        ],
+    ))
+
+    features.append(feature(
+        name = "arm_isa_arm",
+        enabled = False,
+        provides = ["arm_isa"],
+        flag_sets = [
+            flag_set(
+                actions = _actions.compile,
+                flag_groups = [
+                    flag_group(
+                        flags = ["-fstrict-aliasing"],
+                    ),
+                ],
+            ),
+        ],
+    ))
+
+    features.append(feature(
+        name = "arm_isa_thumb",
+        enabled = target_arch == _arches.Arm,
+        provides = ["arm_isa"],
+        flag_sets = [
+            flag_set(
+                actions = _actions.compile,
+                flag_groups = [
+                    flag_group(
+                        flags = _generated_config_constants.ArmThumbCflags,
+                    ),
+                ],
+            ),
+        ],
+    ))
+
+    # Must follow arm_isa_thumb for flag ordering
+    features.append(feature(
+        name = "common_compiler_flags",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = _actions.compile,
+                flag_groups = [
+                    flag_group(
+                        flags = compiler_flags,
                     ),
                 ],
             ),
@@ -392,12 +488,36 @@ def _compiler_flag_features(flags = [], os_is_device = False):
                 actions = [a for a in _actions.compile if a not in _actions.assemble],
                 flag_groups = [
                     flag_group(
-                        flags = _generated_constants.NoOverrideGlobalCflags,
+                        flags = _generated_config_constants.NoOverrideGlobalCflags,
                     ),
                 ],
             ),
         ],
     ))
+
+    if target_os != _oses.Darwin:
+        # These cannot be overriden by the user.
+        features.append(feature(
+            name = "no_override_clang_external_global_copts",
+            enabled = True,
+            flag_sets = [
+                flag_set(
+                    # We want this to apply to all actions except assembly
+                    # primarily to match Soong's semantics
+                    actions = [a for a in _actions.compile if a not in _actions.assemble],
+                    flag_groups = [
+                        flag_group(
+                            flags = _generated_config_constants.NoOverrideExternalGlobalCflags,
+                        ),
+                    ],
+                ),
+            ],
+            requires = [
+                feature_set(features = [
+                    "external_compiler_flags",
+                ]),
+            ],
+        ))
 
     return features
 
@@ -440,13 +560,70 @@ def _rtti_features(rtti_toggle):
     return [rtti_flag_feature, rtti_feature]
 
 # TODO(b/202167934): Darwin does not support pack dynamic relocations
-def _pack_dynamic_relocations_features(os_is_device):
+def _pack_dynamic_relocations_features(target_os):
+    sht_relr_flags = flag_set(
+        actions = _actions.link,
+        flag_groups = [
+            flag_group(
+                flags = ["-Wl,--pack-dyn-relocs=android+relr"],
+            ),
+        ],
+        with_features = [
+            with_feature_set(
+                features = ["linker_flags"],
+                not_features = ["disable_pack_relocations"] + _sdk_version_features_before(30),
+            ),
+        ],
+    )
+    android_relr_flags = flag_set(
+        actions = _actions.link,
+        flag_groups = [
+            flag_group(
+                flags = ["-Wl,--pack-dyn-relocs=android+relr", "-Wl,--use-android-relr-tags"],
+            ),
+        ],
+        with_features = [
+            with_feature_set(
+                features = ["linker_flags", version],
+                not_features = ["disable_pack_relocations"],
+            )
+            for version in _sdk_version_features_between(28, 29)
+        ],
+    )
+    relocation_packer_flags = flag_set(
+        actions = _actions.link,
+        flag_groups = [
+            flag_group(
+                flags = ["-Wl,--pack-dyn-relocs=android"],
+            ),
+        ],
+        with_features = [
+            with_feature_set(
+                features = ["linker_flags", version],
+                not_features = ["disable_pack_relocations"],
+            )
+            for version in _sdk_version_features_between(23, 27)
+        ],
+    )
+
+    if is_os_bionic(target_os):
+        pack_dyn_relr_flag_sets = [
+            sht_relr_flags,
+            android_relr_flags,
+            relocation_packer_flags,
+        ]
+    else:
+        pack_dyn_relr_flag_sets = []
+
     pack_dynamic_relocations_feature = feature(
         name = "pack_dynamic_relocations",
         enabled = True,
+        flag_sets = pack_dyn_relr_flag_sets,
     )
-
     disable_pack_relocations_feature = feature(
+        # this will take precedence over the pack_dynamic_relocations feature
+        # because each flag_set in that feature explicitly disallows the
+        # disable_dynamic_relocations feature
         name = "disable_pack_relocations",
         flag_sets = [
             flag_set(
@@ -459,124 +636,39 @@ def _pack_dynamic_relocations_features(os_is_device):
                 with_features = [
                     with_feature_set(
                         features = ["linker_flags"],
-                        not_features = ["pack_dynamic_relocations"],
                     ),
                 ],
             ),
         ],
         enabled = False,
     )
-
-    if not os_is_device:
-        return [pack_dynamic_relocations_feature, disable_pack_relocations_feature]
-
-    # sdk version >= 30
-    sht_relr_feature = feature(
-        name = "sht_relr",
-        provides = ["pack_dynamic_relocations"],
-        flag_sets = [
-            flag_set(
-                actions = _actions.link,
-                flag_groups = [
-                    flag_group(
-                        flags = ["-Wl,--pack-dyn-relocs=android+relr"],
-                    ),
-                ],
-                with_features = [
-                    with_feature_set(
-                        features = ["linker_flags"],
-                        not_features = [
-                            "disable_pack_relocations",
-                            "android_relr",
-                            "relocation_packer",
-                        ],
-                    ),
-                ],
-            ),
-        ],
-        enabled = True,
-    )
-
-    # sdk version >= 28
-    android_relr_feature = feature(
-        name = "android_relr",
-        provides = ["pack_dynamic_relocations"],
-        flag_sets = [
-            flag_set(
-                actions = _actions.link,
-                flag_groups = [
-                    flag_group(
-                        flags = ["-Wl,--pack-dyn-relocs=android+relr", "-Wl,--use-android-relr-tags"],
-                    ),
-                ],
-                with_features = [
-                    with_feature_set(
-                        features = ["linker_flags"],
-                        not_features = [
-                            "disable_pack_relocations",
-                            "sht_relr",
-                            "relocation_packer",
-                        ],
-                    ),
-                ],
-            ),
-        ],
-        enabled = False,
-    )
-
-    # sdk version >= 32
-    relocation_packer_feature = feature(
-        name = "relocation_packer",
-        provides = ["pack_dynamic_relocations"],
-        flag_sets = [
-            flag_set(
-                actions = _actions.link,
-                flag_groups = [
-                    flag_group(
-                        flags = ["-Wl,--pack-dyn-relocs=android"],
-                    ),
-                ],
-                with_features = [
-                    with_feature_set(
-                        features = ["linker_flags"],
-                        not_features = [
-                            "disable_pack_relocations",
-                            "sht_relr",
-                            "android_relr",
-                        ],
-                    ),
-                ],
-            ),
-        ],
-        enabled = False,
-    )
-
     return [
         pack_dynamic_relocations_feature,
         disable_pack_relocations_feature,
-        sht_relr_feature,
-        android_relr_feature,
-        relocation_packer_feature,
     ]
 
 # TODO(b/202167934): Darwin by default disallows undefined symbols, to allow, -Wl,undefined,dynamic_lookup
-def _undefined_symbols_feature():
-    return _linker_flag_feature("no_undefined_symbols", flags = ["-Wl,--no-undefined"], enabled = True)
+def _undefined_symbols_feature(target_os):
+    return _linker_flag_feature(
+        "no_undefined_symbols",
+        flags = ["-Wl,--no-undefined"],
+        enabled = is_os_bionic(target_os) or target_os == _oses.LinuxMusl,
+    )
 
-def _dynamic_linker_flag_feature(os_is_device, arch_is_64_bit):
-    if os_is_device:
+def _dynamic_linker_flag_feature(target_os, arch_is_64_bit):
+    flags = []
+    if is_os_device(target_os):
         # TODO: handle bootstrap partition, asan
         dynamic_linker_path = "/system/bin/linker"
         if arch_is_64_bit:
             dynamic_linker_path += "64"
-        return _binary_linker_flag_feature(name = "dynamic_linker", flags = ["-Wl,-dynamic-linker," + dynamic_linker_path])
-
-    # TODO(b/205771732, b/205772164): linux_musl and linux_bionic should
-    # add "-Wl,--no-dynamic-linker".
-    return []
+        flags += ["-Wl,-dynamic-linker," + dynamic_linker_path]
+    elif is_os_bionic(target_os) or target_os == _oses.LinuxMusl:
+        flags += ["-Wl,--no-dynamic-linker"]
+    return _binary_linker_flag_feature(name = "dynamic_linker", flags = flags) if len(flags) else []
 
 # TODO(b/202167934): Darwin uses @loader_path in place of $ORIGIN
-def _rpath_features(os_is_device, arch_is_64_bit):
+def _rpath_features(target_os, arch_is_64_bit):
     runtime_library_search_directories_flag_sets = [
         flag_set(
             actions = _actions.link,
@@ -629,7 +721,7 @@ def _rpath_features(os_is_device, arch_is_64_bit):
         ),
     ]
 
-    if (not os_is_device) and arch_is_64_bit:
+    if (not is_os_device(target_os)) and arch_is_64_bit:
         runtime_library_search_directories_flag_sets += [flag_set(
             actions = _actions.link,
             flag_groups = [
@@ -687,6 +779,9 @@ def _flag_feature(name, actions = None, flags = None, enabled = True):
 def _linker_flag_feature(name, flags = [], enabled = True):
     return _flag_feature(name, actions = _actions.link, flags = flags, enabled = enabled)
 
+def _archiver_flag_feature(name, flags = [], enabled = True):
+    return _flag_feature(name, actions = _actions.archive, flags = flags, enabled = enabled)
+
 def _binary_linker_flag_feature(name, flags = [], enabled = True):
     return _flag_feature(name, actions = [_actions.cpp_link_executable], flags = flags, enabled = enabled)
 
@@ -722,7 +817,7 @@ def _stub_library_feature():
                 flag_groups = [
                     flag_group(
                         # Ensures that the stub libraries are always compiled with default visibility
-                        flags = _generated_constants.StubLibraryCompilerFlags + ["-fvisibility=default"],
+                        flags = _generated_config_constants.StubLibraryCompilerFlags + ["-fvisibility=default"],
                     ),
                 ],
             ),
@@ -738,14 +833,20 @@ def _flatten(xs):
             ret.append(x)
     return ret
 
+def _additional_archiver_flags(target_os):
+    archiver_flags = []
+    if target_os != _oses.Darwin:
+        archiver_flags.extend(_flags.non_darwin_archiver_flags)
+    return archiver_flags
+
 # Additional linker flags that are dependent on a host or device target.
 def _additional_linker_flags(os_is_device):
     linker_flags = []
     if os_is_device:
-        linker_flags.extend(_generated_constants.DeviceGlobalLldflags)
+        linker_flags.extend(_generated_config_constants.DeviceGlobalLldflags)
         linker_flags.extend(_flags.bionic_linker_flags)
     else:
-        linker_flags.extend(_generated_constants.HostGlobalLldflags)
+        linker_flags.extend(_generated_config_constants.HostGlobalLldflags)
     return linker_flags
 
 def _static_binary_linker_flags(os_is_device):
@@ -754,10 +855,12 @@ def _static_binary_linker_flags(os_is_device):
         linker_flags.extend(_flags.bionic_static_executable_linker_flags)
     return linker_flags
 
-def _shared_binary_linker_flags(os_is_device):
+def _shared_binary_linker_flags(target_os):
     linker_flags = []
-    if os_is_device:
+    if is_os_device(target_os):
         linker_flags.extend(_flags.bionic_dynamic_executable_linker_flags)
+    elif target_os != _oses.Windows:
+        linker_flags.extend(_flags.host_non_windows_dynamic_executable_linker_flags)
     return linker_flags
 
 # Legacy features moved from their hardcoded Bazel's Java implementation
@@ -787,7 +890,6 @@ def _get_legacy_features_begin():
         # cs_fdo_instrument
         # cs_fdo_optimize
         # fdo_prefetch_hints
-        # autofdo
         # propeller_optimize
         #
         # Interface libraries related features:
@@ -811,6 +913,26 @@ def _get_legacy_features_begin():
         #
         # ------------------------
         #
+        feature(
+            name = "autofdo",
+            flag_sets = [
+                flag_set(
+                    actions = _actions.compile,
+                    flag_groups = [
+                        flag_group(
+                            # https://cs.android.com/android/platform/superproject/+/master:build/soong/cc/afdo.go;l=35;drc=7a8362c252b152f806fc303c414ff1418672b067
+                            flags = [
+                                "-funique-internal-linkage-names",
+                                "-fprofile-sample-accurate",
+                                "-fprofile-sample-use=%{fdo_profile_path}",
+                            ],
+                            expand_if_available = "fdo_profile_path",
+                        ),
+                    ],
+                ),
+            ],
+            provides = ["profile"],
+        ),
         # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=98;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
         feature(
             name = "dependency_file",
@@ -970,7 +1092,7 @@ def _get_legacy_features_begin():
                     actions = ["c++-link-static-library"],
                     flag_groups = [
                         flag_group(
-                            flags = ["rcsD"],
+                            flags = ["crsPD"],
                         ),
                         flag_group(
                             expand_if_available = "output_execpath",
@@ -1006,6 +1128,23 @@ def _get_legacy_features_begin():
                 ),
             ],
         ),
+        feature(
+            name = "archive_with_prebuilt_flags",
+            flag_sets = [
+                flag_set(
+                    actions = ["c++-link-static-library"],
+                    flag_groups = [
+                        flag_group(
+                            flags = ["cqsL"],
+                        ),
+                        flag_group(
+                            expand_if_available = "output_execpath",
+                            flags = ["%{output_execpath}"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
         # https://cs.opensource.google/bazel/bazel/+/master:src/main/java/com/google/devtools/build/lib/rules/cpp/CppActionConfigs.java;l=653;drc=6d03a2ecf25ad596446c296ef1e881b60c379812
         feature(
             name = "libraries_to_link",
@@ -1036,7 +1175,7 @@ def _get_legacy_features_begin():
                                             value = "static_library",
                                         ),
                                         expand_if_true = "libraries_to_link.is_whole_archive",
-                                        flags = ["-Wl,-whole-archive"],
+                                        flags = ["-Wl,--whole-archive"],
                                     ),
                                     flag_group(
                                         expand_if_equal = variable_with_value(
@@ -1087,7 +1226,7 @@ def _get_legacy_features_begin():
                                             value = "static_library",
                                         ),
                                         expand_if_true = "libraries_to_link.is_whole_archive",
-                                        flags = ["-Wl,-no-whole-archive"],
+                                        flags = ["-Wl,--no-whole-archive"],
                                     ),
                                     flag_group(
                                         expand_if_equal = variable_with_value(
@@ -1146,7 +1285,7 @@ def _get_legacy_features_begin():
                                 "-fprofile-instr-generate=/data/misc/trace/clang-%%p-%%m.profraw",
                                 "-fcoverage-mapping",
                                 "-Wno-pass-failed",
-                                "-D__ANDROID_CLANG_COVERAGE__"
+                                "-D__ANDROID_CLANG_COVERAGE__",
                             ],
                         ),
                     ],
@@ -1160,10 +1299,20 @@ def _get_legacy_features_begin():
                     actions = _actions.link,
                     flag_groups = [flag_group(flags = ["-fprofile-instr-generate"])],
                 ),
+                flag_set(
+                    actions = _actions.link,
+                    flag_groups = [flag_group(flags = ["-Wl,--wrap,open"])],
+                    with_features = [
+                        with_feature_set(
+                            features = ["android_coverage_lib"],
+                        ),
+                    ],
+                ),
             ],
             requires = [feature_set(features = ["coverage"])],
         ),
         feature(name = "coverage"),
+        feature(name = "android_coverage_lib"),
     ]
 
     return features
@@ -1373,18 +1522,390 @@ def _link_crtend(crt_files):
         ),
     ]
 
+def _get_thinlto_features():
+    features = [
+        feature(
+            name = "android_thin_lto",
+            enabled = False,
+            flag_sets = [
+                flag_set(
+                    actions = _actions.compile + _actions.link + _actions.assemble,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-flto=thin",
+                                "-fsplit-lto-unit",
+                            ],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            not_features = ["disable_android_thin_lto"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        feature(
+            name = "android_thin_lto_whole_program_vtables",
+            enabled = False,
+            requires = [feature_set(features = ["android_thin_lto"])],
+            flag_sets = [
+                flag_set(
+                    actions = _actions.link,
+                    flag_groups = [
+                        flag_group(
+                            flags = ["-fwhole-program-vtables"],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            not_features = ["disable_android_thin_lto"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        feature(
+            name = "android_thin_lto_limit_cross_tu_inline",
+            enabled = False,
+            requires = [feature_set(features = ["android_thin_lto"])],
+            flag_sets = [
+                flag_set(
+                    actions = _actions.link,
+                    flag_groups = [
+                        flag_group(
+                            flags = ["-Wl,-plugin-opt,-import-instr-limit=5"],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            not_features = ["disable_android_thin_lto"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        feature(
+            name = "disable_android_thin_lto",
+            enabled = False,
+            flag_sets = [
+                flag_set(
+                    actions = _actions.compile + _actions.link,
+                    flag_groups = [
+                        flag_group(
+                            flags = ["-fno-lto"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    ]
+    return features
+
+def _ubsan_flag_feature(name, actions, flags):
+    return feature(
+        name = name,
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = actions,
+                flag_groups = [
+                    flag_group(
+                        flags = flags,
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        features = ["ubsan_enabled"],
+                    ),
+                ],
+            ),
+        ],
+    )
+
+def _host_or_device_specific_ubsan_feature(target_os):
+    if is_os_device(target_os):
+        return _ubsan_flag_feature(
+            "ubsan_device_only_flags",
+            _actions.compile,
+            _generated_sanitizer_constants.DeviceOnlySanitizeFlags,
+        )
+    return _ubsan_flag_feature(
+        "ubsan_host_only_flags",
+        _actions.compile,
+        _generated_sanitizer_constants.HostOnlySanitizeFlags,
+    )
+
+def _exclude_ubsan_rt_feature(path):
+    if not path:
+        return None
+    return _ubsan_flag_feature(
+        "ubsan_exclude_rt",
+        _actions.link,
+        ["-Wl,--exclude-libs=" + path.path],
+    )
+
+int_overflow_ignorelist_path = "build/soong/cc/config"
+int_overflow_ignorelist_filename = "integer_overflow_blocklist.txt"
+
+def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
+    ALL_UBSAN_ACTIONS = _actions.compile + _actions.link + _actions.assemble
+
+    ubsan_features = [
+        feature(
+            name = "ubsan_enabled",
+            enabled = False,
+        ),
+    ]
+
+    ubsan_features += [
+        feature(
+            name = "ubsan_integer_overflow",
+            enabled = False,
+            flag_sets = [
+                flag_set(
+                    actions = ALL_UBSAN_ACTIONS,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-fsanitize=unsigned-integer-overflow",
+                                "-fsanitize=signed-integer-overflow",
+                            ],
+                        ),
+                    ],
+                ),
+                flag_set(
+                    actions = _actions.compile,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-fsanitize-ignorelist=%s/%s" % (
+                                    int_overflow_ignorelist_path,
+                                    int_overflow_ignorelist_filename,
+                                ),
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+            implies = ["ubsan_minimal_runtime", "ubsan_enabled"],
+        ),
+    ]
+
+    ubsan_checks = [
+        "alignment",
+        "bool",
+        "builtin",
+        "bounds",
+        "array-bounds",
+        "local-bounds",
+        "enum",
+        "float-cast-overflow",
+        "float-divide-by-zero",
+        "function",
+        "implicit-unsigned-integer-truncation",
+        "implicit-signed-integer-truncation",
+        "implicit-integer-sign-change",
+        "integer-divide-by-zero",
+        "nonnull-attribute",
+        "null",
+        "nullability-arg",
+        "nullability-assign",
+        "nullability-return",
+        "objc-cast",
+        "object-size",
+        "pointer-overflow",
+        "return",
+        "returns-nonnull-attribute",
+        "shift",
+        "shift-base",
+        "shift-exponent",
+        "unsigned-shift-base",
+        "signed-integer-overflow",
+        "unreachable",
+        "unsigned-integer-overflow",
+        "vla-bound",
+        "vptr",
+
+        # check groups
+        "undefined",
+        "implicit-integer-truncation",
+        "implicit-integer-arithmetic-value-change",
+        "implicit-conversion",
+        "integer",
+        "nullability",
+    ]
+    ubsan_features += [
+        feature(
+            name = "ubsan_" + check_name,
+            enabled = False,
+            flag_sets = [
+                flag_set(
+                    actions = ALL_UBSAN_ACTIONS,
+                    flag_groups = [
+                        flag_group(
+                            flags = ["-fsanitize=%s" % check_name],
+                        ),
+                    ],
+                ),
+            ],
+            implies = ["ubsan_minimal_runtime", "ubsan_enabled"],
+        )
+        for check_name in ubsan_checks
+    ]
+
+    ubsan_features += [
+        feature(
+            name = "ubsan_minimal_runtime",
+            enabled = False,
+            flag_sets = [
+                flag_set(
+                    actions = ALL_UBSAN_ACTIONS,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-fsanitize-minimal-runtime",
+                                "-fno-sanitize-trap=integer,undefined",
+                                "-fno-sanitize-recover=integer,undefined",
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    ]
+
+    ubsan_features += [
+        feature(
+            name = "ubsan_disable_unsupported_integer_checks",
+            enabled = True,
+            flag_sets = [
+                # TODO(b/119329758): If this bug is fixed, this shouldn't be
+                #                    needed anymore
+                flag_set(
+                    actions = _actions.compile,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-fno-sanitize=implicit-integer-sign-change",
+                            ],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            features = ["ubsan_integer"],
+                            not_features = [
+                                "ubsan_implicit-integer-sign-change",
+                            ],
+                        ),
+                    ],
+                ),
+                # TODO(b/171275751): If this bug is fixed, this shouldn't be
+                #                    needed anymore
+                flag_set(
+                    actions = _actions.compile,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-fno-sanitize=unsigned-shift-base",
+                            ],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            features = ["ubsan_integer"],
+                            not_features = [
+                                "ubsan_unsigned-shift-base",
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    ]
+
+    # non-Bionic toolchain prebuilts are missing UBSan's vptr and function san.
+    # Musl toolchain prebuilts have vptr and function sanitizers, but enabling
+    # them implicitly enables RTTI which causes RTTI mismatch issues with
+    # dependencies.
+    ubsan_features += [
+        feature(
+            name = "ubsan_disable_unsupported_non_bionic_checks",
+            enabled = target_os not in [_oses.LinuxBionic, _oses.Android],
+            flag_sets = [
+                flag_set(
+                    actions = _actions.compile,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-fno-sanitize=function,vptr",
+                            ],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            features = ["ubsan_integer_overflow"],
+                        ),
+                    ] + [
+                        with_feature_set(features = ["ubsan_" + check_name])
+                        for check_name in ubsan_checks
+                    ],
+                ),
+            ],
+        ),
+    ]
+
+    ubsan_features += [
+        feature(
+            name = "ubsan_no_sanitize_link_runtime",
+            enabled = target_os in [
+                _oses.Android,
+                _oses.LinuxBionic,
+                _oses.LinuxMusl,
+            ],
+            flag_sets = [
+                flag_set(
+                    actions = _actions.link,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-fno-sanitize-link-runtime",
+                            ],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            features = ["ubsan_enabled"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    ]
+
+    ubsan_features += [
+        _host_or_device_specific_ubsan_feature(target_os),
+        _exclude_ubsan_rt_feature(libclang_rt_ubsan_minimal),
+    ]
+
+    return ubsan_features
+
 # Create the full list of features.
 def get_features(
-        target_os,
-        target_arch,
-        target_flags,
-        compile_only_flags,
-        linker_only_flags,
+        ctx,
         builtin_include_dirs,
-        libclang_rt_builtin,
-        crt_files,
-        rtti_toggle):
-    os_is_device = target_os == "android"
+        crt_files):
+    target_os = ctx.attr.target_os
+    target_arch = ctx.attr.target_arch
+    target_flags = ctx.attr.target_flags
+    compile_only_flags = ctx.attr.compiler_flags
+    linker_only_flags = ctx.attr.linker_flags
+    libclang_rt_builtin = ctx.file.libclang_rt_builtin
+    libclang_rt_ubsan_minimal = ctx.file.libclang_rt_ubsan_minimal
+    rtti_toggle = ctx.attr.rtti_toggle
+
+    os_is_device = is_os_device(target_os)
     arch_is_64_bit = target_arch.endswith("64")
 
     # Aggregate all features in order.
@@ -1408,28 +1929,32 @@ def get_features(
         _get_c_std_features(),
         # Features tied to sdk version
         _get_sdk_version_features(os_is_device, target_arch),
-        _compiler_flag_features(target_flags + compile_only_flags, os_is_device),
-        _rpath_features(os_is_device, arch_is_64_bit),
+        _compiler_flag_features(ctx, target_arch, target_os, target_flags + compile_only_flags),
+        _rpath_features(target_os, arch_is_64_bit),
         _rtti_features(rtti_toggle),
         _use_libcrt_feature(libclang_rt_builtin),
         # Shared compile/link flags that should also be part of the link actions.
         _linker_flag_feature("linker_target_flags", flags = target_flags),
         # Link-only flags.
         _linker_flag_feature("linker_flags", flags = linker_only_flags + _additional_linker_flags(os_is_device)),
-        _undefined_symbols_feature(),
-        _dynamic_linker_flag_feature(os_is_device, arch_is_64_bit),
-        _binary_linker_flag_feature("dynamic_executable", flags = _shared_binary_linker_flags(os_is_device)),
+        _archiver_flag_feature("additional_archiver_flags", flags = _additional_archiver_flags(target_os)),
+        _undefined_symbols_feature(target_os),
+        _dynamic_linker_flag_feature(target_os, arch_is_64_bit),
+        _binary_linker_flag_feature("dynamic_executable", flags = _shared_binary_linker_flags(target_os)),
         # distinct from other static flags as it can be disabled separately
         _binary_linker_flag_feature("static_flag", flags = ["-static"], enabled = False),
         # default for executables is dynamic linking
         _binary_linker_flag_feature("static_executable", flags = _static_binary_linker_flags(os_is_device), enabled = False),
-        _pack_dynamic_relocations_features(os_is_device),
+        _pack_dynamic_relocations_features(target_os),
         # System include directories features
         _toolchain_include_feature(system_includes = builtin_include_dirs),
         # Compiling stub.c sources to stub libraries
         _stub_library_feature(),
         _get_legacy_features_end(),
-
+        # Optimization
+        _get_thinlto_features(),
+        # Sanitizers
+        _get_ubsan_features(target_os, libclang_rt_ubsan_minimal),
         # This must always come last.
         _link_crtend(crt_files),
     ]
