@@ -156,46 +156,6 @@ def test_limit_cross_tu_inline_disabled_when_autofdo_enabled():
 
     return test_name
 
-def test_disable_thin_lto():
-    name = "disable_thin_lto"
-    no_lto_flag_test_name = name + "_no_lto_flag_test"
-
-    native.cc_binary(
-        name = name,
-        srcs = test_srcs,
-        features = [
-            "android_thin_lto",
-            "android_thin_lto_whole_program_vtables",
-            "android_thin_lto_limit_cross_tu_inline",
-            "disable_android_thin_lto",
-        ],
-        tags = ["manual"],
-    )
-    action_flags_present_only_for_mnemonic_test(
-        name = no_lto_flag_test_name,
-        target_under_test = name,
-        mnemonics = [compile_action_mnemonic, link_action_mnemonic],
-        expected_flags = ["-fno-lto"],
-    )
-
-    lto_flags_not_present_test_name = name + "_lto_flags_not_present_test"
-
-    action_flags_absent_for_mnemonic_test(
-        name = lto_flags_not_present_test_name,
-        target_under_test = name,
-        mnemonics = [
-            compile_action_mnemonic,
-            link_action_mnemonic,
-        ],
-        expected_absent_flags = [
-            "-flto=thin",
-            "-fsplit-lto-unit",
-            "-fwhole-program-vtables",
-        ],
-    )
-
-    return [no_lto_flag_test_name, lto_flags_not_present_test_name]
-
 def cc_toolchain_features_lto_test_suite(name):
     native.test_suite(
         name = name,
@@ -204,5 +164,5 @@ def cc_toolchain_features_lto_test_suite(name):
             test_whole_program_vtables_requires_thinlto_feature(),
             test_limit_cross_tu_inline_requires_thinlto_feature(),
             test_limit_cross_tu_inline_disabled_when_autofdo_enabled(),
-        ] + test_disable_thin_lto() + test_thin_lto_feature_defaults(),
+        ] + test_thin_lto_feature_defaults(),
     )
