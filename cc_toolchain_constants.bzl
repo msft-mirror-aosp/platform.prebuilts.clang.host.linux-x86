@@ -190,16 +190,6 @@ arch_to_variants = {
     arches.X86_64: _variant_combinations(arch_variants = generated_config_constants.X86_64ArchVariantCflags),
 }
 
-def arm_extra_ldflags(variant):
-    if variant.arch_variant == "armv7-a-neon":
-        if variant.cpu_variant in ("cortex-a8", ""):
-            return generated_config_constants.ArmFixCortexA8LdFlags
-        else:
-            return generated_config_constants.ArmNoFixCortexA8LdFlags
-    elif variant.arch_variant == "armv7-a":
-        return generated_config_constants.ArmFixCortexA8LdFlags
-    return []
-
 # enabled_features returns a list of enabled features for the given arch variant, defaults to empty list
 def enabled_features(arch_variant, arch_variant_to_features = {}):
     if arch_variant == None:
