@@ -1538,11 +1538,6 @@ def _get_thinlto_features():
                             ],
                         ),
                     ],
-                    with_features = [
-                        with_feature_set(
-                            not_features = ["disable_android_thin_lto"],
-                        ),
-                    ],
                 ),
             ],
         ),
@@ -1556,11 +1551,6 @@ def _get_thinlto_features():
                     flag_groups = [
                         flag_group(
                             flags = ["-fwhole-program-vtables"],
-                        ),
-                    ],
-                    with_features = [
-                        with_feature_set(
-                            not_features = ["disable_android_thin_lto"],
                         ),
                     ],
                 ),
@@ -1586,20 +1576,6 @@ def _get_thinlto_features():
                                 # TODO(b/267220812): Update for PGO
                                 "autofdo",
                             ],
-                        ),
-                    ],
-                ),
-            ],
-        ),
-        feature(
-            name = "disable_android_thin_lto",
-            enabled = False,
-            flag_sets = [
-                flag_set(
-                    actions = _actions.compile + _actions.link,
-                    flag_groups = [
-                        flag_group(
-                            flags = ["-fno-lto"],
                         ),
                     ],
                 ),
