@@ -1538,11 +1538,6 @@ def _get_thinlto_features():
                             ],
                         ),
                     ],
-                    with_features = [
-                        with_feature_set(
-                            not_features = ["disable_android_thin_lto"],
-                        ),
-                    ],
                 ),
             ],
         ),
@@ -1558,17 +1553,14 @@ def _get_thinlto_features():
                             flags = ["-fwhole-program-vtables"],
                         ),
                     ],
-                    with_features = [
-                        with_feature_set(
-                            not_features = ["disable_android_thin_lto"],
-                        ),
-                    ],
                 ),
             ],
         ),
+        # See Soong code:
+        # https://cs.android.com/android/platform/superproject/+/master:build/soong/cc/lto.go;l=133;drc=2c435a00ff73dc485855824ee49d2dec1a01e592
         feature(
             name = "android_thin_lto_limit_cross_tu_inline",
-            enabled = False,
+            enabled = True,
             requires = [feature_set(features = ["android_thin_lto"])],
             flag_sets = [
                 flag_set(
@@ -1580,21 +1572,10 @@ def _get_thinlto_features():
                     ],
                     with_features = [
                         with_feature_set(
-                            not_features = ["disable_android_thin_lto"],
-                        ),
-                    ],
-                ),
-            ],
-        ),
-        feature(
-            name = "disable_android_thin_lto",
-            enabled = False,
-            flag_sets = [
-                flag_set(
-                    actions = _actions.compile + _actions.link,
-                    flag_groups = [
-                        flag_group(
-                            flags = ["-fno-lto"],
+                            not_features = [
+                                # TODO(b/267220812): Update for PGO
+                                "autofdo",
+                            ],
                         ),
                     ],
                 ),
