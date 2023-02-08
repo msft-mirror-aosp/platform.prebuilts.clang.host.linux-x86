@@ -873,6 +873,8 @@ def _get_legacy_features_begin():
         # Android builds currently, or is alternatively supported through rules
         # directly (e.g. stripped_shared_library for debug symbol stripping).
         #
+        # thin_lto: Do not add, as it may break some features. replaced by _get_thinlto_features()
+        #
         # runtime_library_search_directories: replaced by custom _rpath_feature().
         #
         # Compile related features:
