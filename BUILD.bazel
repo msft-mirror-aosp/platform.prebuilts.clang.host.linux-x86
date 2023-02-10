@@ -23,7 +23,6 @@ load(
     ":cc_toolchain_constants.bzl",
     "arch_to_variants",
     "arches",
-    "arm_extra_ldflags",
     "device_compatibility_flags_non_darwin",
     "device_compatibility_flags_non_windows",
     "generated_config_constants",
@@ -53,6 +52,10 @@ load(
     ":cc_toolchain_features_env_based_flags_test.bzl",
     "cc_toolchain_features_env_based_flags_test_suite",
 )
+load(
+    ":cc_toolchain_features_flag_order_test.bzl",
+    "cc_toolchain_features_flag_order_test_suite",
+)
 load("//build/bazel/flags:common.bzl", "is_env_true")
 load("//build/bazel/platforms/arch/variants:constants.bzl", _arch_constants = "constants")
 
@@ -63,7 +66,7 @@ clang_version(
     name = "clang",
     directory = generated_config_constants.CLANG_DEFAULT_VERSION,
     includes = [
-        "lib64/clang/%s/include" % generated_config_constants.CLANG_DEFAULT_SHORT_VERSION,
+        "lib/clang/%s/include" % generated_config_constants.CLANG_DEFAULT_SHORT_VERSION,
     ],
 )
 
@@ -150,7 +153,8 @@ clang_version(
         crt = _bionic_crt,
         libclang_rt_builtin = libclang_rt_prebuilt_map["//build/bazel/platforms/os_arch:android_arm"],
         libclang_rt_ubsan_minimal = libclang_ubsan_minimal_rt_prebuilt_map["//build/bazel/platforms/os_arch:android_arm"],
-        linker_flags = generated_config_constants.ArmLldflags + arm_extra_ldflags(variant),
+        # do not pass "ld"-only flags as Bazel is only using lld. Ensure that all flags are lld-compatible.
+        linker_flags = generated_config_constants.ArmLldflags,
         target_arch = arches.Arm,
         target_flags = generated_config_constants.ArmCflags +
                        generated_config_constants.ArmToolchainCflags +
@@ -413,6 +417,10 @@ cc_toolchain_features_ubsan_test_suite(
 
 cc_toolchain_features_env_based_flags_test_suite(
     name = "cc_toolchain_features_env_based_flags_tests",
+)
+
+cc_toolchain_features_flag_order_test_suite(
+    name = "cc_toolchain_features_flag_order_tests",
 )
 
 bool_flag(
