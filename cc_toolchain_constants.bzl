@@ -236,7 +236,7 @@ x86_musl_host_toolchains = [
     ("cc_toolchain_x86_linux_musl_host_nocrt", "nocrt_toolchain"),
 ]
 
-_libclang_rt_prefix = "%s/lib64/clang/%s/lib/linux" % (
+_libclang_rt_prefix = "%s/lib/clang/%s/lib/linux" % (
     generated_config_constants.CLANG_DEFAULT_VERSION,
     generated_config_constants.CLANG_DEFAULT_SHORT_VERSION,
 )
