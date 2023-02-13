@@ -34,7 +34,7 @@ LLVM Users
 * [**Android Linux Kernel**](http://go/android-systems)
   * Currently clang-r475365b
     * Look for "clang-" in [mainline build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android-mainline/build.config.constants).
-  * Currently clang-r475365b
+    * Look for "clang-" in [android14-6.1 build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android14-6.1/build.config.constants)
     * Look for "clang-" in [android14-5.15 build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android14-5.15/build.config.constants)
   * Internal LLVM developers should look in the partner gerrit for more kernel configurations.
 
