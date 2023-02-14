@@ -291,6 +291,9 @@ _cc_toolchain_config = rule(
         "_allow_unknown_warning_option": attr.label(
             default = "//prebuilts/clang/host/linux-x86:allow_unknown_warning_option_env",
         ),
+        "_target_page_size": attr.label(
+            default = "//prebuilts/clang/host/linux-x86:target_page_size_env",
+        ),
     },
     provides = [CcToolchainConfigInfo],
 )

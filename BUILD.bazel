@@ -10,7 +10,7 @@
 Toolchain config
 """
 
-load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "int_flag")
 load("@env//:env.bzl", "env")
 load(
     ":cc_toolchain_config.bzl",
@@ -51,7 +51,7 @@ load(
     ":cc_toolchain_features_env_based_flags_test.bzl",
     "cc_toolchain_features_env_based_flags_test_suite",
 )
-load("//build/bazel/flags:common.bzl", "is_env_true")
+load("//build/bazel/flags:common.bzl", "get_default_page_size", "is_env_true")
 load("//build/bazel/platforms/arch/variants:constants.bzl", _arch_constants = "constants")
 
 filegroup(name = "empty")
@@ -451,4 +451,9 @@ bool_flag(
 bool_flag(
     name = "allow_unknown_warning_option_env",
     build_setting_default = is_env_true(env.get("ALLOW_UNKNOWN_WARNING_OPTION")),
+)
+
+int_flag(
+    name = "target_page_size_env",
+    build_setting_default = get_default_page_size(env.get("TARGET_PAGE_SIZE")),
 )

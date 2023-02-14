@@ -226,6 +226,11 @@ def _env_based_common_global_cflags(ctx):
     if ctx.attr._allow_unknown_warning_option[BuildSettingInfo].value:
         flags.extend(["-Wno-error=unknown-warning-option"])
 
+    if ctx.attr._target_page_size[BuildSettingInfo].value == 16384:
+        flags.extend(["-DTARGET_PAGE_SIZE=16384"])
+    else:
+        flags.extend(["-DTARGET_PAGE_SIZE=4096"])
+
     return flags
 
 def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
