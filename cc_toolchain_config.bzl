@@ -360,7 +360,7 @@ def android_cc_toolchain(
     # Create the filegroups needed for sandboxing toolchain inputs to C++ actions.
     native.filegroup(
         name = "%s_compiler_clang_includes" % name,
-        srcs = native.glob([clang_version_directory + "/lib64/clang/*/include/**"]),
+        srcs = native.glob([clang_version_directory + "/lib/clang/*/include/**"]),
     )
 
     native.filegroup(
