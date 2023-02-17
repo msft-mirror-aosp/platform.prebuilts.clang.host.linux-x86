@@ -32,7 +32,7 @@ load(
     _generated_sanitizer_constants = "generated_sanitizer_constants",
     _oses = "oses",
 )
-load("@soong_injection//api_levels:api_levels.bzl", _api_levels = "api_levels")
+load("//build/bazel/rules/common:api.bzl", _api_levels = "api_levels_with_previews")
 load("@soong_injection//product_config:product_variables.bzl", "product_vars")
 
 def is_os_device(os):
