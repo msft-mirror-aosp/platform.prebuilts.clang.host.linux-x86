@@ -34,12 +34,12 @@ LLVM Users
 * [**Android Linux Kernel**](http://go/android-systems)
   * Currently clang-r475365b
     * Look for "clang-" in [mainline build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android-mainline/build.config.constants).
-  * Currently clang-r475365b
+    * Look for "clang-" in [android14-6.1 build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android14-6.1/build.config.constants)
     * Look for "clang-" in [android14-5.15 build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android14-5.15/build.config.constants)
   * Internal LLVM developers should look in the partner gerrit for more kernel configurations.
 
 * [**NDK**](https://developer.android.com/ndk)
-  * Currently clang-r450784d
+  * Currently clang-r450784d1
   * Look for "clang-" in [ndk/toolchains.py](https://android.googlesource.com/platform/ndk/+/refs/heads/master/ndk/toolchains.py)
 
 * [**Trusty**](https://source.android.com/security/trusty/)
@@ -48,7 +48,7 @@ LLVM Users
   * Look for "clang-" in [vendor/google/aosp/scripts/envsetup.sh](https://android.googlesource.com/trusty/vendor/google/aosp/+/master/scripts/envsetup.sh).
 
 * [**Android Emulator**](https://developer.android.com/studio/run/emulator.html)
-  * Currently clang-r450784d
+  * Currently clang-r450784e
   * Look for "clang-" in [external/qemu/android/build/cmake/toolchain.cmake](https://android.googlesource.com/platform/external/qemu/+/emu-master-dev/android/build/cmake/toolchain.cmake#25).
     * Note that they work out of the emu-master-dev branch.
     * [Android Code Search link](https://cs.android.com/android/platform/superproject/+/emu-master-dev:external/qemu/android/build/cmake/toolchain.cmake?q=clang-)
