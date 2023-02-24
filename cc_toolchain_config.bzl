@@ -10,14 +10,20 @@ load(
     "variant_constraints",
     "variant_name",
     "x86_64_host_toolchains",
+    "x86_64_musl_host_toolchains",
     "x86_host_toolchains",
+    "x86_musl_host_toolchains",
     _actions = "actions",
-    _bionic_crt = "bionic_crt",
     _enabled_features = "enabled_features",
     _flags = "flags",
-    _generated_constants = "generated_constants",
+    _generated_config_constants = "generated_config_constants",
 )
-load(":cc_toolchain_features.bzl", "get_features")
+load(
+    ":cc_toolchain_features.bzl",
+    "get_features",
+    "int_overflow_ignorelist_filename",
+    "int_overflow_ignorelist_path",
+)
 load("//build/bazel/platforms/arch/variants:constants.bzl", _arch_constants = "constants")
 
 # Clang-specific configuration.
@@ -155,7 +161,6 @@ def _create_action_configs(tool_paths, target_os):
                 "output_execpath_flags",
                 "library_search_directories",
                 "libraries_to_link",
-                "pic",
                 "user_link_flags",
                 "linker_param_file",
             ] + rpath_features,
@@ -181,7 +186,9 @@ def _create_action_configs(tool_paths, target_os):
         action_name = _actions.cpp_link_static_library,
         enabled = True,
         tools = [tool_name_to_tool["ar"]],
-        implies = ["archiver_flags"],
+        implies = [
+            "linker_param_file",
+        ],
     ))
 
     # unused, but Bazel complains if there isn't an action config for strip
@@ -205,7 +212,7 @@ def _cc_toolchain_config_impl(ctx):
     builtin_include_dirs.extend(clang_version_info.includes)
 
     # b/186035856: Do not add anything to this list.
-    builtin_include_dirs.extend(_generated_constants.CommonGlobalIncludes)
+    builtin_include_dirs.extend(_generated_config_constants.CommonGlobalIncludes)
 
     crt_files = struct(
         shared_library_crtbegin = ctx.file.shared_library_crtbegin,
@@ -216,15 +223,9 @@ def _cc_toolchain_config_impl(ctx):
     )
 
     features = get_features(
-        ctx.attr.target_os,
-        ctx.attr.target_arch,
-        ctx.attr.target_flags,
-        ctx.attr.compiler_flags,
-        ctx.attr.linker_flags,
+        ctx,
         builtin_include_dirs,
-        ctx.file.libclang_rt_builtin,
         crt_files,
-        ctx.attr.rtti_toggle,
     )
 
     # This is so that Bazel doesn't validate .d files against the set of headers
@@ -264,6 +265,7 @@ _cc_toolchain_config = rule(
         "compiler_flags": attr.string_list(default = []),
         "linker_flags": attr.string_list(default = []),
         "libclang_rt_builtin": attr.label(allow_single_file = True),
+        "libclang_rt_ubsan_minimal": attr.label(allow_single_file = True),
         # crtbegin and crtend libraries for compiling cc_library_shared and
         # cc_binary against the Bionic runtime
         "shared_library_crtbegin": attr.label(allow_single_file = True, cfg = "target"),
@@ -272,6 +274,24 @@ _cc_toolchain_config = rule(
         "static_binary_crtbegin": attr.label(allow_single_file = True, cfg = "target"),
         "binary_crtend": attr.label(allow_single_file = True, cfg = "target"),
         "rtti_toggle": attr.bool(default = True),
+        "_auto_zero_initialize": attr.label(
+            default = "//prebuilts/clang/host/linux-x86:auto_zero_initialize_env",
+        ),
+        "_auto_pattern_initialize": attr.label(
+            default = "//prebuilts/clang/host/linux-x86:auto_pattern_initialize_env",
+        ),
+        "_auto_uninitialize": attr.label(
+            default = "//prebuilts/clang/host/linux-x86:auto_uninitialize_env",
+        ),
+        "_use_ccache": attr.label(
+            default = "//prebuilts/clang/host/linux-x86:use_ccache_env",
+        ),
+        "_llvm_next": attr.label(
+            default = "//prebuilts/clang/host/linux-x86:llvm_next_env",
+        ),
+        "_allow_unknown_warning_option": attr.label(
+            default = "//prebuilts/clang/host/linux-x86:allow_unknown_warning_option_env",
+        ),
     },
     provides = [CcToolchainConfigInfo],
 )
@@ -297,8 +317,9 @@ def android_cc_toolchain(
         clang_version_directory = None,
         gcc_toolchain = None,
         # If false, the crt version and "normal" version of this toolchain are identical.
-        crt = True,
+        crt = None,
         libclang_rt_builtin = None,
+        libclang_rt_ubsan_minimal = None,
         target_flags = [],
         compiler_flags = [],
         linker_flags = [],
@@ -309,6 +330,9 @@ def android_cc_toolchain(
     if libclang_rt_builtin:
         libclang_rt_path = libclang_rt_builtin
         extra_linker_paths.append(":" + libclang_rt_path)
+    libclang_rt_ubsan_minimal_path = None
+    if libclang_rt_ubsan_minimal:
+        libclang_rt_ubsan_minimal_path = libclang_rt_ubsan_minimal
     if gcc_toolchain:
         gcc_toolchain_path = "//%s:tools" % gcc_toolchain
         extra_linker_paths.append(gcc_toolchain_path)
@@ -319,6 +343,7 @@ def android_cc_toolchain(
             ("target_arch", target_arch),
             ("clang_version", clang_version),
             ("libclang_rt_builtin", libclang_rt_path),
+            ("libclang_rt_ubsan_minimal", libclang_rt_ubsan_minimal_path),
             ("target_flags", target_flags),
             ("compiler_flags", compiler_flags),
             ("linker_flags", linker_flags),
@@ -335,7 +360,7 @@ def android_cc_toolchain(
     # Create the filegroups needed for sandboxing toolchain inputs to C++ actions.
     native.filegroup(
         name = "%s_compiler_clang_includes" % name,
-        srcs = native.glob([clang_version_directory + "/lib64/clang/*/include/**"]),
+        srcs = native.glob([clang_version_directory + "/lib/clang/*/include/**"]),
     )
 
     native.filegroup(
@@ -360,6 +385,7 @@ def android_cc_toolchain(
         srcs = [
             "%s_compiler_binaries" % name,
             "%s_compiler_clang_includes" % name,
+            "@//%s:%s" % (int_overflow_ignorelist_path, int_overflow_ignorelist_filename),
         ],
     )
 
@@ -397,22 +423,22 @@ def android_cc_toolchain(
         _cc_toolchain_config(
             name = "%s_config" % name,
             toolchain_identifier = toolchain_identifier,
-            shared_library_crtbegin = _bionic_crt.shared_library_crtbegin,
-            shared_library_crtend = _bionic_crt.shared_library_crtend,
-            shared_binary_crtbegin = _bionic_crt.shared_binary_crtbegin,
-            static_binary_crtbegin = _bionic_crt.static_binary_crtbegin,
-            binary_crtend = _bionic_crt.binary_crtend,
+            shared_library_crtbegin = crt.shared_library_crtbegin,
+            shared_library_crtend = crt.shared_library_crtend,
+            shared_binary_crtbegin = crt.shared_binary_crtbegin,
+            static_binary_crtbegin = crt.static_binary_crtbegin,
+            binary_crtend = crt.binary_crtend,
             **common_toolchain_config
         )
 
         native.filegroup(
             name = "%s_crt_libs" % name,
             srcs = [
-                _bionic_crt.shared_library_crtbegin,
-                _bionic_crt.shared_library_crtend,
-                _bionic_crt.shared_binary_crtbegin,
-                _bionic_crt.static_binary_crtbegin,
-                _bionic_crt.binary_crtend,
+                crt.shared_library_crtbegin,
+                crt.shared_library_crtend,
+                crt.shared_binary_crtbegin,
+                crt.static_binary_crtbegin,
+                crt.binary_crtend,
             ],
         )
 
@@ -497,26 +523,37 @@ def cc_register_toolchains():
     registered last.
     """
 
-    toolchain_definitions = [
-        tc[0] + "_def"
-        for tc in x86_64_host_toolchains + x86_host_toolchains
-    ]
-    deferred_toolchains = []
-
+    generic_toolchains = []
+    arch_variant_toolchains = []
+    cpu_variant_toolchains = []
     for arch, variants in arch_to_variants.items():
         for variant in variants:
-            if variant_name(variant) == "":
-                deferred_toolchains.append((arch, variant))
-                continue
+            if not variant.arch_variant:
+                generic_toolchains.append((arch, variant))
+            elif not variant.cpu_variant:
+                arch_variant_toolchains.append((arch, variant))
+            else:
+                cpu_variant_toolchains.append((arch, variant))
 
-            toolchain_definitions.append(_toolchain_name(arch, variant, nocrt = False))
-            toolchain_definitions.append(_toolchain_name(arch, variant, nocrt = True))
+    target_toolchains = [
+        _toolchain_name(arch, variant, nocrt = nocrt)
+        for nocrt in [False, True]
+        for arch, variant in (
+            # Ordering is important here: more specific toolchains must be
+            # registered before more generic toolchains
+            cpu_variant_toolchains +
+            arch_variant_toolchains +
+            generic_toolchains
+        )
+    ]
 
-    for (arch, variant) in deferred_toolchains:
-        toolchain_definitions.append(_toolchain_name(arch, variant, nocrt = False))
-        toolchain_definitions.append(_toolchain_name(arch, variant, nocrt = True))
+    host_toolchains = [
+        tc[0] + "_def"
+        for tc in x86_64_host_toolchains + x86_host_toolchains +
+                  x86_64_musl_host_toolchains + x86_musl_host_toolchains
+    ]
 
     native.register_toolchains(*[
         "//prebuilts/clang/host/linux-x86:" + tc
-        for tc in toolchain_definitions
+        for tc in host_toolchains + target_toolchains
     ])
