@@ -904,6 +904,66 @@ set_target_properties(LLVMRISCVInfo PROPERTIES
 list(APPEND _IMPORT_CHECK_TARGETS LLVMRISCVInfo )
 list(APPEND _IMPORT_CHECK_FILES_FOR_LLVMRISCVInfo "${_IMPORT_PREFIX}/lib/libLLVMRISCVInfo.a" )
 
+# Import target "LLVMWebAssemblyCodeGen" for configuration "Release"
+set_property(TARGET LLVMWebAssemblyCodeGen APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+set_target_properties(LLVMWebAssemblyCodeGen PROPERTIES
+  IMPORTED_LINK_INTERFACE_LANGUAGES_RELEASE "CXX"
+  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/libLLVMWebAssemblyCodeGen.a"
+  )
+
+list(APPEND _IMPORT_CHECK_TARGETS LLVMWebAssemblyCodeGen )
+list(APPEND _IMPORT_CHECK_FILES_FOR_LLVMWebAssemblyCodeGen "${_IMPORT_PREFIX}/lib/libLLVMWebAssemblyCodeGen.a" )
+
+# Import target "LLVMWebAssemblyAsmParser" for configuration "Release"
+set_property(TARGET LLVMWebAssemblyAsmParser APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+set_target_properties(LLVMWebAssemblyAsmParser PROPERTIES
+  IMPORTED_LINK_INTERFACE_LANGUAGES_RELEASE "CXX"
+  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/libLLVMWebAssemblyAsmParser.a"
+  )
+
+list(APPEND _IMPORT_CHECK_TARGETS LLVMWebAssemblyAsmParser )
+list(APPEND _IMPORT_CHECK_FILES_FOR_LLVMWebAssemblyAsmParser "${_IMPORT_PREFIX}/lib/libLLVMWebAssemblyAsmParser.a" )
+
+# Import target "LLVMWebAssemblyDisassembler" for configuration "Release"
+set_property(TARGET LLVMWebAssemblyDisassembler APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+set_target_properties(LLVMWebAssemblyDisassembler PROPERTIES
+  IMPORTED_LINK_INTERFACE_LANGUAGES_RELEASE "CXX"
+  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/libLLVMWebAssemblyDisassembler.a"
+  )
+
+list(APPEND _IMPORT_CHECK_TARGETS LLVMWebAssemblyDisassembler )
+list(APPEND _IMPORT_CHECK_FILES_FOR_LLVMWebAssemblyDisassembler "${_IMPORT_PREFIX}/lib/libLLVMWebAssemblyDisassembler.a" )
+
+# Import target "LLVMWebAssemblyDesc" for configuration "Release"
+set_property(TARGET LLVMWebAssemblyDesc APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+set_target_properties(LLVMWebAssemblyDesc PROPERTIES
+  IMPORTED_LINK_INTERFACE_LANGUAGES_RELEASE "CXX"
+  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/libLLVMWebAssemblyDesc.a"
+  )
+
+list(APPEND _IMPORT_CHECK_TARGETS LLVMWebAssemblyDesc )
+list(APPEND _IMPORT_CHECK_FILES_FOR_LLVMWebAssemblyDesc "${_IMPORT_PREFIX}/lib/libLLVMWebAssemblyDesc.a" )
+
+# Import target "LLVMWebAssemblyInfo" for configuration "Release"
+set_property(TARGET LLVMWebAssemblyInfo APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+set_target_properties(LLVMWebAssemblyInfo PROPERTIES
+  IMPORTED_LINK_INTERFACE_LANGUAGES_RELEASE "CXX"
+  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/libLLVMWebAssemblyInfo.a"
+  )
+
+list(APPEND _IMPORT_CHECK_TARGETS LLVMWebAssemblyInfo )
+list(APPEND _IMPORT_CHECK_FILES_FOR_LLVMWebAssemblyInfo "${_IMPORT_PREFIX}/lib/libLLVMWebAssemblyInfo.a" )
+
+# Import target "LLVMWebAssemblyUtils" for configuration "Release"
+set_property(TARGET LLVMWebAssemblyUtils APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+set_target_properties(LLVMWebAssemblyUtils PROPERTIES
+  IMPORTED_LINK_INTERFACE_LANGUAGES_RELEASE "CXX"
+  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/libLLVMWebAssemblyUtils.a"
+  )
+
+list(APPEND _IMPORT_CHECK_TARGETS LLVMWebAssemblyUtils )
+list(APPEND _IMPORT_CHECK_FILES_FOR_LLVMWebAssemblyUtils "${_IMPORT_PREFIX}/lib/libLLVMWebAssemblyUtils.a" )
+
 # Import target "LLVMX86CodeGen" for configuration "Release"
 set_property(TARGET LLVMX86CodeGen APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
 set_target_properties(LLVMX86CodeGen PROPERTIES
