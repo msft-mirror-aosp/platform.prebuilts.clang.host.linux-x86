@@ -7,3 +7,10 @@ filegroup(
         "lib/*",
     ]),
 )
+
+filegroup(
+    name = "includes",
+    srcs = glob([
+        "lib/clang/*/include/**",
+    ]),
+)
