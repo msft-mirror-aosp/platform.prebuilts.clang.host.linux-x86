@@ -38,7 +38,7 @@ var (
 	llvmToolsFiles = []string{
 		"bin/llvm-symbolizer",
 		"bin/llvm-cxxfilt",
-		"lib64/libc++.so.1",
+		"lib/libc++.so.1",
 	}
 )
 
@@ -78,7 +78,7 @@ func getClangResourceDir(ctx android.LoadHookContext) string {
 	clangDir := getClangPrebuiltDir(ctx)
 	releaseVersion := ctx.Config().GetenvWithDefault("LLVM_RELEASE_VERSION",
 		config.ClangDefaultShortVersion)
-	return path.Join(clangDir, "lib64", "clang", releaseVersion, "lib", "linux")
+	return path.Join(clangDir, "lib", "clang", releaseVersion, "lib", "linux")
 }
 
 func getSymbolFilePath(ctx android.LoadHookContext) string {
@@ -121,7 +121,7 @@ func llvmHostPrebuiltLibraryShared(ctx android.LoadHookContext) {
 		headerDir = path.Join(headerDir, "c++", "v1")
 	}
 
-	linuxLibrary := path.Join(clangDir, "lib64", getHostLibrary(ctx))
+	linuxLibrary := path.Join(clangDir, "lib", getHostLibrary(ctx))
 	darwinFileGroup := strings.TrimSuffix(strings.TrimPrefix(
 		moduleName, "prebuilt_"), "_host") + "_darwin"
 
@@ -370,7 +370,7 @@ func llvmDarwinFileGroup(ctx android.LoadHookContext) {
 	if libName == "libc++" || libName == "libc++abi" {
 		libName += ".1"
 	}
-	lib := path.Join(clangDir, "lib64", libName+".dylib")
+	lib := path.Join(clangDir, "lib", libName+".dylib")
 
 	type props struct {
 		Srcs []string
@@ -455,7 +455,7 @@ func clangBuiltinHeaders(ctx android.LoadHookContext) {
 
 	p := &props{}
 	builtinHeadersDir := path.Join(
-		getClangPrebuiltDir(ctx), "lib64", "clang",
+		getClangPrebuiltDir(ctx), "lib", "clang",
 		ctx.Config().GetenvWithDefault("LLVM_RELEASE_VERSION",
 			config.ClangDefaultShortVersion), "include")
 	s := "$(location) " + path.Join(ctx.ModuleDir(), builtinHeadersDir) + " $(in) >$(out)"

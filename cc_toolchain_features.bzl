@@ -32,7 +32,7 @@ load(
     _generated_sanitizer_constants = "generated_sanitizer_constants",
     _oses = "oses",
 )
-load("@soong_injection//api_levels:api_levels.bzl", _api_levels = "api_levels")
+load("//build/bazel/rules/common:api.bzl", _api_levels = "api_levels_with_previews")
 load("@soong_injection//product_config:product_variables.bzl", "product_vars")
 
 def is_os_device(os):
@@ -873,6 +873,8 @@ def _get_legacy_features_begin():
         # Android builds currently, or is alternatively supported through rules
         # directly (e.g. stripped_shared_library for debug symbol stripping).
         #
+        # thin_lto: Do not add, as it may break some features. replaced by _get_thinlto_features()
+        #
         # runtime_library_search_directories: replaced by custom _rpath_feature().
         #
         # Compile related features:
@@ -1538,11 +1540,6 @@ def _get_thinlto_features():
                             ],
                         ),
                     ],
-                    with_features = [
-                        with_feature_set(
-                            not_features = ["disable_android_thin_lto"],
-                        ),
-                    ],
                 ),
             ],
         ),
@@ -1556,11 +1553,6 @@ def _get_thinlto_features():
                     flag_groups = [
                         flag_group(
                             flags = ["-fwhole-program-vtables"],
-                        ),
-                    ],
-                    with_features = [
-                        with_feature_set(
-                            not_features = ["disable_android_thin_lto"],
                         ),
                     ],
                 ),
@@ -1586,20 +1578,6 @@ def _get_thinlto_features():
                                 # TODO(b/267220812): Update for PGO
                                 "autofdo",
                             ],
-                        ),
-                    ],
-                ),
-            ],
-        ),
-        feature(
-            name = "disable_android_thin_lto",
-            enabled = False,
-            flag_sets = [
-                flag_set(
-                    actions = _actions.compile + _actions.link,
-                    flag_groups = [
-                        flag_group(
-                            flags = ["-fno-lto"],
                         ),
                     ],
                 ),
