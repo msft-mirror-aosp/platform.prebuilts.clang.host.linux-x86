@@ -14,7 +14,9 @@
 
 load(
     "@kernel_toolchain_info//:dict.bzl",
+    "AARCH64_NDK_TRIPLE",
     "CLANG_VERSION",
+    "X86_64_NDK_TRIPLE",
 )
 load(":clang_toolchain.bzl", "clang_toolchain")
 
@@ -31,4 +33,36 @@ clang_toolchain(
     sysroot_path = "build/kernel/build-tools/sysroot",
     target_cpu = "x86_64",
     target_os = "linux",
+)
+
+clang_toolchain(
+    name = "android_arm64_clang_toolchain",
+    clang_version = CLANG_VERSION,
+    ndk_triple = AARCH64_NDK_TRIPLE,
+    # From _setup_env.sh: when NDK triple is set,
+    # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
+    sysroot_label = "@prebuilt_ndk//:sysroot",
+    sysroot_path = "external/prebuilt_ndk/toolchains/llvm/prebuilt/linux-x86_64/sysroot",
+    target_cpu = "arm64",
+    target_os = "android",
+)
+
+clang_toolchain(
+    name = "android_x86_64_clang_toolchain",
+    clang_version = CLANG_VERSION,
+    ndk_triple = X86_64_NDK_TRIPLE,
+    # From _setup_env.sh: when NDK triple is set,
+    # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
+    sysroot_label = "@prebuilt_ndk//:sysroot",
+    sysroot_path = "external/prebuilt_ndk/toolchains/llvm/prebuilt/linux-x86_64/sysroot",
+    target_cpu = "x86_64",
+    target_os = "android",
+)
+
+clang_toolchain(
+    name = "android_riscv64_clang_toolchain",
+    clang_version = CLANG_VERSION,
+    target_cpu = "riscv64",
+    target_os = "android",
+    # TODO(b/228238975): We need NDK_TRIPLE for riscv
 )
