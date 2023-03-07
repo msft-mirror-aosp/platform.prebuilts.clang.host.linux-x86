@@ -64,5 +64,5 @@ clang_toolchain(
     clang_version = CLANG_VERSION,
     target_cpu = "riscv64",
     target_os = "android",
-    # TODO(b/228238975): We need NDK_TRIPLE for riscv
+    # TODO(b/271919464): We need NDK_TRIPLE for riscv
 )
