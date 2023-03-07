@@ -24,7 +24,8 @@ def clang_toolchain(
         target_os,
         linker_files = None,
         sysroot_label = None,
-        sysroot_path = None):
+        sysroot_path = None,
+        ndk_triple = None):
     """Defines a cc toolchain for kernel build, based on clang.
 
     Args:
@@ -35,6 +36,7 @@ def clang_toolchain(
         linker_files: Additional dependencies to the linker
         sysroot_label: Label to a list of files from sysroot
         sysroot_path: Path to sysroot
+        ndk_triple: `NDK_TRIPLE`.
     """
 
     if sysroot_path == None:
@@ -83,6 +85,7 @@ def clang_toolchain(
         sysroot = sysroot_path,
         target_cpu = target_cpu,
         target_os = target_os,
+        ndk_triple = ndk_triple,
         toolchain_identifier = name + "_clang_id",
     )
 
