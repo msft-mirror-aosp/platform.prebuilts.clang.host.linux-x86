@@ -1,0 +1,68 @@
+# Copyright (C) 2023 The Android Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+load(
+    "@kernel_toolchain_info//:dict.bzl",
+    "AARCH64_NDK_TRIPLE",
+    "CLANG_VERSION",
+    "X86_64_NDK_TRIPLE",
+)
+load(":clang_toolchain.bzl", "clang_toolchain")
+
+clang_toolchain(
+    name = "linux_x86_64_clang_toolchain",
+    clang_version = CLANG_VERSION,
+    linker_files = [
+        # From _setup_env.sh, HOSTLDFLAGS
+        "//prebuilts/kernel-build-tools:linux-x86-libs",
+    ],
+    # From _setup_env.sh
+    # sysroot_flags+="--sysroot=${ROOT_DIR}/build/kernel/build-tools/sysroot "
+    sysroot_label = "//build/kernel:sysroot",
+    sysroot_path = "build/kernel/build-tools/sysroot",
+    target_cpu = "x86_64",
+    target_os = "linux",
+)
+
+clang_toolchain(
+    name = "android_arm64_clang_toolchain",
+    clang_version = CLANG_VERSION,
+    ndk_triple = AARCH64_NDK_TRIPLE,
+    # From _setup_env.sh: when NDK triple is set,
+    # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
+    sysroot_label = "@prebuilt_ndk//:sysroot",
+    sysroot_path = "external/prebuilt_ndk/toolchains/llvm/prebuilt/linux-x86_64/sysroot",
+    target_cpu = "arm64",
+    target_os = "android",
+)
+
+clang_toolchain(
+    name = "android_x86_64_clang_toolchain",
+    clang_version = CLANG_VERSION,
+    ndk_triple = X86_64_NDK_TRIPLE,
+    # From _setup_env.sh: when NDK triple is set,
+    # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
+    sysroot_label = "@prebuilt_ndk//:sysroot",
+    sysroot_path = "external/prebuilt_ndk/toolchains/llvm/prebuilt/linux-x86_64/sysroot",
+    target_cpu = "x86_64",
+    target_os = "android",
+)
+
+clang_toolchain(
+    name = "android_riscv64_clang_toolchain",
+    clang_version = CLANG_VERSION,
+    target_cpu = "riscv64",
+    target_os = "android",
+    # TODO(b/271919464): We need NDK_TRIPLE for riscv
+)
