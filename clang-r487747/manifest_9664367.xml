@@ -9,13 +9,13 @@
 
   <superproject name="platform/superproject" remote="aosp" revision="llvm-toolchain" />
 
-  <project path="bionic" name="platform/bionic" revision="83b661802d1173c0e0a2cf64c8b4fdcc6e383e8f" />
+  <project path="bionic" name="platform/bionic" revision="62e24fd016ccf4eaae3726d1f60ba4a90e1f6709" />
 
   <project path="toolchain/binutils" name="toolchain/binutils" revision="c19795e958ed532462948fd14b1bdfd4f6e96e03" />
 
   <project path="toolchain/llvm-project" name="toolchain/llvm-project" revision="d9f89f4d16663d5012e5c09495f3b30ece3d2362" />
 
-  <project path="toolchain/llvm_android" name="toolchain/llvm_android" revision="5dec8804203bb61c199dbc14f6addbc259657fe6" />
+  <project path="toolchain/llvm_android" name="toolchain/llvm_android" revision="89853e61f27b839f0ee7ccdaca4a7bed29e1f66e" />
 
   <project path="toolchain/common" name="toolchain/common" revision="0bce8b062126242872e9f3fc66760d3f76773c49" />
 
@@ -31,7 +31,7 @@
 
   <project path="prebuilts/cmake/linux-x86" name="platform/prebuilts/cmake/linux-x86" clone-depth="1" revision="001ed46e3703c78cbc3838adfe4c14ba279f9ff7" />
 
-  <project path="prebuilts/build-tools" name="platform/prebuilts/build-tools" clone-depth="1" revision="c9002c23894e83470b9dff6e0cece6b5b3cfc9c9" />
+  <project path="prebuilts/build-tools" name="platform/prebuilts/build-tools" clone-depth="1" revision="2653f08f4bae7d418f5fa3fe5269de5368eef9de" />
 
   <project path="prebuilts/go/darwin-x86" name="platform/prebuilts/go/darwin-x86" groups="darwin,pdk,tradefed" clone-depth="1" revision="1c9ca9a5c47fc0a763a16f57b43327471c558b32" />
 
@@ -55,13 +55,13 @@
 
   <project path="prebuilts/python/windows-x86" name="platform/prebuilts/python/windows-x86" clone-depth="1" revision="7119932cd3cea23f16db62e683b69c23e415ff09" />
 
-  <project path="prebuilts/clang/host/darwin-x86" name="platform/prebuilts/clang/host/darwin-x86" clone-depth="1" revision="d4be87be0f4c9f39759a59b10ee9a19f3386c4bf" />
+  <project path="prebuilts/clang/host/darwin-x86" name="platform/prebuilts/clang/host/darwin-x86" clone-depth="1" revision="6905e2225f91f257b8f0380392691b96e825c415" />
 
   <project path="prebuilts/clang/host/darwin-universal" name="platform/prebuilts/clang/host/darwin-universal" clone-depth="1" revision="592f071af1df99cb463ff5b670cd383efd49a6e1" />
 
-  <project path="prebuilts/clang/host/linux-x86" name="platform/prebuilts/clang/host/linux-x86" clone-depth="1" revision="0fb4ac7c3485c98487692c808b282a365e6075da" />
+  <project path="prebuilts/clang/host/linux-x86" name="platform/prebuilts/clang/host/linux-x86" clone-depth="1" revision="97998232028fc73b186f9d368f0eacb9f21f67fe" />
 
-  <project path="prebuilts/clang/host/windows-x86" name="platform/prebuilts/clang/host/windows-x86" clone-depth="1" revision="16762a38051f0185128688d6dc9297295576ec45" />
+  <project path="prebuilts/clang/host/windows-x86" name="platform/prebuilts/clang/host/windows-x86" clone-depth="1" revision="042c045cae445322e30761b6113fb39f366843de" />
 
   <project path="toolchain/prebuilts/ndk/r25" name="toolchain/prebuilts/ndk/r25" revision="4e9417de81d40daf6e50c7b15b864e78e83214e2" />
 
