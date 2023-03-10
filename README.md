@@ -24,7 +24,7 @@ LLVM Users
 
 * [**Android Platform clang-stable**](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-stable/)
   * Currently clang-r475365b
-  * These are *copies* of some clang tools and can be updated by running [update-clang-stable.sh](https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/master/update-clang-stable.sh).
+  * These are *copies* of some clang tools and can be updated by running [update-clang-stable.py](https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/master/update-clang-stable.py).
 
 * [**RenderScript**](https://developer.android.com/guide/topics/renderscript/index.html)
   * Currently clang-3289846
