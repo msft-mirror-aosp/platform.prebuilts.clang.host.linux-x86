@@ -32,7 +32,7 @@ load(
     _generated_sanitizer_constants = "generated_sanitizer_constants",
     _oses = "oses",
 )
-load("//build/bazel/rules/common:api.bzl", _api_levels = "api_levels_with_previews")
+load("//build/bazel/rules/common:api.bzl", "api")
 load("@soong_injection//product_config:product_variables.bzl", "product_vars")
 
 def is_os_device(os):
@@ -54,12 +54,12 @@ def _get_sdk_version_features(os_is_device, target_arch):
     default_sdk_version = "10000"
     sdk_feature_prefix = "sdk_version_"
     all_sdk_versions = [default_sdk_version]
-    for level in _api_levels.values():
+    for level in api.api_levels.values():
         all_sdk_versions.append(str(level))
 
     # Explicitly support internal branch state where the platform sdk version has
     # finalized, but the sdk is still active, so it's represented by a 9000-ish
-    # value in _api_levels.
+    # value in api_levels.
     platform_sdk_version = str(product_vars["Platform_sdk_version"])
     if platform_sdk_version not in all_sdk_versions:
         all_sdk_versions.append(platform_sdk_version)
