@@ -78,7 +78,7 @@ def _tool_paths(ctx):
 
 def _common_cflags():
     return feature(
-        name = "kleaf-common-cflags",
+        name = "kleaf-no-canonical-prefixes",
         enabled = True,
         flag_sets = [
             flag_set(
