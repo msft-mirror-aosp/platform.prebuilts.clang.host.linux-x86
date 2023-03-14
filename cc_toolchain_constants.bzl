@@ -237,8 +237,8 @@ x86_musl_host_toolchains = [
 ]
 
 _libclang_rt_prefix = "%s/lib/clang/%s/lib/linux" % (
-    generated_config_constants.CLANG_DEFAULT_VERSION,
-    generated_config_constants.CLANG_DEFAULT_SHORT_VERSION,
+    generated_config_constants.ClangVersion,
+    generated_config_constants.ClangShortVersion,
 )
 
 libclang_rt_prebuilt_map = {
