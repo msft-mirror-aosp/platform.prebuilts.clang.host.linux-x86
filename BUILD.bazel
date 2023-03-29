@@ -37,6 +37,10 @@ load(
     _musl_crt = "musl_crt",
 )
 load(
+    ":cc_toolchain_features_cfi_test.bzl",
+    "cc_toolchain_features_cfi_test_suite",
+)
+load(
     ":cc_toolchain_features_pack_relocation_test.bzl",
     "cc_toolchain_features_pack_relocation_test_suite",
 )
@@ -401,6 +405,10 @@ filegroup(
         generated_config_constants.ClangVersion + "/bin/llvm-nm",
     ],
     visibility = ["//build/bazel/tests:__subpackages__"],
+)
+
+cc_toolchain_features_cfi_test_suite(
+    name = "cc_toolchain_features_cfi_tests",
 )
 
 cc_toolchain_features_pack_relocation_test_suite(

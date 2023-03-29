@@ -59,6 +59,10 @@ actions = struct(
         ACTION_NAMES.assemble,
         ACTION_NAMES.preprocess_assemble,
     ],
+    c_and_cpp_compile = [
+        ACTION_NAMES.c_compile,
+        ACTION_NAMES.cpp_compile,
+    ],
     c_compile = ACTION_NAMES.c_compile,
     cpp_compile = ACTION_NAMES.cpp_compile,
     # Assembler actions for .s and .S files.
