@@ -17,6 +17,7 @@ load(
     _enabled_features = "enabled_features",
     _flags = "flags",
     _generated_config_constants = "generated_config_constants",
+    _generated_sanitizer_constants = "generated_sanitizer_constants",
 )
 load(
     ":cc_toolchain_features.bzl",
@@ -336,6 +337,14 @@ def android_cc_toolchain(
     if gcc_toolchain:
         gcc_toolchain_path = "//%s:tools" % gcc_toolchain
         extra_linker_paths.append(gcc_toolchain_path)
+    extra_linker_paths.append("//%s:%s" % (
+        _generated_sanitizer_constants.CfiExportsMapPath,
+        _generated_sanitizer_constants.CfiExportsMapFilename,
+    ))
+    extra_linker_paths.append("//%s:%s" % (
+        _generated_sanitizer_constants.CfiBlocklistPath,
+        _generated_sanitizer_constants.CfiBlocklistFilename,
+    ))
 
     common_toolchain_config = dict(
         [
