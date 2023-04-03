@@ -213,12 +213,12 @@ def test_cfi_and_arm_uses_thumb():
     return test_name
 
 # TODO(b/274924237): Uncomment after Darwin and Windows have toolchains
-#def test_cfi_absent_on_darwin_and_windows():
-#    name = "cfi_absent_on_darwin_and_windows"
+#def test_cfi_absent_on_unsupported_oses():
+#    name = "cfi_absent_on_unsupported_oses"
 #    native.cc_binary(
 #        name = name,
 #        srcs = ["foo.c", "bar.cpp"],
-#        features = ["android_cfi"]
+#        features = ["android_cfi"],
 #        tags = ["manual"],
 #    )
 #
@@ -229,6 +229,7 @@ def test_cfi_and_arm_uses_thumb():
 #        mnemonics = [compile_action_mnemonic],
 #        expected_absent_flags = generated_sanitizer_constants.CfiCFlags,
 #        target_compatible_with = [
+#            "//build/bazel/platforms/os:linux_musl",
 #            "//build/bazel/platforms/os:darwin",
 #            "//build/bazel/platforms/os:windows",
 #        ]
@@ -244,7 +245,7 @@ def cc_toolchain_features_cfi_test_suite(name):
         test_cfi_implies_lto(),
         test_cfi_and_arm_uses_thumb(),
         # TODO(b/274924237): Uncomment after Darwin and Windows have toolchains
-        # test_cfi_absent_on_darwin_and_windows(),
+        # test_cfi_absent_on_unsupported_oses(),
     ]
     native.test_suite(
         name = name,
