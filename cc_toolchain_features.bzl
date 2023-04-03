@@ -1597,7 +1597,7 @@ def _make_flag_set(actions, flags):
     )
 
 def _get_cfi_features(target_arch, target_os):
-    if target_os in [_oses.Windows, _oses.Darwin]:
+    if target_os in [_oses.Windows, _oses.Darwin, _oses.LinuxMusl]:
         return []
     features = [
         feature(
