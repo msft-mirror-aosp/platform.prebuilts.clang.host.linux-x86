@@ -528,6 +528,31 @@ def _test_no_undefined_flag_present_when_bionic_or_musl():
 
     return test_names
 
+# TODO(b/274924237): Uncomment after Darwin and Windows have toolchains
+#def _test_undefined_flag_absent_when_windows_or_darwin():
+#    name = "no_undefined_flag_absent_when_windows_or_darwin"
+#
+#    native.cc_binary(
+#        name = name,
+#        srcs = test_srcs,
+#        features = ["ubsan_undefined"],
+#        tags = ["manual"],
+#    )
+#
+#    test_name = name + "_test"
+#    action_flags_absent_for_mnemonic_test(
+#        name = test_name,
+#        target_under_test = name,
+#        mnemonics = [compile_action_mnemonic],
+#        expected_absent_flags = [ubsan_prefix_format % "undefined"]
+#        target_compatible_with = [
+#            "//build/bazel/platforms/os:darwin",
+#            "//build/bazel/platforms/os:windows",
+#        ]
+#    )
+#
+#    return test_name
+
 def _test_no_undefined_flag_absent_when_not_bionic_or_musl():
     name = "no_undefined_flag_absent_when_not_bionic_or_musl"
     test_name = name + "_test"
@@ -745,6 +770,8 @@ def cc_toolchain_features_ubsan_test_suite(name):
         _test_ubsan_unsupported_non_bionic_checks_not_disabled_when_android(),
         _test_ubsan_unsupported_non_bionic_checks_not_disabled_when_no_ubsan(),
         _test_ubsan_link_runtime_when_not_bionic_or_musl(),
+        # TODO(b/274924237): Uncomment after Darwin and Windows have toolchains
+        #        _test_undefined_flag_absent_when_windows_or_darwin(),
     ]
     native.test_suite(
         name = name,
