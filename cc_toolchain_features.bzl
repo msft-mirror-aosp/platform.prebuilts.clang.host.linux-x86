@@ -32,7 +32,7 @@ load(
     _generated_sanitizer_constants = "generated_sanitizer_constants",
     _oses = "oses",
 )
-load("@soong_injection//api_levels:api_levels.bzl", _api_levels = "api_levels")
+load("//build/bazel/rules/common:api.bzl", "api")
 load("@soong_injection//product_config:product_variables.bzl", "product_vars")
 
 def is_os_device(os):
@@ -54,12 +54,12 @@ def _get_sdk_version_features(os_is_device, target_arch):
     default_sdk_version = "10000"
     sdk_feature_prefix = "sdk_version_"
     all_sdk_versions = [default_sdk_version]
-    for level in _api_levels.values():
+    for level in api.api_levels.values():
         all_sdk_versions.append(str(level))
 
     # Explicitly support internal branch state where the platform sdk version has
     # finalized, but the sdk is still active, so it's represented by a 9000-ish
-    # value in _api_levels.
+    # value in api_levels.
     platform_sdk_version = str(product_vars["Platform_sdk_version"])
     if platform_sdk_version not in all_sdk_versions:
         all_sdk_versions.append(platform_sdk_version)
@@ -873,6 +873,8 @@ def _get_legacy_features_begin():
         # Android builds currently, or is alternatively supported through rules
         # directly (e.g. stripped_shared_library for debug symbol stripping).
         #
+        # thin_lto: Do not add, as it may break some features. replaced by _get_thinlto_features()
+        #
         # runtime_library_search_directories: replaced by custom _rpath_feature().
         #
         # Compile related features:
@@ -1538,11 +1540,6 @@ def _get_thinlto_features():
                             ],
                         ),
                     ],
-                    with_features = [
-                        with_feature_set(
-                            not_features = ["disable_android_thin_lto"],
-                        ),
-                    ],
                 ),
             ],
         ),
@@ -1558,17 +1555,14 @@ def _get_thinlto_features():
                             flags = ["-fwhole-program-vtables"],
                         ),
                     ],
-                    with_features = [
-                        with_feature_set(
-                            not_features = ["disable_android_thin_lto"],
-                        ),
-                    ],
                 ),
             ],
         ),
+        # See Soong code:
+        # https://cs.android.com/android/platform/superproject/+/master:build/soong/cc/lto.go;l=133;drc=2c435a00ff73dc485855824ee49d2dec1a01e592
         feature(
             name = "android_thin_lto_limit_cross_tu_inline",
-            enabled = False,
+            enabled = True,
             requires = [feature_set(features = ["android_thin_lto"])],
             flag_sets = [
                 flag_set(
@@ -1580,27 +1574,88 @@ def _get_thinlto_features():
                     ],
                     with_features = [
                         with_feature_set(
-                            not_features = ["disable_android_thin_lto"],
-                        ),
-                    ],
-                ),
-            ],
-        ),
-        feature(
-            name = "disable_android_thin_lto",
-            enabled = False,
-            flag_sets = [
-                flag_set(
-                    actions = _actions.compile + _actions.link,
-                    flag_groups = [
-                        flag_group(
-                            flags = ["-fno-lto"],
+                            not_features = [
+                                # TODO(b/267220812): Update for PGO
+                                "autofdo",
+                            ],
                         ),
                     ],
                 ),
             ],
         ),
     ]
+    return features
+
+def _make_flag_set(actions, flags):
+    return flag_set(
+        actions = actions,
+        flag_groups = [
+            flag_group(
+                flags = flags,
+            ),
+        ],
+    )
+
+def _get_cfi_features(target_arch, target_os):
+    if target_os in [_oses.Windows, _oses.Darwin]:
+        return []
+    features = [
+        feature(
+            name = "android_cfi",
+            enabled = False,
+            flag_sets = [
+                _make_flag_set(
+                    _actions.c_and_cpp_compile,
+                    _generated_sanitizer_constants.CfiCFlags,
+                ),
+                _make_flag_set(
+                    _actions.link,
+                    _generated_sanitizer_constants.CfiLdFlags,
+                ),
+                _make_flag_set(
+                    _actions.assemble,
+                    _generated_sanitizer_constants.CfiAsFlags,
+                ),
+            ],
+            implies = ["android_thin_lto"] + (
+                ["arm_isa_thumb"] if target_arch == _arches.Arm else []
+            ),
+        ),
+    ]
+
+    features += [
+        feature(
+            name = "android_cfi_assembly_support",
+            enabled = False,
+            requires = [feature_set(features = ["android_cfi"])],
+            flag_sets = [
+                _make_flag_set(
+                    _actions.c_and_cpp_compile,
+                    [_generated_sanitizer_constants.CfiAssemblySupportFlag],
+                ),
+            ],
+        ),
+    ]
+
+    features += [
+        feature(
+            name = "android_cfi_exports_map",
+            enabled = False,
+            requires = [feature_set(features = ["android_cfi"])],
+            flag_sets = [
+                _make_flag_set(
+                    _actions.link,
+                    [
+                        _generated_config_constants.VersionScriptFlagPrefix +
+                        _generated_sanitizer_constants.CfiExportsMapPath +
+                        "/" +
+                        _generated_sanitizer_constants.CfiExportsMapFilename,
+                    ],
+                ),
+            ],
+        ),
+    ]
+
     return features
 
 def _ubsan_flag_feature(name, actions, flags):
@@ -1954,6 +2009,7 @@ def get_features(
         # Optimization
         _get_thinlto_features(),
         # Sanitizers
+        _get_cfi_features(target_arch, target_os),
         _get_ubsan_features(target_os, libclang_rt_ubsan_minimal),
         # This must always come last.
         _link_crtend(crt_files),
