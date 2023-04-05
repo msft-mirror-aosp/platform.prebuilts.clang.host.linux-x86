@@ -1524,6 +1524,7 @@ def _link_crtend(crt_files):
         ),
     ]
 
+# TODO(b/276932249): Restrict for Fuzzer when we have Fuzzer in Bazel
 def _get_thinlto_features():
     features = [
         feature(
@@ -1596,6 +1597,10 @@ def _make_flag_set(actions, flags):
         ],
     )
 
+# TODO(b/276756817): Restrict for VNDK when we have VNDK in Bazel
+# TODO(b/276756319): Restrict for riscv64 when we have riscv64 in Bazel
+# TODO(b/276932249): Restrict for Fuzzer when we have Fuzzer in Bazel
+# TODO(b/276931992): Restrict for Asan when we have Asan in Bazel
 def _get_cfi_features(target_arch, target_os):
     if target_os in [_oses.Windows, _oses.Darwin, _oses.LinuxMusl]:
         return []
