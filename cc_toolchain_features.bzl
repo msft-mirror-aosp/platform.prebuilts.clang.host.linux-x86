@@ -1597,7 +1597,7 @@ def _make_flag_set(actions, flags):
     )
 
 def _get_cfi_features(target_arch, target_os):
-    if target_os in [_oses.Windows, _oses.Darwin]:
+    if target_os in [_oses.Windows, _oses.Darwin, _oses.LinuxMusl]:
         return []
     features = [
         feature(
@@ -1705,6 +1705,9 @@ int_overflow_ignorelist_path = "build/soong/cc/config"
 int_overflow_ignorelist_filename = "integer_overflow_blocklist.txt"
 
 def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
+    if target_os in [_oses.Windows, _oses.Darwin]:
+        return []
+
     ALL_UBSAN_ACTIONS = _actions.compile + _actions.link + _actions.assemble
 
     ubsan_features = [
