@@ -1656,7 +1656,44 @@ def _get_cfi_features(target_arch, target_os):
         ),
     ]
 
+    features += [
+        feature(
+            name = "android_cfi_visibility_default",
+            enabled = True,
+            requires = [feature_set(features = ["android_cfi"])],
+            flag_sets = [
+                flag_set(
+                    actions = _actions.c_and_cpp_compile,
+                    flag_groups = [
+                        flag_group(
+                            flags = ["-fvisibility=default"],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            not_features = ["visibility_hidden"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    ]
+
     return features
+
+def _get_visibiility_hidden_feature():
+    return [
+        feature(
+            name = "visibility_hidden",
+            enabled = False,
+            flag_sets = [
+                _make_flag_set(
+                    _actions.c_and_cpp_compile,
+                    ["-fvisibility=hidden"],
+                ),
+            ],
+        ),
+    ]
 
 def _ubsan_flag_feature(name, actions, flags):
     return feature(
@@ -2011,6 +2048,8 @@ def get_features(
         # Sanitizers
         _get_cfi_features(target_arch, target_os),
         _get_ubsan_features(target_os, libclang_rt_ubsan_minimal),
+        # Misc features
+        _get_visibiility_hidden_feature(),
         # This must always come last.
         _link_crtend(crt_files),
     ]
