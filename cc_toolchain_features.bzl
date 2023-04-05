@@ -1946,6 +1946,24 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
 
     return ubsan_features
 
+def _manual_binder_interface_feature():
+    return feature(
+        name = "do_not_check_manual_binder_interfaces",
+        enabled = False,
+        flag_sets = [
+            flag_set(
+                actions = _actions.compile,
+                flag_groups = [
+                    flag_group(
+                        flags = [
+                            "-DDO_NOT_CHECK_MANUAL_BINDER_INTERFACES",
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    )
+
 # Create the full list of features.
 def get_features(
         ctx,
@@ -2013,6 +2031,7 @@ def get_features(
         _get_ubsan_features(target_os, libclang_rt_ubsan_minimal),
         # This must always come last.
         _link_crtend(crt_files),
+        _manual_binder_interface_feature(),
     ]
 
     return _flatten([f for f in features if f != None])
