@@ -32,6 +32,9 @@ def _test_flag_order_impl(ctx):
             out_of_order = False
             expected_index = 0
             for flag in action.argv:
+                # If we've found all the flags, we don't need to check any further
+                if expected_index >= len(ctx.attr.expected_flags_in_order):
+                    break
                 if sets.contains(expected_flags_set, flag):
                     if ctx.attr.expected_flags_in_order[expected_index] != flag:
                         out_of_order = True
@@ -94,8 +97,35 @@ def _test_compile_flag_order_arm():
     )
     return test_name
 
+def _test_external_compile_flag_order():
+    name = "external_compile_flag_order"
+    test_name = name + "_test"
+
+    native.cc_binary(
+        name = name,
+        srcs = ["foo.cpp"],
+        tags = ["manual"],
+        features = ["external_compiler_flags", "-non_external_compiler_flags"],
+    )
+
+    flag_order_test(
+        name = test_name,
+        target_under_test = name,
+        expected_flags_in_order = (
+            generated_config_constants.CommonGlobalCflags +
+            generated_config_constants.DeviceGlobalCflags +
+            generated_config_constants.ExternalCflags
+        ),
+        mnemonic = "CppCompile",
+        target_compatible_with = ["//build/bazel/platforms/os:android"],
+    )
+    return test_name
+
 def cc_toolchain_features_flag_order_test_suite(name):
     native.test_suite(
         name = name,
-        tests = [_test_compile_flag_order_arm()],
+        tests = [
+            _test_compile_flag_order_arm(),
+            _test_external_compile_flag_order(),
+        ],
     )
