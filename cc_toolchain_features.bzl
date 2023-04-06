@@ -1812,6 +1812,70 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
 
     ubsan_features += [
         feature(
+            name = "ubsan_no_sanitize_link_runtime",
+            enabled = target_os in [
+                _oses.Android,
+                _oses.LinuxBionic,
+                _oses.LinuxMusl,
+            ],
+            flag_sets = [
+                flag_set(
+                    actions = _actions.link,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-fno-sanitize-link-runtime",
+                            ],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            features = ["ubsan_enabled"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    ]
+
+    # non-Bionic toolchain prebuilts are missing UBSan's vptr and function san.
+    # Musl toolchain prebuilts have vptr and function sanitizers, but enabling
+    # them implicitly enables RTTI which causes RTTI mismatch issues with
+    # dependencies.
+    ubsan_features += [
+        feature(
+            name = "ubsan_disable_unsupported_non_bionic_checks",
+            enabled = target_os not in [_oses.LinuxBionic, _oses.Android],
+            flag_sets = [
+                flag_set(
+                    actions = _actions.compile,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-fno-sanitize=function,vptr",
+                            ],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            features = ["ubsan_integer_overflow"],
+                        ),
+                    ] + [
+                        with_feature_set(features = ["ubsan_" + check_name])
+                        for check_name in ubsan_checks
+                    ],
+                ),
+            ],
+        ),
+    ]
+
+    ubsan_features += [
+        _host_or_device_specific_ubsan_feature(target_os),
+        _exclude_ubsan_rt_feature(libclang_rt_ubsan_minimal),
+    ]
+
+    ubsan_features += [
+        feature(
             name = "ubsan_minimal_runtime",
             enabled = False,
             flag_sets = [
@@ -1878,70 +1942,6 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
                 ),
             ],
         ),
-    ]
-
-    # non-Bionic toolchain prebuilts are missing UBSan's vptr and function san.
-    # Musl toolchain prebuilts have vptr and function sanitizers, but enabling
-    # them implicitly enables RTTI which causes RTTI mismatch issues with
-    # dependencies.
-    ubsan_features += [
-        feature(
-            name = "ubsan_disable_unsupported_non_bionic_checks",
-            enabled = target_os not in [_oses.LinuxBionic, _oses.Android],
-            flag_sets = [
-                flag_set(
-                    actions = _actions.compile,
-                    flag_groups = [
-                        flag_group(
-                            flags = [
-                                "-fno-sanitize=function,vptr",
-                            ],
-                        ),
-                    ],
-                    with_features = [
-                        with_feature_set(
-                            features = ["ubsan_integer_overflow"],
-                        ),
-                    ] + [
-                        with_feature_set(features = ["ubsan_" + check_name])
-                        for check_name in ubsan_checks
-                    ],
-                ),
-            ],
-        ),
-    ]
-
-    ubsan_features += [
-        feature(
-            name = "ubsan_no_sanitize_link_runtime",
-            enabled = target_os in [
-                _oses.Android,
-                _oses.LinuxBionic,
-                _oses.LinuxMusl,
-            ],
-            flag_sets = [
-                flag_set(
-                    actions = _actions.link,
-                    flag_groups = [
-                        flag_group(
-                            flags = [
-                                "-fno-sanitize-link-runtime",
-                            ],
-                        ),
-                    ],
-                    with_features = [
-                        with_feature_set(
-                            features = ["ubsan_enabled"],
-                        ),
-                    ],
-                ),
-            ],
-        ),
-    ]
-
-    ubsan_features += [
-        _host_or_device_specific_ubsan_feature(target_os),
-        _exclude_ubsan_rt_feature(libclang_rt_ubsan_minimal),
     ]
 
     return ubsan_features
