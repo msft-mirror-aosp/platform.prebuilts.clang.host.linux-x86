@@ -387,25 +387,6 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
                 ),
             ],
         ))
-    features.append(feature(
-        name = "external_compiler_flags",
-        enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = _actions.compile,
-                flag_groups = [
-                    flag_group(
-                        flags = _generated_config_constants.ExternalCflags,
-                    ),
-                ],
-                with_features = [
-                    with_feature_set(
-                        not_features = ["non_external_compiler_flags"],
-                    ),
-                ],
-            ),
-        ],
-    ))
 
     features.append(feature(
         name = "arm_isa_arm",
@@ -449,6 +430,26 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
                 flag_groups = [
                     flag_group(
                         flags = compiler_flags,
+                    ),
+                ],
+            ),
+        ],
+    ))
+
+    features.append(feature(
+        name = "external_compiler_flags",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = _actions.compile,
+                flag_groups = [
+                    flag_group(
+                        flags = _generated_config_constants.ExternalCflags,
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        not_features = ["non_external_compiler_flags"],
                     ),
                 ],
             ),
@@ -1524,6 +1525,7 @@ def _link_crtend(crt_files):
         ),
     ]
 
+# TODO(b/276932249): Restrict for Fuzzer when we have Fuzzer in Bazel
 def _get_thinlto_features():
     features = [
         feature(
@@ -1596,6 +1598,10 @@ def _make_flag_set(actions, flags):
         ],
     )
 
+# TODO(b/276756817): Restrict for VNDK when we have VNDK in Bazel
+# TODO(b/276756319): Restrict for riscv64 when we have riscv64 in Bazel
+# TODO(b/276932249): Restrict for Fuzzer when we have Fuzzer in Bazel
+# TODO(b/276931992): Restrict for Asan when we have Asan in Bazel
 def _get_cfi_features(target_arch, target_os):
     if target_os in [_oses.Windows, _oses.Darwin, _oses.LinuxMusl]:
         return []
