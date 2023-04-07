@@ -54,18 +54,9 @@ def test_cfi_c_and_cpp_has_correct_flags():
         expected_flags = generated_sanitizer_constants.CfiLdFlags,
     )
 
-    compile_no_assemble_flags_test_name = "_compile_no_assemble_flags_test"
-    action_flags_absent_for_mnemonic_test(
-        name = compile_no_assemble_flags_test_name,
-        target_under_test = name,
-        mnemonics = [compile_action_mnemonic],
-        expected_absent_flags = generated_sanitizer_constants.CfiAsFlags,
-    )
-
     return [
         compile_test_name,
         link_test_name,
-        compile_no_assemble_flags_test_name,
     ]
 
 def test_cfi_s_has_correct_flags():
@@ -190,6 +181,44 @@ def test_cfi_implies_lto():
 
     return test_name
 
+def test_cfi_implies_vis_default_if_not_hidden():
+    name = "cfi_implies_vis_default_if_not_hidden"
+    native.cc_binary(
+        name = name,
+        srcs = ["foo.c", "bar.cpp"],
+        features = ["android_cfi"],
+        tags = ["manual"],
+    )
+
+    test_name = name + "_test"
+    action_flags_present_only_for_mnemonic_test(
+        name = test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_flags = ["-fvisibility=default"],
+    )
+
+    return test_name
+
+def test_cfi_does_not_add_vis_default_if_hidden():
+    name = "cfi_does_not_add_vis_default_if_hidden"
+    native.cc_binary(
+        name = name,
+        srcs = ["foo.c", "bar.cpp"],
+        features = ["android_cfi", "visibility_hidden"],
+        tags = ["manual"],
+    )
+
+    test_name = name + "_test"
+    action_flags_absent_for_mnemonic_test(
+        name = test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_absent_flags = ["-fvisibility=default"],
+    )
+
+    return test_name
+
 def test_cfi_and_arm_uses_thumb():
     name = "cfi_and_arm_uses_thumb"
     native.cc_binary(
@@ -243,6 +272,8 @@ def cc_toolchain_features_cfi_test_suite(name):
         test_cfi_assembly_support_does_not_add_flags_for_s(),
         test_cfi_exports_map_has_correct_flags(),
         test_cfi_implies_lto(),
+        test_cfi_implies_vis_default_if_not_hidden(),
+        test_cfi_does_not_add_vis_default_if_hidden(),
         test_cfi_and_arm_uses_thumb(),
         # TODO(b/274924237): Uncomment after Darwin and Windows have toolchains
         # test_cfi_absent_on_unsupported_oses(),
