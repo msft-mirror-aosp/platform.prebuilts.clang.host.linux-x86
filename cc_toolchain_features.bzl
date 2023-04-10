@@ -28,10 +28,11 @@ load(
     _experimental_cpp_std_version = "experimental_cpp_std_version",
     _experimental_cpp_std_version_no_gnu = "experimental_cpp_std_version_no_gnu",
     _flags = "flags",
-    _generated_constants = "generated_constants",
+    _generated_config_constants = "generated_config_constants",
+    _generated_sanitizer_constants = "generated_sanitizer_constants",
     _oses = "oses",
 )
-load("@soong_injection//api_levels:api_levels.bzl", _api_levels = "api_levels")
+load("//build/bazel/rules/common:api.bzl", "api")
 load("@soong_injection//product_config:product_variables.bzl", "product_vars")
 
 def is_os_device(os):
@@ -53,12 +54,12 @@ def _get_sdk_version_features(os_is_device, target_arch):
     default_sdk_version = "10000"
     sdk_feature_prefix = "sdk_version_"
     all_sdk_versions = [default_sdk_version]
-    for level in _api_levels.values():
+    for level in api.api_levels.values():
         all_sdk_versions.append(str(level))
 
     # Explicitly support internal branch state where the platform sdk version has
     # finalized, but the sdk is still active, so it's represented by a 9000-ish
-    # value in _api_levels.
+    # value in api_levels.
     platform_sdk_version = str(product_vars["Platform_sdk_version"])
     if platform_sdk_version not in all_sdk_versions:
         all_sdk_versions.append(platform_sdk_version)
@@ -69,7 +70,7 @@ def _get_sdk_version_features(os_is_device, target_arch):
     elif target_arch == _arches.X86_64:
         flag_prefix += "x86_64-linux-android"
     elif target_arch == _arches.Arm:
-        flag_prefix += _generated_constants.ArmClangTriple
+        flag_prefix += _generated_config_constants.ArmClangTriple
     elif target_arch == _arches.Arm64:
         flag_prefix += "aarch64-linux-android"
     else:
@@ -235,28 +236,28 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
     # Combine the toolchain's provided flags with the default ones.
     compiler_flags.extend(flags)
     compiler_flags.extend(_flags.compiler_flags)
-    compiler_flags.extend(_generated_constants.CommonGlobalCflags)
+    compiler_flags.extend(_generated_config_constants.CommonGlobalCflags)
     compiler_flags.extend(_env_based_common_global_cflags(ctx))
 
     if os_is_device:
-        compiler_flags.extend(_generated_constants.DeviceGlobalCflags)
+        compiler_flags.extend(_generated_config_constants.DeviceGlobalCflags)
     else:
-        compiler_flags.extend(_generated_constants.HostGlobalCflags)
+        compiler_flags.extend(_generated_config_constants.HostGlobalCflags)
 
     # Default compiler flags for assembly sources.
-    asm_only_flags = _generated_constants.CommonGlobalAsflags
+    asm_only_flags = _generated_config_constants.CommonGlobalAsflags
 
     # Default C++ compile action only flags (No C)
     cpp_only_flags = []
-    cpp_only_flags.extend(_generated_constants.CommonGlobalCppflags)
+    cpp_only_flags.extend(_generated_config_constants.CommonGlobalCppflags)
     if os_is_device:
-        cpp_only_flags.extend(_generated_constants.DeviceGlobalCppflags)
+        cpp_only_flags.extend(_generated_config_constants.DeviceGlobalCppflags)
     else:
-        cpp_only_flags.extend(_generated_constants.HostGlobalCppflags)
+        cpp_only_flags.extend(_generated_config_constants.HostGlobalCppflags)
 
     # Default C compile action only flags (No C++)
     c_only_flags = []
-    c_only_flags.extend(_generated_constants.CommonGlobalConlyflags)
+    c_only_flags.extend(_generated_config_constants.CommonGlobalConlyflags)
 
     # Flags that only apply in the external/ directory.
     non_external_flags = _flags.non_external_defines
@@ -325,20 +326,6 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
             ),
         ],
     ))
-    features.append(feature(
-        name = "common_compiler_flags",
-        enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = _actions.compile,
-                flag_groups = [
-                    flag_group(
-                        flags = compiler_flags,
-                    ),
-                ],
-            ),
-        ],
-    ))
 
     # bpf only needs the flag below instead of all the flags in
     # common_compiler_flags
@@ -400,25 +387,6 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
                 ),
             ],
         ))
-    features.append(feature(
-        name = "external_compiler_flags",
-        enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = _actions.compile,
-                flag_groups = [
-                    flag_group(
-                        flags = _generated_constants.ExternalCflags,
-                    ),
-                ],
-                with_features = [
-                    with_feature_set(
-                        not_features = ["non_external_compiler_flags"],
-                    ),
-                ],
-            ),
-        ],
-    ))
 
     features.append(feature(
         name = "arm_isa_arm",
@@ -445,10 +413,43 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
                 actions = _actions.compile,
                 flag_groups = [
                     flag_group(
-                        flags = [
-                            "-mthumb",
-                            "-Os",
-                        ],
+                        flags = _generated_config_constants.ArmThumbCflags,
+                    ),
+                ],
+            ),
+        ],
+    ))
+
+    # Must follow arm_isa_thumb for flag ordering
+    features.append(feature(
+        name = "common_compiler_flags",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = _actions.compile,
+                flag_groups = [
+                    flag_group(
+                        flags = compiler_flags,
+                    ),
+                ],
+            ),
+        ],
+    ))
+
+    features.append(feature(
+        name = "external_compiler_flags",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = _actions.compile,
+                flag_groups = [
+                    flag_group(
+                        flags = _generated_config_constants.ExternalCflags,
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        not_features = ["non_external_compiler_flags"],
                     ),
                 ],
             ),
@@ -488,7 +489,7 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
                 actions = [a for a in _actions.compile if a not in _actions.assemble],
                 flag_groups = [
                     flag_group(
-                        flags = _generated_constants.NoOverrideGlobalCflags,
+                        flags = _generated_config_constants.NoOverrideGlobalCflags,
                     ),
                 ],
             ),
@@ -507,7 +508,7 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
                     actions = [a for a in _actions.compile if a not in _actions.assemble],
                     flag_groups = [
                         flag_group(
-                            flags = _generated_constants.NoOverrideExternalGlobalCflags,
+                            flags = _generated_config_constants.NoOverrideExternalGlobalCflags,
                         ),
                     ],
                 ),
@@ -817,7 +818,7 @@ def _stub_library_feature():
                 flag_groups = [
                     flag_group(
                         # Ensures that the stub libraries are always compiled with default visibility
-                        flags = _generated_constants.StubLibraryCompilerFlags + ["-fvisibility=default"],
+                        flags = _generated_config_constants.StubLibraryCompilerFlags + ["-fvisibility=default"],
                     ),
                 ],
             ),
@@ -843,10 +844,10 @@ def _additional_archiver_flags(target_os):
 def _additional_linker_flags(os_is_device):
     linker_flags = []
     if os_is_device:
-        linker_flags.extend(_generated_constants.DeviceGlobalLldflags)
+        linker_flags.extend(_generated_config_constants.DeviceGlobalLldflags)
         linker_flags.extend(_flags.bionic_linker_flags)
     else:
-        linker_flags.extend(_generated_constants.HostGlobalLldflags)
+        linker_flags.extend(_generated_config_constants.HostGlobalLldflags)
     return linker_flags
 
 def _static_binary_linker_flags(os_is_device):
@@ -872,6 +873,8 @@ def _get_legacy_features_begin():
         # Legacy features omitted from this list, since they're not used in
         # Android builds currently, or is alternatively supported through rules
         # directly (e.g. stripped_shared_library for debug symbol stripping).
+        #
+        # thin_lto: Do not add, as it may break some features. replaced by _get_thinlto_features()
         #
         # runtime_library_search_directories: replaced by custom _rpath_feature().
         #
@@ -1522,6 +1525,7 @@ def _link_crtend(crt_files):
         ),
     ]
 
+# TODO(b/276932249): Restrict for Fuzzer when we have Fuzzer in Bazel
 def _get_thinlto_features():
     features = [
         feature(
@@ -1536,11 +1540,6 @@ def _get_thinlto_features():
                                 "-flto=thin",
                                 "-fsplit-lto-unit",
                             ],
-                        ),
-                    ],
-                    with_features = [
-                        with_feature_set(
-                            not_features = ["disable_android_thin_lto"],
                         ),
                     ],
                 ),
@@ -1558,17 +1557,14 @@ def _get_thinlto_features():
                             flags = ["-fwhole-program-vtables"],
                         ),
                     ],
-                    with_features = [
-                        with_feature_set(
-                            not_features = ["disable_android_thin_lto"],
-                        ),
-                    ],
                 ),
             ],
         ),
+        # See Soong code:
+        # https://cs.android.com/android/platform/superproject/+/master:build/soong/cc/lto.go;l=133;drc=2c435a00ff73dc485855824ee49d2dec1a01e592
         feature(
             name = "android_thin_lto_limit_cross_tu_inline",
-            enabled = False,
+            enabled = True,
             requires = [feature_set(features = ["android_thin_lto"])],
             flag_sets = [
                 flag_set(
@@ -1580,21 +1576,10 @@ def _get_thinlto_features():
                     ],
                     with_features = [
                         with_feature_set(
-                            not_features = ["disable_android_thin_lto"],
-                        ),
-                    ],
-                ),
-            ],
-        ),
-        feature(
-            name = "disable_android_thin_lto",
-            enabled = False,
-            flag_sets = [
-                flag_set(
-                    actions = _actions.compile + _actions.link,
-                    flag_groups = [
-                        flag_group(
-                            flags = ["-fno-lto"],
+                            not_features = [
+                                # TODO(b/267220812): Update for PGO
+                                "autofdo",
+                            ],
                         ),
                     ],
                 ),
@@ -1603,10 +1588,132 @@ def _get_thinlto_features():
     ]
     return features
 
+def _make_flag_set(actions, flags):
+    return flag_set(
+        actions = actions,
+        flag_groups = [
+            flag_group(
+                flags = flags,
+            ),
+        ],
+    )
+
+# TODO(b/276756817): Restrict for VNDK when we have VNDK in Bazel
+# TODO(b/276756319): Restrict for riscv64 when we have riscv64 in Bazel
+# TODO(b/276932249): Restrict for Fuzzer when we have Fuzzer in Bazel
+# TODO(b/276931992): Restrict for Asan when we have Asan in Bazel
+def _get_cfi_features(target_arch, target_os):
+    if target_os in [_oses.Windows, _oses.Darwin, _oses.LinuxMusl]:
+        return []
+    features = [
+        feature(
+            name = "android_cfi",
+            enabled = False,
+            flag_sets = [
+                _make_flag_set(
+                    _actions.c_and_cpp_compile,
+                    _generated_sanitizer_constants.CfiCFlags,
+                ),
+                _make_flag_set(
+                    _actions.link,
+                    _generated_sanitizer_constants.CfiLdFlags,
+                ),
+                _make_flag_set(
+                    _actions.assemble,
+                    _generated_sanitizer_constants.CfiAsFlags,
+                ),
+            ],
+            implies = ["android_thin_lto"] + (
+                ["arm_isa_thumb"] if target_arch == _arches.Arm else []
+            ),
+        ),
+    ]
+
+    features += [
+        feature(
+            name = "android_cfi_assembly_support",
+            enabled = False,
+            requires = [feature_set(features = ["android_cfi"])],
+            flag_sets = [
+                _make_flag_set(
+                    _actions.c_and_cpp_compile,
+                    [_generated_sanitizer_constants.CfiAssemblySupportFlag],
+                ),
+            ],
+        ),
+    ]
+
+    features += [
+        feature(
+            name = "android_cfi_exports_map",
+            enabled = False,
+            requires = [feature_set(features = ["android_cfi"])],
+            flag_sets = [
+                _make_flag_set(
+                    _actions.link,
+                    [
+                        _generated_config_constants.VersionScriptFlagPrefix +
+                        _generated_sanitizer_constants.CfiExportsMapPath +
+                        "/" +
+                        _generated_sanitizer_constants.CfiExportsMapFilename,
+                    ],
+                ),
+            ],
+        ),
+    ]
+
+    return features
+
+def _ubsan_flag_feature(name, actions, flags):
+    return feature(
+        name = name,
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = actions,
+                flag_groups = [
+                    flag_group(
+                        flags = flags,
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        features = ["ubsan_enabled"],
+                    ),
+                ],
+            ),
+        ],
+    )
+
+def _host_or_device_specific_ubsan_feature(target_os):
+    if is_os_device(target_os):
+        return _ubsan_flag_feature(
+            "ubsan_device_only_flags",
+            _actions.compile,
+            _generated_sanitizer_constants.DeviceOnlySanitizeFlags,
+        )
+    return _ubsan_flag_feature(
+        "ubsan_host_only_flags",
+        _actions.compile,
+        _generated_sanitizer_constants.HostOnlySanitizeFlags,
+    )
+
+def _exclude_ubsan_rt_feature(path):
+    if not path:
+        return None
+    return _ubsan_flag_feature(
+        "ubsan_exclude_rt",
+        _actions.link,
+        ["-Wl,--exclude-libs=" + path.path],
+    )
+
 int_overflow_ignorelist_path = "build/soong/cc/config"
 int_overflow_ignorelist_filename = "integer_overflow_blocklist.txt"
 
-def _get_ubsan_features(target_os):
+def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
+    if target_os in [_oses.Windows, _oses.Darwin]:
+        return []
+
     ALL_UBSAN_ACTIONS = _actions.compile + _actions.link + _actions.assemble
 
     ubsan_features = [
@@ -1841,6 +1948,11 @@ def _get_ubsan_features(target_os):
         ),
     ]
 
+    ubsan_features += [
+        _host_or_device_specific_ubsan_feature(target_os),
+        _exclude_ubsan_rt_feature(libclang_rt_ubsan_minimal),
+    ]
+
     return ubsan_features
 
 # Create the full list of features.
@@ -1854,6 +1966,7 @@ def get_features(
     compile_only_flags = ctx.attr.compiler_flags
     linker_only_flags = ctx.attr.linker_flags
     libclang_rt_builtin = ctx.file.libclang_rt_builtin
+    libclang_rt_ubsan_minimal = ctx.file.libclang_rt_ubsan_minimal
     rtti_toggle = ctx.attr.rtti_toggle
 
     os_is_device = is_os_device(target_os)
@@ -1905,7 +2018,8 @@ def get_features(
         # Optimization
         _get_thinlto_features(),
         # Sanitizers
-        _get_ubsan_features(target_os),
+        _get_cfi_features(target_arch, target_os),
+        _get_ubsan_features(target_os, libclang_rt_ubsan_minimal),
         # This must always come last.
         _link_crtend(crt_files),
     ]
