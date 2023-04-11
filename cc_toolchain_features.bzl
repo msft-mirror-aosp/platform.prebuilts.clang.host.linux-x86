@@ -387,25 +387,6 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
                 ),
             ],
         ))
-    features.append(feature(
-        name = "external_compiler_flags",
-        enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = _actions.compile,
-                flag_groups = [
-                    flag_group(
-                        flags = _generated_config_constants.ExternalCflags,
-                    ),
-                ],
-                with_features = [
-                    with_feature_set(
-                        not_features = ["non_external_compiler_flags"],
-                    ),
-                ],
-            ),
-        ],
-    ))
 
     features.append(feature(
         name = "arm_isa_arm",
@@ -449,6 +430,26 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
                 flag_groups = [
                     flag_group(
                         flags = compiler_flags,
+                    ),
+                ],
+            ),
+        ],
+    ))
+
+    features.append(feature(
+        name = "external_compiler_flags",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = _actions.compile,
+                flag_groups = [
+                    flag_group(
+                        flags = _generated_config_constants.ExternalCflags,
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        not_features = ["non_external_compiler_flags"],
                     ),
                 ],
             ),
@@ -1524,6 +1525,7 @@ def _link_crtend(crt_files):
         ),
     ]
 
+# TODO(b/276932249): Restrict for Fuzzer when we have Fuzzer in Bazel
 def _get_thinlto_features():
     features = [
         feature(
@@ -1586,6 +1588,119 @@ def _get_thinlto_features():
     ]
     return features
 
+def _make_flag_set(actions, flags):
+    return flag_set(
+        actions = actions,
+        flag_groups = [
+            flag_group(
+                flags = flags,
+            ),
+        ],
+    )
+
+# TODO(b/276756817): Restrict for VNDK when we have VNDK in Bazel
+# TODO(b/276756319): Restrict for riscv64 when we have riscv64 in Bazel
+# TODO(b/276932249): Restrict for Fuzzer when we have Fuzzer in Bazel
+# TODO(b/276931992): Restrict for Asan when we have Asan in Bazel
+def _get_cfi_features(target_arch, target_os):
+    if target_os in [_oses.Windows, _oses.Darwin, _oses.LinuxMusl]:
+        return []
+    features = [
+        feature(
+            name = "android_cfi",
+            enabled = False,
+            flag_sets = [
+                _make_flag_set(
+                    _actions.c_and_cpp_compile,
+                    _generated_sanitizer_constants.CfiCFlags,
+                ),
+                _make_flag_set(
+                    _actions.link,
+                    _generated_sanitizer_constants.CfiLdFlags,
+                ),
+                _make_flag_set(
+                    _actions.assemble,
+                    _generated_sanitizer_constants.CfiAsFlags,
+                ),
+            ],
+            implies = ["android_thin_lto"] + (
+                ["arm_isa_thumb"] if target_arch == _arches.Arm else []
+            ),
+        ),
+    ]
+
+    features += [
+        feature(
+            name = "android_cfi_assembly_support",
+            enabled = False,
+            requires = [feature_set(features = ["android_cfi"])],
+            flag_sets = [
+                _make_flag_set(
+                    _actions.c_and_cpp_compile,
+                    [_generated_sanitizer_constants.CfiAssemblySupportFlag],
+                ),
+            ],
+        ),
+    ]
+
+    features += [
+        feature(
+            name = "android_cfi_exports_map",
+            enabled = False,
+            requires = [feature_set(features = ["android_cfi"])],
+            flag_sets = [
+                _make_flag_set(
+                    _actions.link,
+                    [
+                        _generated_config_constants.VersionScriptFlagPrefix +
+                        _generated_sanitizer_constants.CfiExportsMapPath +
+                        "/" +
+                        _generated_sanitizer_constants.CfiExportsMapFilename,
+                    ],
+                ),
+            ],
+        ),
+    ]
+
+    features += [
+        feature(
+            name = "android_cfi_visibility_default",
+            enabled = True,
+            requires = [feature_set(features = ["android_cfi"])],
+            flag_sets = [
+                flag_set(
+                    actions = _actions.c_and_cpp_compile,
+                    flag_groups = [
+                        flag_group(
+                            flags = ["-fvisibility=default"],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            not_features = ["visibility_hidden"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    ]
+
+    return features
+
+def _get_visibiility_hidden_feature():
+    return [
+        feature(
+            name = "visibility_hidden",
+            enabled = False,
+            flag_sets = [
+                _make_flag_set(
+                    _actions.c_and_cpp_compile,
+                    ["-fvisibility=hidden"],
+                ),
+            ],
+        ),
+    ]
+
 def _ubsan_flag_feature(name, actions, flags):
     return feature(
         name = name,
@@ -1633,6 +1748,9 @@ int_overflow_ignorelist_path = "build/soong/cc/config"
 int_overflow_ignorelist_filename = "integer_overflow_blocklist.txt"
 
 def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
+    if target_os in [_oses.Windows, _oses.Darwin]:
+        return []
+
     ALL_UBSAN_ACTIONS = _actions.compile + _actions.link + _actions.assemble
 
     ubsan_features = [
@@ -1874,6 +1992,24 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
 
     return ubsan_features
 
+def _manual_binder_interface_feature():
+    return feature(
+        name = "do_not_check_manual_binder_interfaces",
+        enabled = False,
+        flag_sets = [
+            flag_set(
+                actions = _actions.compile,
+                flag_groups = [
+                    flag_group(
+                        flags = [
+                            "-DDO_NOT_CHECK_MANUAL_BINDER_INTERFACES",
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    )
+
 # Create the full list of features.
 def get_features(
         ctx,
@@ -1937,9 +2073,13 @@ def get_features(
         # Optimization
         _get_thinlto_features(),
         # Sanitizers
+        _get_cfi_features(target_arch, target_os),
         _get_ubsan_features(target_os, libclang_rt_ubsan_minimal),
+        # Misc features
+        _get_visibiility_hidden_feature(),
         # This must always come last.
         _link_crtend(crt_files),
+        _manual_binder_interface_feature(),
     ]
 
     return _flatten([f for f in features if f != None])

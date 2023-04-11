@@ -1,0 +1,286 @@
+"""Copyright (C) 2022 The Android Open Source Project
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+
+load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
+load(
+    ":cc_toolchain_constants.bzl",
+    "generated_config_constants",
+    "generated_sanitizer_constants",
+)
+load(
+    "//build/bazel/rules/test_common:flags.bzl",
+    "action_flags_absent_for_mnemonic_test",
+    "action_flags_present_for_mnemonic_nonexclusive_test",
+    "action_flags_present_only_for_mnemonic_test",
+)
+
+compile_action_mnemonic = "CppCompile"
+link_action_mnemonic = "CppLink"
+
+def test_cfi_c_and_cpp_has_correct_flags():
+    name = "cfi_c_and_cpp_has_correct_flags"
+    native.cc_binary(
+        name = name,
+        srcs = ["foo.c", "bar.cpp"],
+        features = ["android_cfi"],
+        tags = ["manual"],
+    )
+
+    compile_test_name = name + "_compile_test"
+    action_flags_present_for_mnemonic_nonexclusive_test(
+        name = compile_test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_flags = generated_sanitizer_constants.CfiCFlags,
+    )
+
+    link_test_name = name + "_link_test"
+    action_flags_present_for_mnemonic_nonexclusive_test(
+        name = link_test_name,
+        target_under_test = name,
+        mnemonics = [link_action_mnemonic],
+        expected_flags = generated_sanitizer_constants.CfiLdFlags,
+    )
+
+    return [
+        compile_test_name,
+        link_test_name,
+    ]
+
+def test_cfi_s_has_correct_flags():
+    name = "cfi_s_has_correct_flags"
+    native.cc_binary(
+        name = name,
+        srcs = ["baz.s", "blah.S"],
+        features = ["android_cfi"],
+        tags = ["manual"],
+    )
+
+    assemble_test_name = name + "_assemble_test"
+    action_flags_present_only_for_mnemonic_test(
+        name = assemble_test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_flags = generated_sanitizer_constants.CfiAsFlags,
+    )
+
+    compile_flags_absent_test_name = name + "_compile_flags_absent_test"
+    action_flags_absent_for_mnemonic_test(
+        name = compile_flags_absent_test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_absent_flags = generated_sanitizer_constants.CfiCFlags,
+    )
+
+    return [
+        assemble_test_name,
+        compile_flags_absent_test_name,
+    ]
+
+def test_cfi_assembly_support_has_correct_flags():
+    name = "cfi_assembly_support_has_correct_flags"
+    native.cc_binary(
+        name = name,
+        srcs = ["foo.c", "bar.cpp"],
+        features = [
+            "android_cfi",
+            "android_cfi_assembly_support",
+        ],
+        tags = ["manual"],
+    )
+
+    test_name = name + "_test"
+    action_flags_present_only_for_mnemonic_test(
+        name = test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_flags = [generated_sanitizer_constants.CfiAssemblySupportFlag],
+    )
+
+    return test_name
+
+def test_cfi_assembly_support_does_not_add_flags_for_s():
+    name = "cfi_assembly_support_does_not_add_flags_for_s"
+    native.cc_binary(
+        name = name,
+        srcs = ["baz.s", "blah.S"],
+        features = [
+            "android_cfi",
+            "android_cfi_assembly_support",
+        ],
+        tags = ["manual"],
+    )
+
+    test_name = name + "_test"
+    action_flags_absent_for_mnemonic_test(
+        name = test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_absent_flags = [
+            generated_sanitizer_constants.CfiAssemblySupportFlag,
+        ],
+    )
+
+    return test_name
+
+def test_cfi_exports_map_has_correct_flags():
+    name = "cfi_exports_map_has_correct_flags"
+    native.cc_binary(
+        name = name,
+        srcs = ["foo.c", "bar.cpp"],
+        features = [
+            "android_cfi",
+            "android_cfi_exports_map",
+        ],
+        tags = ["manual"],
+    )
+
+    test_name = name + "_test"
+    action_flags_present_only_for_mnemonic_test(
+        name = test_name,
+        target_under_test = name,
+        mnemonics = [link_action_mnemonic],
+        expected_flags = [
+            generated_config_constants.VersionScriptFlagPrefix +
+            generated_sanitizer_constants.CfiExportsMapPath +
+            "/" +
+            generated_sanitizer_constants.CfiExportsMapFilename,
+        ],
+    )
+
+    return test_name
+
+def test_cfi_implies_lto():
+    name = "cfi_implies_lto"
+    native.cc_binary(
+        name = name,
+        srcs = ["foo.c", "bar.cpp"],
+        features = ["android_cfi"],
+        tags = ["manual"],
+    )
+
+    test_name = name + "_test"
+    action_flags_present_for_mnemonic_nonexclusive_test(
+        name = test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_flags = ["-flto=thin"],
+    )
+
+    return test_name
+
+def test_cfi_implies_vis_default_if_not_hidden():
+    name = "cfi_implies_vis_default_if_not_hidden"
+    native.cc_binary(
+        name = name,
+        srcs = ["foo.c", "bar.cpp"],
+        features = ["android_cfi"],
+        tags = ["manual"],
+    )
+
+    test_name = name + "_test"
+    action_flags_present_only_for_mnemonic_test(
+        name = test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_flags = ["-fvisibility=default"],
+    )
+
+    return test_name
+
+def test_cfi_does_not_add_vis_default_if_hidden():
+    name = "cfi_does_not_add_vis_default_if_hidden"
+    native.cc_binary(
+        name = name,
+        srcs = ["foo.c", "bar.cpp"],
+        features = ["android_cfi", "visibility_hidden"],
+        tags = ["manual"],
+    )
+
+    test_name = name + "_test"
+    action_flags_absent_for_mnemonic_test(
+        name = test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_absent_flags = ["-fvisibility=default"],
+    )
+
+    return test_name
+
+def test_cfi_and_arm_uses_thumb():
+    name = "cfi_and_arm_uses_thumb"
+    native.cc_binary(
+        name = name,
+        srcs = ["foo.c", "bar.cpp"],
+        features = ["android_cfi"],
+        tags = ["manual"],
+    )
+
+    test_name = name + "_test"
+    action_flags_present_for_mnemonic_nonexclusive_test(
+        name = test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_flags = generated_config_constants.ArmThumbCflags,
+        target_compatible_with = [
+            "//build/bazel/platforms/arch:arm",
+        ],
+    )
+
+    return test_name
+
+# TODO(b/274924237): Uncomment after Darwin and Windows have toolchains
+#def test_cfi_absent_on_unsupported_oses():
+#    name = "cfi_absent_on_unsupported_oses"
+#    native.cc_binary(
+#        name = name,
+#        srcs = ["foo.c", "bar.cpp"],
+#        features = ["android_cfi"],
+#        tags = ["manual"],
+#    )
+#
+#    test_name = name + "_test"
+#    action_flags_absent_for_mnemonic_test(
+#        name = test_name,
+#        target_under_test = name,
+#        mnemonics = [compile_action_mnemonic],
+#        expected_absent_flags = generated_sanitizer_constants.CfiCFlags,
+#        target_compatible_with = [
+#            "//build/bazel/platforms/os:linux_musl",
+#            "//build/bazel/platforms/os:darwin",
+#            "//build/bazel/platforms/os:windows",
+#        ]
+#    )
+#
+#    return test_name
+
+def cc_toolchain_features_cfi_test_suite(name):
+    individual_tests = [
+        test_cfi_assembly_support_has_correct_flags(),
+        test_cfi_assembly_support_does_not_add_flags_for_s(),
+        test_cfi_exports_map_has_correct_flags(),
+        test_cfi_implies_lto(),
+        test_cfi_implies_vis_default_if_not_hidden(),
+        test_cfi_does_not_add_vis_default_if_hidden(),
+        test_cfi_and_arm_uses_thumb(),
+        # TODO(b/274924237): Uncomment after Darwin and Windows have toolchains
+        # test_cfi_absent_on_unsupported_oses(),
+    ]
+    native.test_suite(
+        name = name,
+        tests = individual_tests +
+                test_cfi_c_and_cpp_has_correct_flags() +
+                test_cfi_s_has_correct_flags(),
+    )
