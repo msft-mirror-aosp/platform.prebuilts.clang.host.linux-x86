@@ -1672,7 +1672,9 @@ def _get_cfi_features(target_arch, target_os):
                     actions = _actions.c_and_cpp_compile,
                     flag_groups = [
                         flag_group(
-                            flags = ["-fvisibility=default"],
+                            flags = [
+                                _generated_config_constants.VisibilityDefaultFlag,
+                            ],
                         ),
                     ],
                     with_features = [
@@ -1695,7 +1697,7 @@ def _get_visibiility_hidden_feature():
             flag_sets = [
                 _make_flag_set(
                     _actions.c_and_cpp_compile,
-                    ["-fvisibility=hidden"],
+                    [_generated_config_constants.VisibilityHiddenFlag],
                 ),
             ],
         ),
