@@ -33,7 +33,7 @@ load(
     _oses = "oses",
 )
 load("//build/bazel/rules/common:api.bzl", "api")
-load("@soong_injection//product_config:product_variables.bzl", "product_vars")
+load("@soong_injection//api_levels:platform_versions.bzl", "platform_versions")
 
 def is_os_device(os):
     return os == _oses.Android
@@ -60,7 +60,7 @@ def _get_sdk_version_features(os_is_device, target_arch):
     # Explicitly support internal branch state where the platform sdk version has
     # finalized, but the sdk is still active, so it's represented by a 9000-ish
     # value in api_levels.
-    platform_sdk_version = str(product_vars["Platform_sdk_version"])
+    platform_sdk_version = str(platform_versions.platform_sdk_version)
     if platform_sdk_version not in all_sdk_versions:
         all_sdk_versions.append(platform_sdk_version)
 
