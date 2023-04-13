@@ -1588,12 +1588,18 @@ def _get_thinlto_features():
     ]
     return features
 
-def _make_flag_set(actions, flags):
+def _make_flag_set(actions, flags, with_features = [], with_not_features = []):
     return flag_set(
         actions = actions,
         flag_groups = [
             flag_group(
                 flags = flags,
+            ),
+        ],
+        with_features = [
+            with_feature_set(
+                features = with_features,
+                not_features = with_not_features,
             ),
         ],
     )
@@ -1626,6 +1632,22 @@ def _get_cfi_features(target_arch, target_os):
             implies = ["android_thin_lto"] + (
                 ["arm_isa_thumb"] if target_arch == _arches.Arm else []
             ),
+        ),
+    ]
+
+    features += [
+        feature(
+            name = "android_cfi_cross_dso",
+            enabled = True,
+            requires = [feature_set(features = ["android_cfi"])],
+            flag_sets = [
+                _make_flag_set(
+                    actions = _actions.c_and_cpp_compile + _actions.link,
+                    flags = [_generated_sanitizer_constants.CfiCrossDsoFlag],
+                    with_features = ["dynamic_executable"],
+                    with_not_features = ["static_executable"],
+                ),
+            ],
         ),
     ]
 
@@ -1672,7 +1694,9 @@ def _get_cfi_features(target_arch, target_os):
                     actions = _actions.c_and_cpp_compile,
                     flag_groups = [
                         flag_group(
-                            flags = ["-fvisibility=default"],
+                            flags = [
+                                _generated_config_constants.VisibilityDefaultFlag,
+                            ],
                         ),
                     ],
                     with_features = [
@@ -1695,7 +1719,7 @@ def _get_visibiility_hidden_feature():
             flag_sets = [
                 _make_flag_set(
                     _actions.c_and_cpp_compile,
-                    ["-fvisibility=hidden"],
+                    [_generated_config_constants.VisibilityHiddenFlag],
                 ),
             ],
         ),
