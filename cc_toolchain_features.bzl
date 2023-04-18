@@ -33,7 +33,7 @@ load(
     _oses = "oses",
 )
 load("//build/bazel/rules/common:api.bzl", "api")
-load("@soong_injection//product_config:product_variables.bzl", "product_vars")
+load("@soong_injection//api_levels:platform_versions.bzl", "platform_versions")
 
 def is_os_device(os):
     return os == _oses.Android
@@ -60,7 +60,7 @@ def _get_sdk_version_features(os_is_device, target_arch):
     # Explicitly support internal branch state where the platform sdk version has
     # finalized, but the sdk is still active, so it's represented by a 9000-ish
     # value in api_levels.
-    platform_sdk_version = str(product_vars["Platform_sdk_version"])
+    platform_sdk_version = str(platform_versions.platform_sdk_version)
     if platform_sdk_version not in all_sdk_versions:
         all_sdk_versions.append(platform_sdk_version)
 
@@ -1588,12 +1588,18 @@ def _get_thinlto_features():
     ]
     return features
 
-def _make_flag_set(actions, flags):
+def _make_flag_set(actions, flags, with_features = [], with_not_features = []):
     return flag_set(
         actions = actions,
         flag_groups = [
             flag_group(
                 flags = flags,
+            ),
+        ],
+        with_features = [
+            with_feature_set(
+                features = with_features,
+                not_features = with_not_features,
             ),
         ],
     )
@@ -1626,6 +1632,22 @@ def _get_cfi_features(target_arch, target_os):
             implies = ["android_thin_lto"] + (
                 ["arm_isa_thumb"] if target_arch == _arches.Arm else []
             ),
+        ),
+    ]
+
+    features += [
+        feature(
+            name = "android_cfi_cross_dso",
+            enabled = True,
+            requires = [feature_set(features = ["android_cfi"])],
+            flag_sets = [
+                _make_flag_set(
+                    actions = _actions.c_and_cpp_compile + _actions.link,
+                    flags = [_generated_sanitizer_constants.CfiCrossDsoFlag],
+                    with_features = ["dynamic_executable"],
+                    with_not_features = ["static_executable"],
+                ),
+            ],
         ),
     ]
 
@@ -1672,7 +1694,9 @@ def _get_cfi_features(target_arch, target_os):
                     actions = _actions.c_and_cpp_compile,
                     flag_groups = [
                         flag_group(
-                            flags = ["-fvisibility=default"],
+                            flags = [
+                                _generated_config_constants.VisibilityDefaultFlag,
+                            ],
                         ),
                     ],
                     with_features = [
@@ -1695,7 +1719,7 @@ def _get_visibiility_hidden_feature():
             flag_sets = [
                 _make_flag_set(
                     _actions.c_and_cpp_compile,
-                    ["-fvisibility=hidden"],
+                    [_generated_config_constants.VisibilityHiddenFlag],
                 ),
             ],
         ),
@@ -1741,7 +1765,7 @@ def _exclude_ubsan_rt_feature(path):
     return _ubsan_flag_feature(
         "ubsan_exclude_rt",
         _actions.link,
-        ["-Wl,--exclude-libs=" + path.path],
+        ["-Wl,--exclude-libs=" + path.basename],
     )
 
 int_overflow_ignorelist_path = "build/soong/cc/config"
