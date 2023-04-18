@@ -674,26 +674,21 @@ def _test_device_only_and_host_only_features_absent_when_ubsan_disabled():
 
 _exclude_ubsan_rt_name = "ubsan_exclude_rt"
 
-def _exclude_ubsan_rt_test_for_os_arch(os_arch_platform, os, arch):
+def _exclude_ubsan_rt_test_for_os_arch(os, arch, flag):
     test_name = "%s_%s_test" % (
         _exclude_ubsan_rt_name,
-        os_arch_platform.split(":")[-1],
+        os + "_" + arch,
     )
 
     action_flags_present_only_for_mnemonic_test(
         name = test_name,
         target_under_test = _exclude_ubsan_rt_name,
         mnemonics = [link_action_mnemonic],
-        expected_flags = [
-            (
-                "-Wl,--exclude-libs=%s" %
-                paths.join(
-                    "prebuilts/clang/host/linux-x86",
-                    libclang_ubsan_minimal_rt_prebuilt_map[os_arch_platform],
-                )
-            ),
+        expected_flags = [flag],
+        target_compatible_with = [
+            "//build/bazel/platforms/os:" + os,
+            "//build/bazel/platforms/arch:" + arch,
         ],
-        target_compatible_with = [os, arch],
     )
 
     return test_name
@@ -705,55 +700,57 @@ def _test_exclude_ubsan_rt():
         features = ["ubsan_undefined"],
         tags = ["manual"],
     )
-
-    test_names = []
-    test_names += [_exclude_ubsan_rt_test_for_os_arch(
-        "//build/bazel/platforms/os_arch:android_arm",
-        "//build/bazel/platforms/os:android",
-        "//build/bazel/platforms/arch:arm",
-    )]
-    test_names += [_exclude_ubsan_rt_test_for_os_arch(
-        "//build/bazel/platforms/os_arch:android_arm64",
-        "//build/bazel/platforms/os:android",
-        "//build/bazel/platforms/arch:arm64",
-    )]
-    test_names += [_exclude_ubsan_rt_test_for_os_arch(
-        "//build/bazel/platforms/os_arch:android_x86",
-        "//build/bazel/platforms/os:android",
-        "//build/bazel/platforms/arch:x86",
-    )]
-    test_names += [_exclude_ubsan_rt_test_for_os_arch(
-        "//build/bazel/platforms/os_arch:android_x86_64",
-        "//build/bazel/platforms/os:android",
-        "//build/bazel/platforms/arch:x86_64",
-    )]
-    test_names += [_exclude_ubsan_rt_test_for_os_arch(
-        "//build/bazel/platforms/os_arch:linux_bionic_x86_64",
-        "//build/bazel/platforms/os:linux_bionic",
-        "//build/bazel/platforms/arch:x86_64",
-    )]
-    test_names += [_exclude_ubsan_rt_test_for_os_arch(
-        "//build/bazel/platforms/os_arch:linux_glibc_x86",
-        "//build/bazel/platforms/os:linux",
-        "//build/bazel/platforms/arch:x86",
-    )]
-    test_names += [_exclude_ubsan_rt_test_for_os_arch(
-        "//build/bazel/platforms/os_arch:linux_glibc_x86_64",
-        "//build/bazel/platforms/os:linux",
-        "//build/bazel/platforms/arch:x86_64",
-    )]
-    test_names += [_exclude_ubsan_rt_test_for_os_arch(
-        "//build/bazel/platforms/os_arch:linux_musl_x86",
-        "//build/bazel/platforms/os:linux_musl",
-        "//build/bazel/platforms/arch:x86",
-    )]
-    test_names += [_exclude_ubsan_rt_test_for_os_arch(
-        "//build/bazel/platforms/os_arch:linux_musl_x86_64",
-        "//build/bazel/platforms/os:linux_musl",
-        "//build/bazel/platforms/arch:x86_64",
-    )]
-
-    return test_names
+    test_cases = [
+        {
+            "os": "android",
+            "arch": "arm",
+            "flag": "-Wl,--exclude-libs=libclang_rt.ubsan_minimal-arm-android.a",
+        },
+        {
+            "os": "android",
+            "arch": "arm64",
+            "flag": "-Wl,--exclude-libs=libclang_rt.ubsan_minimal-aarch64-android.a",
+        },
+        {
+            "os": "android",
+            "arch": "x86",
+            "flag": "-Wl,--exclude-libs=libclang_rt.ubsan_minimal-i686-android.a",
+        },
+        {
+            "os": "android",
+            "arch": "x86_64",
+            "flag": "-Wl,--exclude-libs=libclang_rt.ubsan_minimal-x86_64-android.a",
+        },
+        {
+            "os": "linux_bionic",
+            "arch": "x86_64",
+            "flag": "-Wl,--exclude-libs=libclang_rt.ubsan_minimal-x86_64-android.a",
+        },
+        {
+            "os": "linux",
+            "arch": "x86",
+            "flag": "-Wl,--exclude-libs=libclang_rt.ubsan_minimal-i386.a",
+        },
+        {
+            "os": "linux",
+            "arch": "x86_64",
+            "flag": "-Wl,--exclude-libs=libclang_rt.ubsan_minimal-x86_64.a",
+        },
+        {
+            "os": "linux_musl",
+            "arch": "x86",
+            "flag": "-Wl,--exclude-libs=libclang_rt.ubsan_minimal-i386.a",
+        },
+        {
+            "os": "linux_musl",
+            "arch": "x86_64",
+            "flag": "-Wl,--exclude-libs=libclang_rt.ubsan_minimal-x86_64.a",
+        },
+    ]
+    return [
+        _exclude_ubsan_rt_test_for_os_arch(**tc)
+        for tc in test_cases
+    ]
 
 def cc_toolchain_features_ubsan_test_suite(name):
     individual_tests = [
