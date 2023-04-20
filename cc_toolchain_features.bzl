@@ -33,7 +33,7 @@ load(
     _oses = "oses",
 )
 load("//build/bazel/rules/common:api.bzl", "api")
-load("@soong_injection//product_config:product_variables.bzl", "product_vars")
+load("@soong_injection//api_levels:platform_versions.bzl", "platform_versions")
 
 def is_os_device(os):
     return os == _oses.Android
@@ -60,7 +60,7 @@ def _get_sdk_version_features(os_is_device, target_arch):
     # Explicitly support internal branch state where the platform sdk version has
     # finalized, but the sdk is still active, so it's represented by a 9000-ish
     # value in api_levels.
-    platform_sdk_version = str(product_vars["Platform_sdk_version"])
+    platform_sdk_version = str(platform_versions.platform_sdk_version)
     if platform_sdk_version not in all_sdk_versions:
         all_sdk_versions.append(platform_sdk_version)
 
@@ -387,25 +387,6 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
                 ),
             ],
         ))
-    features.append(feature(
-        name = "external_compiler_flags",
-        enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = _actions.compile,
-                flag_groups = [
-                    flag_group(
-                        flags = _generated_config_constants.ExternalCflags,
-                    ),
-                ],
-                with_features = [
-                    with_feature_set(
-                        not_features = ["non_external_compiler_flags"],
-                    ),
-                ],
-            ),
-        ],
-    ))
 
     features.append(feature(
         name = "arm_isa_arm",
@@ -449,6 +430,26 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
                 flag_groups = [
                     flag_group(
                         flags = compiler_flags,
+                    ),
+                ],
+            ),
+        ],
+    ))
+
+    features.append(feature(
+        name = "external_compiler_flags",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = _actions.compile,
+                flag_groups = [
+                    flag_group(
+                        flags = _generated_config_constants.ExternalCflags,
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        not_features = ["non_external_compiler_flags"],
                     ),
                 ],
             ),
@@ -1524,6 +1525,7 @@ def _link_crtend(crt_files):
         ),
     ]
 
+# TODO(b/276932249): Restrict for Fuzzer when we have Fuzzer in Bazel
 def _get_thinlto_features():
     features = [
         feature(
@@ -1586,6 +1588,143 @@ def _get_thinlto_features():
     ]
     return features
 
+def _make_flag_set(actions, flags, with_features = [], with_not_features = []):
+    return flag_set(
+        actions = actions,
+        flag_groups = [
+            flag_group(
+                flags = flags,
+            ),
+        ],
+        with_features = [
+            with_feature_set(
+                features = with_features,
+                not_features = with_not_features,
+            ),
+        ],
+    )
+
+# TODO(b/276756817): Restrict for VNDK when we have VNDK in Bazel
+# TODO(b/276756319): Restrict for riscv64 when we have riscv64 in Bazel
+# TODO(b/276932249): Restrict for Fuzzer when we have Fuzzer in Bazel
+# TODO(b/276931992): Restrict for Asan when we have Asan in Bazel
+def _get_cfi_features(target_arch, target_os):
+    if target_os in [_oses.Windows, _oses.Darwin, _oses.LinuxMusl]:
+        return []
+    features = [
+        feature(
+            name = "android_cfi",
+            enabled = False,
+            flag_sets = [
+                _make_flag_set(
+                    _actions.c_and_cpp_compile,
+                    _generated_sanitizer_constants.CfiCFlags,
+                ),
+                _make_flag_set(
+                    _actions.link,
+                    _generated_sanitizer_constants.CfiLdFlags,
+                ),
+                _make_flag_set(
+                    _actions.assemble,
+                    _generated_sanitizer_constants.CfiAsFlags,
+                ),
+            ],
+            implies = ["android_thin_lto"] + (
+                ["arm_isa_thumb"] if target_arch == _arches.Arm else []
+            ),
+        ),
+    ]
+
+    features += [
+        feature(
+            name = "android_cfi_cross_dso",
+            enabled = True,
+            requires = [feature_set(features = ["android_cfi"])],
+            flag_sets = [
+                _make_flag_set(
+                    actions = _actions.c_and_cpp_compile + _actions.link,
+                    flags = [_generated_sanitizer_constants.CfiCrossDsoFlag],
+                    with_features = ["dynamic_executable"],
+                    with_not_features = ["static_executable"],
+                ),
+            ],
+        ),
+    ]
+
+    features += [
+        feature(
+            name = "android_cfi_assembly_support",
+            enabled = False,
+            requires = [feature_set(features = ["android_cfi"])],
+            flag_sets = [
+                _make_flag_set(
+                    _actions.c_and_cpp_compile,
+                    [_generated_sanitizer_constants.CfiAssemblySupportFlag],
+                ),
+            ],
+        ),
+    ]
+
+    features += [
+        feature(
+            name = "android_cfi_exports_map",
+            enabled = False,
+            requires = [feature_set(features = ["android_cfi"])],
+            flag_sets = [
+                _make_flag_set(
+                    _actions.link,
+                    [
+                        _generated_config_constants.VersionScriptFlagPrefix +
+                        _generated_sanitizer_constants.CfiExportsMapPath +
+                        "/" +
+                        _generated_sanitizer_constants.CfiExportsMapFilename,
+                    ],
+                ),
+            ],
+        ),
+    ]
+
+    features += [
+        feature(
+            name = "android_cfi_visibility_default",
+            enabled = True,
+            requires = [feature_set(features = ["android_cfi"])],
+            flag_sets = [
+                flag_set(
+                    actions = _actions.c_and_cpp_compile,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                _generated_config_constants.VisibilityDefaultFlag,
+                            ],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            not_features = ["visibility_hidden"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    ]
+
+    return features
+
+def _get_visibiility_hidden_feature():
+    return [
+        feature(
+            name = "visibility_hidden",
+            enabled = False,
+            flag_sets = [
+                _make_flag_set(
+                    _actions.c_and_cpp_compile,
+                    [_generated_config_constants.VisibilityHiddenFlag],
+                ),
+            ],
+        ),
+    ]
+
 def _ubsan_flag_feature(name, actions, flags):
     return feature(
         name = name,
@@ -1626,13 +1765,16 @@ def _exclude_ubsan_rt_feature(path):
     return _ubsan_flag_feature(
         "ubsan_exclude_rt",
         _actions.link,
-        ["-Wl,--exclude-libs=" + path.path],
+        ["-Wl,--exclude-libs=" + path.basename],
     )
 
 int_overflow_ignorelist_path = "build/soong/cc/config"
 int_overflow_ignorelist_filename = "integer_overflow_blocklist.txt"
 
 def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
+    if target_os in [_oses.Windows, _oses.Darwin]:
+        return []
+
     ALL_UBSAN_ACTIONS = _actions.compile + _actions.link + _actions.assemble
 
     ubsan_features = [
@@ -1740,6 +1882,70 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
 
     ubsan_features += [
         feature(
+            name = "ubsan_no_sanitize_link_runtime",
+            enabled = target_os in [
+                _oses.Android,
+                _oses.LinuxBionic,
+                _oses.LinuxMusl,
+            ],
+            flag_sets = [
+                flag_set(
+                    actions = _actions.link,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-fno-sanitize-link-runtime",
+                            ],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            features = ["ubsan_enabled"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    ]
+
+    # non-Bionic toolchain prebuilts are missing UBSan's vptr and function san.
+    # Musl toolchain prebuilts have vptr and function sanitizers, but enabling
+    # them implicitly enables RTTI which causes RTTI mismatch issues with
+    # dependencies.
+    ubsan_features += [
+        feature(
+            name = "ubsan_disable_unsupported_non_bionic_checks",
+            enabled = target_os not in [_oses.LinuxBionic, _oses.Android],
+            flag_sets = [
+                flag_set(
+                    actions = _actions.compile,
+                    flag_groups = [
+                        flag_group(
+                            flags = [
+                                "-fno-sanitize=function,vptr",
+                            ],
+                        ),
+                    ],
+                    with_features = [
+                        with_feature_set(
+                            features = ["ubsan_integer_overflow"],
+                        ),
+                    ] + [
+                        with_feature_set(features = ["ubsan_" + check_name])
+                        for check_name in ubsan_checks
+                    ],
+                ),
+            ],
+        ),
+    ]
+
+    ubsan_features += [
+        _host_or_device_specific_ubsan_feature(target_os),
+        _exclude_ubsan_rt_feature(libclang_rt_ubsan_minimal),
+    ]
+
+    ubsan_features += [
+        feature(
             name = "ubsan_minimal_runtime",
             enabled = False,
             flag_sets = [
@@ -1808,71 +2014,25 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
         ),
     ]
 
-    # non-Bionic toolchain prebuilts are missing UBSan's vptr and function san.
-    # Musl toolchain prebuilts have vptr and function sanitizers, but enabling
-    # them implicitly enables RTTI which causes RTTI mismatch issues with
-    # dependencies.
-    ubsan_features += [
-        feature(
-            name = "ubsan_disable_unsupported_non_bionic_checks",
-            enabled = target_os not in [_oses.LinuxBionic, _oses.Android],
-            flag_sets = [
-                flag_set(
-                    actions = _actions.compile,
-                    flag_groups = [
-                        flag_group(
-                            flags = [
-                                "-fno-sanitize=function,vptr",
-                            ],
-                        ),
-                    ],
-                    with_features = [
-                        with_feature_set(
-                            features = ["ubsan_integer_overflow"],
-                        ),
-                    ] + [
-                        with_feature_set(features = ["ubsan_" + check_name])
-                        for check_name in ubsan_checks
-                    ],
-                ),
-            ],
-        ),
-    ]
-
-    ubsan_features += [
-        feature(
-            name = "ubsan_no_sanitize_link_runtime",
-            enabled = target_os in [
-                _oses.Android,
-                _oses.LinuxBionic,
-                _oses.LinuxMusl,
-            ],
-            flag_sets = [
-                flag_set(
-                    actions = _actions.link,
-                    flag_groups = [
-                        flag_group(
-                            flags = [
-                                "-fno-sanitize-link-runtime",
-                            ],
-                        ),
-                    ],
-                    with_features = [
-                        with_feature_set(
-                            features = ["ubsan_enabled"],
-                        ),
-                    ],
-                ),
-            ],
-        ),
-    ]
-
-    ubsan_features += [
-        _host_or_device_specific_ubsan_feature(target_os),
-        _exclude_ubsan_rt_feature(libclang_rt_ubsan_minimal),
-    ]
-
     return ubsan_features
+
+def _manual_binder_interface_feature():
+    return feature(
+        name = "do_not_check_manual_binder_interfaces",
+        enabled = False,
+        flag_sets = [
+            flag_set(
+                actions = _actions.compile,
+                flag_groups = [
+                    flag_group(
+                        flags = [
+                            "-DDO_NOT_CHECK_MANUAL_BINDER_INTERFACES",
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    )
 
 # Create the full list of features.
 def get_features(
@@ -1937,9 +2097,13 @@ def get_features(
         # Optimization
         _get_thinlto_features(),
         # Sanitizers
+        _get_cfi_features(target_arch, target_os),
         _get_ubsan_features(target_os, libclang_rt_ubsan_minimal),
+        # Misc features
+        _get_visibiility_hidden_feature(),
         # This must always come last.
         _link_crtend(crt_files),
+        _manual_binder_interface_feature(),
     ]
 
     return _flatten([f for f in features if f != None])
