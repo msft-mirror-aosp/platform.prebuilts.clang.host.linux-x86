@@ -758,7 +758,7 @@ def _use_libcrt_feature(path):
         return None
     return _flag_feature("use_libcrt", actions = _actions.link, flags = [
         path.path,
-        "-Wl,--exclude-libs=" + path.path,
+        "-Wl,--exclude-libs=" + path.basename,
     ])
 
 def _flag_feature(name, actions = None, flags = None, enabled = True):
