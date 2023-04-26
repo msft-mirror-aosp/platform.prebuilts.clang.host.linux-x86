@@ -49,31 +49,55 @@ def clang_toolchain(
     if linker_files == None:
         linker_files = []
 
-    clang = "//{}/parent/clang-{}".format(native.package_name(), clang_version)
-    clang_includes = "{}:includes".format(clang)
+    clang_pkg = "//prebuilts/clang/host/linux-x86/clang-{}".format(clang_version)
+    clang_includes = Label("{}:includes".format(clang_pkg))
 
     # Technically we can split the binaries into those for compiler, linker
     # etc., but since these binaries are usually updated together, it is okay
     # to use a superset here.
-    clang_bin = "{}:binaries".format(clang)
+    clang_all_binaries = Label("{}:binaries".format(clang_pkg))
+
+    # Individual binaries
+    # From _setup_env.sh
+    #  HOSTCC=clang
+    #  HOSTCXX=clang++
+    #  CC=clang
+    #  LD=ld.lld
+    #  AR=llvm-ar
+    #  NM=llvm-nm
+    #  OBJCOPY=llvm-objcopy
+    #  OBJDUMP=llvm-objdump
+    #  OBJSIZE=llvm-size
+    #  READELF=llvm-readelf
+    #  STRIP=llvm-strip
+    #
+    # Note: ld.lld does not recognize --target etc. from android.bzl,
+    # so just use clang directly
+    clang = Label("{}:bin/clang".format(clang_pkg))
+    clang_plus_plus = Label("{}:bin/clang++".format(clang_pkg))
+    ld = clang
+    strip = Label("{}:bin/llvm-strip".format(clang_pkg))
+    ar = Label("{}:bin/llvm-ar".format(clang_pkg))
+    objcopy = Label("{}:bin/llvm-objcopy".format(clang_pkg))
+    # cc_* rules doesn't seem to need nm, obj-dump, size, and readelf
 
     native.filegroup(
         name = name + "_compiler_files",
         srcs = [
-            clang_bin,
+            clang_all_binaries,
             clang_includes,
         ] + sysroot_labels,
     )
 
     native.filegroup(
         name = name + "_linker_files",
-        srcs = [clang_bin] + sysroot_labels + linker_files,
+        srcs = [clang_all_binaries] + sysroot_labels + linker_files,
     )
 
     native.filegroup(
         name = name + "_all_files",
         srcs = [
-            clang_bin,
+            clang_all_binaries,
             name + "_compiler_files",
             name + "_linker_files",
         ],
@@ -87,17 +111,23 @@ def clang_toolchain(
         target_os = target_os,
         ndk_triple = ndk_triple,
         toolchain_identifier = name + "_clang_id",
+        clang = clang,
+        ld = ld,
+        clang_plus_plus = clang_plus_plus,
+        strip = strip,
+        ar = ar,
+        objcopy = objcopy,
     )
 
     native.cc_toolchain(
         name = name + "_cc_toolchain",
         all_files = name + "_all_files",
-        ar_files = clang_bin,
+        ar_files = clang_all_binaries,
         compiler_files = name + "_compiler_files",
-        dwp_files = clang_bin,
+        dwp_files = clang_all_binaries,
         linker_files = name + "_linker_files",
-        objcopy_files = clang_bin,
-        strip_files = clang_bin,
+        objcopy_files = clang_all_binaries,
+        strip_files = clang_all_binaries,
         supports_param_files = False,
         toolchain_config = name + "_clang_config",
         toolchain_identifier = name + "_clang_id",
