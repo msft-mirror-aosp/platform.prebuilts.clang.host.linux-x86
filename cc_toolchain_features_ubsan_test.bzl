@@ -672,17 +672,15 @@ def _test_device_only_and_host_only_features_absent_when_ubsan_disabled():
 
     return test_names
 
-_exclude_ubsan_rt_name = "ubsan_exclude_rt"
-
-def _exclude_ubsan_rt_test_for_os_arch(os, arch, flag):
+def _exclude_rt_test_for_os_arch(target_name, os, arch, flag):
     test_name = "%s_%s_test" % (
-        _exclude_ubsan_rt_name,
+        target_name,
         os + "_" + arch,
     )
 
     action_flags_present_only_for_mnemonic_test(
         name = test_name,
-        target_under_test = _exclude_ubsan_rt_name,
+        target_under_test = target_name,
         mnemonics = [link_action_mnemonic],
         expected_flags = [flag],
         target_compatible_with = [
@@ -694,6 +692,7 @@ def _exclude_ubsan_rt_test_for_os_arch(os, arch, flag):
     return test_name
 
 def _test_exclude_ubsan_rt():
+    _exclude_ubsan_rt_name = "ubsan_exclude_rt"
     native.cc_binary(
         name = _exclude_ubsan_rt_name,
         srcs = test_srcs,
@@ -748,7 +747,66 @@ def _test_exclude_ubsan_rt():
         },
     ]
     return [
-        _exclude_ubsan_rt_test_for_os_arch(**tc)
+        _exclude_rt_test_for_os_arch(_exclude_ubsan_rt_name, **tc)
+        for tc in test_cases
+    ]
+
+def _test_exclude_builtins_rt():
+    _exclude_builtins_rt_name = "builtins_exclude_rt"
+    native.cc_binary(
+        name = _exclude_builtins_rt_name,
+        srcs = test_srcs,
+        tags = ["manual"],
+    )
+    test_cases = [
+        {
+            "os": "android",
+            "arch": "arm",
+            "flag": "-Wl,--exclude-libs=libclang_rt.builtins-arm-android.a",
+        },
+        {
+            "os": "android",
+            "arch": "arm64",
+            "flag": "-Wl,--exclude-libs=libclang_rt.builtins-aarch64-android.a",
+        },
+        {
+            "os": "android",
+            "arch": "x86",
+            "flag": "-Wl,--exclude-libs=libclang_rt.builtins-i686-android.a",
+        },
+        {
+            "os": "android",
+            "arch": "x86_64",
+            "flag": "-Wl,--exclude-libs=libclang_rt.builtins-x86_64-android.a",
+        },
+        {
+            "os": "linux_bionic",
+            "arch": "x86_64",
+            "flag": "-Wl,--exclude-libs=libclang_rt.builtins-x86_64-android.a",
+        },
+        {
+            "os": "linux",
+            "arch": "x86",
+            "flag": "-Wl,--exclude-libs=libclang_rt.builtins-i386.a",
+        },
+        {
+            "os": "linux",
+            "arch": "x86_64",
+            "flag": "-Wl,--exclude-libs=libclang_rt.builtins-x86_64.a",
+        },
+        {
+            "os": "linux_musl",
+            "arch": "x86",
+            "flag": "-Wl,--exclude-libs=libclang_rt.builtins-i386.a",
+        },
+        {
+            "os": "linux_musl",
+            "arch": "x86_64",
+            "flag": "-Wl,--exclude-libs=libclang_rt.builtins-x86_64.a",
+        },
+    ]
+    return [
+        _exclude_rt_test_for_os_arch(_exclude_builtins_rt_name, **tc)
         for tc in test_cases
     ]
 
@@ -779,5 +837,6 @@ def cc_toolchain_features_ubsan_test_suite(name):
                 _test_host_only_features() +
                 _test_device_only_features() +
                 _test_device_only_and_host_only_features_absent_when_ubsan_disabled() +
-                _test_exclude_ubsan_rt(),
+                _test_exclude_ubsan_rt() +
+                _test_exclude_builtins_rt(),
     )
