@@ -293,6 +293,9 @@ _cc_toolchain_config = rule(
         "_allow_unknown_warning_option": attr.label(
             default = "//prebuilts/clang/host/linux-x86:allow_unknown_warning_option_env",
         ),
+        "_product_variables": attr.label(
+            default = "//build/bazel/product_config:product_vars",
+        ),
     },
     provides = [CcToolchainConfigInfo],
 )
