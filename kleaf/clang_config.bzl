@@ -32,7 +32,7 @@ def _impl(ctx):
         ctx = ctx,
         toolchain_identifier = ctx.attr.toolchain_identifier,
         target_cpu = ctx.attr.target_cpu,
-        tool_paths = common.tool_paths(ctx),
+        action_configs = common.action_configs(ctx),
         features = features,
         builtin_sysroot = ctx.attr.sysroot,
 
@@ -62,6 +62,6 @@ clang_config = rule(
         "ndk_triple": attr.string(),
         "toolchain_identifier": attr.string(),
         "clang_version": attr.string(),
-    },
+    } | common.tool_attrs(),
     provides = [CcToolchainConfigInfo],
 )
