@@ -15,6 +15,10 @@
 """Defines a cc toolchain for kernel build, based on clang."""
 
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "CPP_TOOLCHAIN_TYPE")
+load(
+    "@kernel_toolchain_info//:dict.bzl",
+    "VARS",
+)
 load(":clang_config.bzl", "clang_config")
 
 def clang_toolchain(
@@ -145,4 +149,87 @@ def clang_toolchain(
         ],
         toolchain = name + "_cc_toolchain",
         toolchain_type = CPP_TOOLCHAIN_TYPE,
+    )
+
+def linux_x86_64_clang_toolchain(
+        name,
+        clang_version):
+    """Declare an linux_x86_64 toolchain.
+
+    Args:
+        name: name prefix
+        clang_version: `CLANG_VERSION`
+    """
+    clang_toolchain(
+        name = name,
+        clang_version = clang_version,
+        linker_files = [
+            # From _setup_env.sh, HOSTLDFLAGS
+            "//prebuilts/kernel-build-tools:linux-x86-libs",
+        ],
+        # From _setup_env.sh
+        # sysroot_flags+="--sysroot=${ROOT_DIR}/build/kernel/build-tools/sysroot "
+        sysroot_label = "//build/kernel:sysroot",
+        sysroot_path = "build/kernel/build-tools/sysroot",
+        target_cpu = "x86_64",
+        target_os = "linux",
+    )
+
+def android_arm64_clang_toolchain(
+        name,
+        clang_version):
+    """Declare an android_arm64 toolchain.
+
+    Args:
+        name: name prefix
+        clang_version: `CLANG_VERSION`
+    """
+    clang_toolchain(
+        name = name,
+        clang_version = clang_version,
+        ndk_triple = VARS.get("AARCH64_NDK_TRIPLE"),
+        # From _setup_env.sh: when NDK triple is set,
+        # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
+        sysroot_label = "@prebuilt_ndk//:sysroot" if "AARCH64_NDK_TRIPLE" in VARS else None,
+        sysroot_path = "external/prebuilt_ndk/toolchains/llvm/prebuilt/linux-x86_64/sysroot" if "AARCH64_NDK_TRIPLE" in VARS else None,
+        target_cpu = "arm64",
+        target_os = "android",
+    )
+
+def android_x86_64_clang_toolchain(
+        name,
+        clang_version):
+    """Declare an android_x86_64 toolchain.
+
+    Args:
+        name: name prefix
+        clang_version: `CLANG_VERSION`
+    """
+    clang_toolchain(
+        name = name,
+        clang_version = clang_version,
+        ndk_triple = VARS.get("X86_64_NDK_TRIPLE"),
+        # From _setup_env.sh: when NDK triple is set,
+        # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
+        sysroot_label = "@prebuilt_ndk//:sysroot" if "X86_64_NDK_TRIPLE" in VARS else None,
+        sysroot_path = "external/prebuilt_ndk/toolchains/llvm/prebuilt/linux-x86_64/sysroot" if "X86_64_NDK_TRIPLE" in VARS else None,
+        target_cpu = "x86_64",
+        target_os = "android",
+    )
+
+def android_riscv64_clang_toolchain(
+        name,
+        clang_version):
+    """Declare an android_riscv toolchain.
+
+    Args:
+        name: name prefix
+        clang_version: `CLANG_VERSION`
+    """
+    clang_toolchain(
+        name = name,
+        clang_version = clang_version,
+        target_cpu = "riscv64",
+        target_os = "android",
+        # TODO(b/271919464): We need NDK_TRIPLE for riscv
     )
