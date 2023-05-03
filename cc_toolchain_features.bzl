@@ -1763,10 +1763,19 @@ def _host_or_device_specific_ubsan_feature(target_os):
 def _exclude_ubsan_rt_feature(path):
     if not path:
         return None
-    return _ubsan_flag_feature(
-        "ubsan_exclude_rt",
-        _actions.link,
-        ["-Wl,--exclude-libs=" + path.basename],
+    return feature(
+        name = "ubsan_exclude_rt",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = _actions.link,
+                flag_groups = [
+                    flag_group(
+                        flags = ["-Wl,--exclude-libs=" + path.basename],
+                    ),
+                ],
+            ),
+        ],
     )
 
 int_overflow_ignorelist_path = "build/soong/cc/config"
