@@ -29,7 +29,8 @@ def clang_toolchain(
         linker_files = None,
         sysroot_label = None,
         sysroot_path = None,
-        ndk_triple = None):
+        ndk_triple = None,
+        extra_compatible_with = None):
     """Defines a cc toolchain for kernel build, based on clang.
 
     Args:
@@ -41,6 +42,7 @@ def clang_toolchain(
         sysroot_label: Label to a list of files from sysroot
         sysroot_path: Path to sysroot
         ndk_triple: `NDK_TRIPLE`.
+        extra_compatible_with: Extra `exec_compatible_with` / `target_compatible_with`.
     """
 
     if sysroot_path == None:
@@ -52,6 +54,9 @@ def clang_toolchain(
 
     if linker_files == None:
         linker_files = []
+
+    if extra_compatible_with == None:
+        extra_compatible_with = []
 
     clang_pkg = "//prebuilts/clang/host/linux-x86/clang-{}".format(clang_version)
     clang_includes = Label("{}:includes".format(clang_pkg))
@@ -142,23 +147,25 @@ def clang_toolchain(
         exec_compatible_with = [
             "@platforms//os:linux",
             "@platforms//cpu:x86_64",
-        ],
+        ] + extra_compatible_with,
         target_compatible_with = [
             "@platforms//os:{}".format(target_os),
             "@platforms//cpu:{}".format(target_cpu),
-        ],
+        ] + extra_compatible_with,
         toolchain = name + "_cc_toolchain",
         toolchain_type = CPP_TOOLCHAIN_TYPE,
     )
 
 def linux_x86_64_clang_toolchain(
         name,
-        clang_version):
+        clang_version,
+        extra_compatible_with = None):
     """Declare an linux_x86_64 toolchain.
 
     Args:
         name: name prefix
         clang_version: `CLANG_VERSION`
+        extra_compatible_with: extra `exec_compatible_with` and `target_compatible_with`
     """
     clang_toolchain(
         name = name,
@@ -173,16 +180,19 @@ def linux_x86_64_clang_toolchain(
         sysroot_path = "build/kernel/build-tools/sysroot",
         target_cpu = "x86_64",
         target_os = "linux",
+        extra_compatible_with = extra_compatible_with,
     )
 
 def android_arm64_clang_toolchain(
         name,
-        clang_version):
+        clang_version,
+        extra_compatible_with = None):
     """Declare an android_arm64 toolchain.
 
     Args:
         name: name prefix
         clang_version: `CLANG_VERSION`
+        extra_compatible_with: extra `exec_compatible_with` and `target_compatible_with`
     """
     clang_toolchain(
         name = name,
@@ -194,16 +204,19 @@ def android_arm64_clang_toolchain(
         sysroot_path = "external/prebuilt_ndk/toolchains/llvm/prebuilt/linux-x86_64/sysroot" if "AARCH64_NDK_TRIPLE" in VARS else None,
         target_cpu = "arm64",
         target_os = "android",
+        extra_compatible_with = extra_compatible_with,
     )
 
 def android_x86_64_clang_toolchain(
         name,
-        clang_version):
+        clang_version,
+        extra_compatible_with = None):
     """Declare an android_x86_64 toolchain.
 
     Args:
         name: name prefix
         clang_version: `CLANG_VERSION`
+        extra_compatible_with: extra `exec_compatible_with` and `target_compatible_with`
     """
     clang_toolchain(
         name = name,
@@ -215,21 +228,25 @@ def android_x86_64_clang_toolchain(
         sysroot_path = "external/prebuilt_ndk/toolchains/llvm/prebuilt/linux-x86_64/sysroot" if "X86_64_NDK_TRIPLE" in VARS else None,
         target_cpu = "x86_64",
         target_os = "android",
+        extra_compatible_with = extra_compatible_with,
     )
 
 def android_riscv64_clang_toolchain(
         name,
-        clang_version):
+        clang_version,
+        extra_compatible_with = None):
     """Declare an android_riscv toolchain.
 
     Args:
         name: name prefix
         clang_version: `CLANG_VERSION`
+        extra_compatible_with: extra `exec_compatible_with` and `target_compatible_with`
     """
     clang_toolchain(
         name = name,
         clang_version = clang_version,
         target_cpu = "riscv64",
         target_os = "android",
+        extra_compatible_with = extra_compatible_with,
         # TODO(b/271919464): We need NDK_TRIPLE for riscv
     )
