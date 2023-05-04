@@ -41,7 +41,7 @@ def _impl(ctx):
         host_system_name = "__toolchain_host_system_name__",
         target_system_name = "__toolchain_target_system_name__",
         target_libc = "__toolchain_target_libc__",
-        compiler = "__toolchain_compiler__",
+        compiler = ctx.attr.clang_version,
         abi_version = "__toolchain_abi_version__",
         abi_libc_version = "__toolchain_abi_libc_version__",
     )
