@@ -457,6 +457,21 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
         ],
     ))
 
+    features.append(feature(
+        name = "warnings_as_errors",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = _actions.compile,
+                flag_groups = [
+                    flag_group(
+                        flags = ["-Werror"],
+                    ),
+                ],
+            ),
+        ],
+    ))
+
     # The user_compile_flags feature is used by Bazel to add --copt, --conlyopt,
     # and --cxxopt values. Any features added above this call will thus appear
     # earlier in the commandline than the user opts (so users could override
