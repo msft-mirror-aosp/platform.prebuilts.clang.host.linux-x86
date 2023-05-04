@@ -10,12 +10,15 @@
 Toolchain config
 """
 
-load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
 load("@env//:env.bzl", "env")
+load("//build/bazel/flags:common.bzl", "is_env_true")
 load(
     ":cc_toolchain_config.bzl",
+    "CLANG_TOOLS",
     "android_cc_toolchain",
-    "clang_version",
+    "clang_tool_output_group",
+    "clang_version_info",
     "expand_feature_flags",
     "toolchain_definition",
 )
@@ -36,6 +39,7 @@ load(
     _bionic_crt = "bionic_crt",
     _musl_crt = "musl_crt",
 )
+load(":cc_toolchain_clang_version_test.bzl", "cc_toolchain_clang_version_test_suite")
 load(
     ":cc_toolchain_features_cfi_test.bzl",
     "cc_toolchain_features_cfi_test_suite",
@@ -60,18 +64,21 @@ load(
     ":cc_toolchain_features_flag_order_test.bzl",
     "cc_toolchain_features_flag_order_test_suite",
 )
+load(
+    ":cc_toolchain_features_linker_alignment_test.bzl",
+    "cc_toolchain_features_linker_alignment_test_suite",
+)
 load("//build/bazel/flags:common.bzl", "is_env_true")
 load("//build/bazel/platforms/arch/variants:constants.bzl", _arch_constants = "constants")
 
 filegroup(name = "empty")
 
 # Different clang versions are configured here.
-clang_version(
+clang_version_info(
     name = "clang",
-    directory = generated_config_constants.ClangVersion,
-    includes = [
-        "lib/clang/%s/include" % generated_config_constants.ClangShortVersion,
-    ],
+    clang_files = glob(["**/*"]),
+    clang_short_version = ":clang_short_version",
+    clang_version = ":clang_version",
 )
 
 # x86_64 toolchain definitions
@@ -79,7 +86,6 @@ clang_version(
     android_cc_toolchain(
         name = "cc_toolchain_x86_64" + variant_name(variant),
         clang_version = ":clang",
-        clang_version_directory = generated_config_constants.ClangVersion,
         compiler_flags = generated_config_constants.X86_64ToolchainCflags +
                          generated_config_constants.X86_64ArchVariantCflags[variant.arch_variant] +
                          expand_feature_flags(
@@ -103,7 +109,6 @@ clang_version(
     android_cc_toolchain(
         name = "cc_toolchain_x86" + variant_name(variant),
         clang_version = ":clang",
-        clang_version_directory = generated_config_constants.ClangVersion,
         compiler_flags = generated_config_constants.X86ToolchainCflags +
                          generated_config_constants.X86ArchVariantCflags[variant.arch_variant] +
                          expand_feature_flags(
@@ -127,7 +132,6 @@ clang_version(
     android_cc_toolchain(
         name = "cc_toolchain_arm64" + variant_name(variant),
         clang_version = ":clang",
-        clang_version_directory = generated_config_constants.ClangVersion,
         compiler_flags = generated_config_constants.Arm64Cflags +
                          generated_config_constants.Arm64ArchVariantCflags[variant.arch_variant] +
                          generated_config_constants.Arm64CpuVariantCflags.get(
@@ -153,7 +157,6 @@ clang_version(
     android_cc_toolchain(
         name = "cc_toolchain_arm" + variant_name(variant),
         clang_version = ":clang",
-        clang_version_directory = generated_config_constants.ClangVersion,
         compiler_flags = generated_config_constants.ArmCflags +
                          generated_config_constants.ArmToolchainCflags +
                          generated_config_constants.ArmArchVariantCflags[variant.arch_variant] +
@@ -178,7 +181,6 @@ clang_version(
 android_cc_toolchain(
     name = "cc_toolchain_x86_64_linux_host",
     clang_version = ":clang",
-    clang_version_directory = generated_config_constants.ClangVersion,
     compiler_flags = generated_config_constants.LinuxCflags +
                      generated_config_constants.LinuxGlibcCflags +
                      generated_config_constants.LinuxX8664Cflags +
@@ -206,7 +208,6 @@ android_cc_toolchain(
 android_cc_toolchain(
     name = "cc_toolchain_x86_linux_host",
     clang_version = ":clang",
-    clang_version_directory = generated_config_constants.ClangVersion,
     compiler_flags = generated_config_constants.LinuxCflags +
                      generated_config_constants.LinuxGlibcCflags +
                      generated_config_constants.LinuxX86Cflags +
@@ -234,7 +235,6 @@ android_cc_toolchain(
 android_cc_toolchain(
     name = "cc_toolchain_x86_64_linux_musl_host",
     clang_version = ":clang",
-    clang_version_directory = generated_config_constants.ClangVersion,
     compiler_flags = generated_config_constants.LinuxCflags +
                      generated_config_constants.LinuxMuslCflags +
                      generated_config_constants.LinuxX8664Cflags +
@@ -260,7 +260,6 @@ android_cc_toolchain(
 android_cc_toolchain(
     name = "cc_toolchain_x86_linux_musl_host",
     clang_version = ":clang",
-    clang_version_directory = generated_config_constants.ClangVersion,
     compiler_flags = generated_config_constants.LinuxCflags +
                      generated_config_constants.LinuxMuslCflags +
                      generated_config_constants.LinuxX86Cflags +
@@ -371,40 +370,59 @@ toolchain_type(name = "nocrt_toolchain")
     for (toolchain_name, toolchain_type) in x86_musl_host_toolchains
 ]
 
+[
+    filegroup(
+        name = "libclang_rt_%s_%s_%s" % (prefix, os, arch),
+        srcs = [":clang"],
+        output_group = "libclang_rt_%s_%s_%s" % (prefix, os, arch),
+    )
+    for os, arches in {
+        "android": [
+            "arm",
+            "arm64",
+            "x86",
+            "x86_64",
+        ],
+        "linux": [
+            "bionic_x86_64",
+            "glibc_x86",
+            "glibc_x86_64",
+            "musl_x86",
+            "musl_x86_64",
+        ],
+    }.items()
+    for arch in arches
+    for prefix in [
+        "builtins",
+        "ubsan_minimal",
+    ]
+]
+
 cc_import(
     name = "libclang_rt",
     static_library = select(libclang_rt_prebuilt_map),
 )
 
-[alias(
-    name = "llvm-%s" % tool,
-    actual = generated_config_constants.ClangVersion + "/bin/llvm-%s" % tool,
-    visibility = ["//visibility:public"],
-) for tool in [
-    "ar",
-    "readelf",
-    "objcopy",
-    "strip",
-]]
-
-[alias(
-    name = tool,
-    actual = generated_config_constants.ClangVersion + "/bin/" + tool,
-    visibility = ["//visibility:public"],
-) for tool in [
-    "clang-tidy",
-    "clang-tidy.sh",
-    "clang-tidy.real",
-]]
+[
+    filegroup(
+        name = tool,
+        srcs = [":clang"],
+        output_group = clang_tool_output_group(tool),
+        visibility = ["//visibility:public"],
+    )
+    for tool in CLANG_TOOLS
+]
 
 # Test tools used by Bazel tests.
 filegroup(
     name = "test_tools",
-    srcs = [
-        generated_config_constants.ClangVersion + "/bin/llvm-readelf",
-        generated_config_constants.ClangVersion + "/bin/llvm-nm",
-    ],
+    srcs = [":clang"],
+    output_group = "clang_test_tools",
     visibility = ["//build/bazel/tests:__subpackages__"],
+)
+
+cc_toolchain_clang_version_test_suite(
+    name = "cc_toolchain_clang_version_tests",
 )
 
 cc_toolchain_features_cfi_test_suite(
@@ -429,6 +447,10 @@ cc_toolchain_features_env_based_flags_test_suite(
 
 cc_toolchain_features_flag_order_test_suite(
     name = "cc_toolchain_features_flag_order_tests",
+)
+
+cc_toolchain_features_linker_alignment_test_suite(
+    name = "cc_toolchain_features_linker_alignment_tests",
 )
 
 bool_flag(
@@ -459,4 +481,20 @@ bool_flag(
 bool_flag(
     name = "allow_unknown_warning_option_env",
     build_setting_default = is_env_true(env.get("ALLOW_UNKNOWN_WARNING_OPTION")),
+)
+
+string_flag(
+    name = "clang_version",
+    build_setting_default = env.get(
+        "LLVM_PREBUILTS_VERSION",
+        generated_config_constants.CLANG_DEFAULT_VERSION,
+    ),
+)
+
+string_flag(
+    name = "clang_short_version",
+    build_setting_default = env.get(
+        "LLVM_RELEASE_VERSION",
+        generated_config_constants.CLANG_DEFAULT_SHORT_VERSION,
+    ),
 )
