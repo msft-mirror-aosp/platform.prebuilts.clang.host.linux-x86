@@ -13,6 +13,7 @@ load(
     "variable_with_value",
     "with_feature_set",
 )
+load("//build/bazel/product_config:product_variables_providing_rule.bzl", "ProductVariablesInfo")
 load(
     ":cc_toolchain_constants.bzl",
     _actions = "actions",
@@ -758,7 +759,7 @@ def _use_libcrt_feature(path):
         return None
     return _flag_feature("use_libcrt", actions = _actions.link, flags = [
         path.path,
-        "-Wl,--exclude-libs=" + path.path,
+        "-Wl,--exclude-libs=" + path.basename,
     ])
 
 def _flag_feature(name, actions = None, flags = None, enabled = True):
@@ -1762,10 +1763,19 @@ def _host_or_device_specific_ubsan_feature(target_os):
 def _exclude_ubsan_rt_feature(path):
     if not path:
         return None
-    return _ubsan_flag_feature(
-        "ubsan_exclude_rt",
-        _actions.link,
-        ["-Wl,--exclude-libs=" + path.basename],
+    return feature(
+        name = "ubsan_exclude_rt",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = _actions.link,
+                flag_groups = [
+                    flag_group(
+                        flags = ["-Wl,--exclude-libs=" + path.basename],
+                    ),
+                ],
+            ),
+        ],
     )
 
 int_overflow_ignorelist_path = "build/soong/cc/config"
@@ -2044,6 +2054,11 @@ def get_features(
     target_flags = ctx.attr.target_flags
     compile_only_flags = ctx.attr.compiler_flags
     linker_only_flags = ctx.attr.linker_flags
+    deviceMaxPageSize = ctx.attr._product_variables[ProductVariablesInfo].DeviceMaxPageSizeSupported
+    if deviceMaxPageSize and (target_arch == "arm" or target_arch == "arm64"):
+        linker_only_flags = ctx.attr.linker_flags + \
+                            ["-Wl,-z,max-page-size=" + deviceMaxPageSize]
+
     libclang_rt_builtin = ctx.file.libclang_rt_builtin
     libclang_rt_ubsan_minimal = ctx.file.libclang_rt_ubsan_minimal
     rtti_toggle = ctx.attr.rtti_toggle
