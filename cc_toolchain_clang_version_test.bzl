@@ -14,6 +14,8 @@
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 load("//build/bazel/rules/cc:cc_library_static.bzl", "cc_library_static")
+load("//build/bazel/rules/test_common:rules.bzl", "expect_failure_test")
+load(":cc_toolchain_config.bzl", "clang_version_info")
 
 def _clang_version_path_test_impl(ctx):
     env = analysistest.begin(ctx)
@@ -39,10 +41,10 @@ def _clang_version_path_test_impl(ctx):
             "expected 1 clang binary file; found: " + str(clang_binary_files),
         )
         return analysistest.end(env)
-    clang_path = clang_binary_files[0].short_path
+    clang_path = clang_binary_files[0]
     asserts.equals(
         env,
-        ctx.attr.expected_clang_path,
+        ctx.file.expected_clang_path,
         clang_path,
         "expected clang binary path to be `%s`, but got `%s`" % (
             ctx.attr.expected_clang_path,
@@ -70,10 +72,10 @@ def _clang_version_path_test_impl(ctx):
             "expected 1 libclang_rt file; found: " + str(libclang_rt_files),
         )
         return analysistest.end(env)
-    libclang_rt_path = libclang_rt_files[0].short_path
+    libclang_rt_path = libclang_rt_files[0]
     asserts.equals(
         env,
-        ctx.attr.expected_libclang_rt_path,
+        ctx.file.expected_libclang_rt_path,
         libclang_rt_path,
         "expected libclang_rt path to be `%s`, but got `%s`" % (
             ctx.attr.expected_libclang_rt_path,
@@ -87,10 +89,12 @@ def _clang_version_path_test(clang_version, clang_short_version):
     return analysistest.make(
         _clang_version_path_test_impl,
         attrs = {
-            "expected_clang_path": attr.string(
+            "expected_clang_path": attr.label(
+                allow_single_file = True,
                 mandatory = True,
             ),
-            "expected_libclang_rt_path": attr.string(
+            "expected_libclang_rt_path": attr.label(
+                allow_single_file = True,
                 mandatory = True,
             ),
         },
@@ -100,11 +104,17 @@ def _clang_version_path_test(clang_version, clang_short_version):
         },
     )
 
-_clang_15_0_1_path_test = _clang_version_path_test("clang-r458507", "15.0.1")
+_clang_17_path_test = _clang_version_path_test("clang-r487747", "17")
 
 _clang_16_0_2_path_test = _clang_version_path_test("clang-r475365b", "16.0.2")
 
-def _test_clang_version_paths(os, arch, clang_short_version, clang_version_test, expected_clang_path, expected_libclang_rt_path):
+def _test_clang_version_paths(
+        os,
+        arch,
+        clang_short_version,
+        clang_version_test,
+        expected_clang_path,
+        expected_libclang_rt_builtins_path):
     name = "clang_version_paths_%s_%s_%s" % (
         os,
         arch,
@@ -120,7 +130,7 @@ def _test_clang_version_paths(os, arch, clang_short_version, clang_version_test,
         name = test_name,
         target_under_test = name,
         expected_clang_path = expected_clang_path,
-        expected_libclang_rt_path = expected_libclang_rt_path,
+        expected_libclang_rt_path = expected_libclang_rt_builtins_path,
         target_compatible_with = [
             "//build/bazel/platforms/os:" + os,
             "//build/bazel/platforms/arch:" + arch,
@@ -133,18 +143,18 @@ def _create_clang_version_tests():
         {
             "os": "android",
             "arch": "arm64",
-            "clang_short_version": "15.0.1",
-            "clang_version_test": _clang_15_0_1_path_test,
-            "expected_clang_path": "prebuilts/clang/host/linux-x86/clang-r458507/bin/clang",
-            "expected_libclang_rt_path": "prebuilts/clang/host/linux-x86/clang-r458507/lib/clang/15.0.1/lib/linux/libclang_rt.builtins-aarch64-android.a",
+            "clang_short_version": "17",
+            "clang_version_test": _clang_17_path_test,
+            "expected_clang_path": "clang-r487747/bin/clang",
+            "expected_libclang_rt_builtins_path": "clang-r487747/lib/clang/17/lib/linux/libclang_rt.builtins-aarch64-android.a",
         },
         {
             "os": "android",
             "arch": "arm64",
             "clang_short_version": "16.0.2",
             "clang_version_test": _clang_16_0_2_path_test,
-            "expected_clang_path": "prebuilts/clang/host/linux-x86/clang-r475365b/bin/clang",
-            "expected_libclang_rt_path": "prebuilts/clang/host/linux-x86/clang-r475365b/lib/clang/16.0.2/lib/linux/libclang_rt.builtins-aarch64-android.a",
+            "expected_clang_path": "clang-r475365b/bin/clang",
+            "expected_libclang_rt_builtins_path": "clang-r475365b/lib/clang/16.0.2/lib/linux/libclang_rt.builtins-aarch64-android.a",
         },
     ]
     return [
@@ -152,8 +162,140 @@ def _create_clang_version_tests():
         for tc in test_cases
     ]
 
+def _filegroup_has_expected_files_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    target_under_test = analysistest.target_under_test(env)
+
+    asserts.equals(
+        env,
+        [f.short_path for f in ctx.files.expected_files],
+        [f.short_path for f in target_under_test.files.to_list()],
+    )
+
+    return analysistest.end(env)
+
+def _filegroup_has_expected_files_test(clang_version, clang_short_version):
+    return analysistest.make(
+        _filegroup_has_expected_files_test_impl,
+        attrs = {
+            "expected_files": attr.label_list(
+                allow_files = True,
+                mandatory = True,
+            ),
+        },
+        config_settings = {
+            "@//prebuilts/clang/host/linux-x86:clang_version": clang_version,
+            "@//prebuilts/clang/host/linux-x86:clang_short_version": clang_short_version,
+        },
+    )
+
+_clang_17_filegroup_test = _filegroup_has_expected_files_test("clang-r487747", "17")
+
+_clang_16_0_2_filegroup_test = _filegroup_has_expected_files_test("clang-r475365b", "16.0.2")
+
+def _test_clang_version_filegroups(
+        os,
+        arch,
+        clang_short_version,
+        clang_version_filegroup_test,
+        expected_libclang_rt_builtins_path,
+        expected_libclang_rt_ubsan_minimal_path):
+    """
+    These filegroup tests should give a clearer signal if the cc_toolchain
+    fails in analysis due to missing files from these filegroups.
+    """
+    name = "clang_version_filegroups_%s_%s_%s" % (
+        os,
+        arch,
+        clang_short_version,
+    )
+    libclang_rt_builtins_test_name = name + "_test_libclang_rt_builtins"
+    libclang_rt_ubsan_minimal_test_name = name + "_test_libclang_rt_ubsan_minimal"
+
+    clang_version_filegroup_test(
+        name = libclang_rt_builtins_test_name,
+        target_under_test = "//prebuilts/clang/host/linux-x86:libclang_rt_builtins_%s_%s" % (os, arch),
+        expected_files = [expected_libclang_rt_builtins_path],
+    )
+    clang_version_filegroup_test(
+        name = libclang_rt_ubsan_minimal_test_name,
+        target_under_test = "//prebuilts/clang/host/linux-x86:libclang_rt_ubsan_minimal_%s_%s" % (os, arch),
+        expected_files = [expected_libclang_rt_ubsan_minimal_path],
+    )
+
+    return [
+        libclang_rt_builtins_test_name,
+        libclang_rt_ubsan_minimal_test_name,
+    ]
+
+def _create_clang_version_filegroup_tests():
+    test_cases = [
+        {
+            "os": "android",
+            "arch": "arm64",
+            "clang_short_version": "17",
+            "clang_version_filegroup_test": _clang_17_filegroup_test,
+            "expected_libclang_rt_builtins_path": "clang-r487747/lib/clang/17/lib/linux/libclang_rt.builtins-aarch64-android.a",
+            "expected_libclang_rt_ubsan_minimal_path": "clang-r487747/lib/clang/17/lib/linux/libclang_rt.ubsan_minimal-aarch64-android.a",
+        },
+        {
+            "os": "android",
+            "arch": "arm64",
+            "clang_short_version": "16.0.2",
+            "clang_version_filegroup_test": _clang_16_0_2_filegroup_test,
+            "expected_libclang_rt_builtins_path": "clang-r475365b/lib/clang/16.0.2/lib/linux/libclang_rt.builtins-aarch64-android.a",
+            "expected_libclang_rt_ubsan_minimal_path": "clang-r475365b/lib/clang/16.0.2/lib/linux/libclang_rt.ubsan_minimal-aarch64-android.a",
+        },
+    ]
+    return [
+        t
+        for tc in test_cases
+        for t in _test_clang_version_filegroups(**tc)
+    ]
+
+def _test_clang_version_errors_for_missing_files(clang_version, clang_short_version):
+    name = "clang_version_errors_for_missing_files_%s-%s" % (
+        clang_version,
+        clang_short_version,
+    )
+    test_name = name + "_test"
+
+    clang_version_info(
+        name = name,
+        clang_files = native.glob(["**/*"]),
+        clang_short_version = clang_short_version,
+        clang_version = clang_version,
+        tags = ["manual"],
+    )
+    expect_failure_test(
+        name = test_name,
+        target_under_test = name,
+        failure_message = "rule '//prebuilts/clang/host/linux-x86:NOT-A-VERSION' does not exist",
+    )
+    return test_name
+
+def _create_clang_version_missing_file_tests():
+    test_cases = [
+        {
+            "clang_version": "r487747",
+            "clang_short_version": "NOT-A-VERSION",
+        },
+        {
+            "clang_version": "NOT-A-VERSION",
+            "clang_short_version": "16.0.2",
+        },
+    ]
+    return [
+        _test_clang_version_errors_for_missing_files(**tc)
+        for tc in test_cases
+    ]
+
 def cc_toolchain_clang_version_test_suite(name):
     native.test_suite(
         name = name,
-        tests = _create_clang_version_tests(),
+        tests = (
+            _create_clang_version_tests() +
+            _create_clang_version_filegroup_tests() +
+            _create_clang_version_missing_file_tests()
+        ),
     )
