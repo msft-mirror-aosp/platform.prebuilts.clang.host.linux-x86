@@ -43,7 +43,8 @@ def test_cfi_c_and_cpp_has_correct_flags():
         name = compile_test_name,
         target_under_test = name,
         mnemonics = [compile_action_mnemonic],
-        expected_flags = generated_sanitizer_constants.CfiCFlags,
+        expected_flags = generated_sanitizer_constants.CfiCFlags +
+                         [generated_sanitizer_constants.CfiCrossDsoFlag],
     )
 
     link_test_name = name + "_link_test"
@@ -51,21 +52,13 @@ def test_cfi_c_and_cpp_has_correct_flags():
         name = link_test_name,
         target_under_test = name,
         mnemonics = [link_action_mnemonic],
-        expected_flags = generated_sanitizer_constants.CfiLdFlags,
-    )
-
-    compile_no_assemble_flags_test_name = "_compile_no_assemble_flags_test"
-    action_flags_absent_for_mnemonic_test(
-        name = compile_no_assemble_flags_test_name,
-        target_under_test = name,
-        mnemonics = [compile_action_mnemonic],
-        expected_absent_flags = generated_sanitizer_constants.CfiAsFlags,
+        expected_flags = generated_sanitizer_constants.CfiLdFlags +
+                         [generated_sanitizer_constants.CfiCrossDsoFlag],
     )
 
     return [
         compile_test_name,
         link_test_name,
-        compile_no_assemble_flags_test_name,
     ]
 
 def test_cfi_s_has_correct_flags():
@@ -90,12 +83,69 @@ def test_cfi_s_has_correct_flags():
         name = compile_flags_absent_test_name,
         target_under_test = name,
         mnemonics = [compile_action_mnemonic],
-        expected_absent_flags = generated_sanitizer_constants.CfiCFlags,
+        expected_absent_flags = generated_sanitizer_constants.CfiCFlags +
+                                [generated_sanitizer_constants.CfiCrossDsoFlag],
     )
 
     return [
         assemble_test_name,
         compile_flags_absent_test_name,
+    ]
+
+def test_cross_dso_not_added_when_cfi_disabled():
+    name = "cross_dso_not_added_when_cfi_disabled"
+    native.cc_binary(
+        name = name,
+        srcs = ["foo.c", "bar.cpp"],
+        features = ["android_cfi_cross_dso"],
+        tags = ["manual"],
+    )
+
+    test_name = name + "_test"
+    action_flags_absent_for_mnemonic_test(
+        name = test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic, link_action_mnemonic],
+        expected_absent_flags = [generated_sanitizer_constants.CfiCrossDsoFlag],
+    )
+
+    return test_name
+
+def test_cross_dso_not_added_when_static_binary():
+    name = "cross_dso_not_added_when_static_binary"
+    native.cc_binary(
+        name = name,
+        srcs = ["foo.c", "bar.cpp"],
+        features = [
+            "android_cfi",
+            "static_executable",
+            "-dynamic_executable",
+            "android_cfi_cross_dso",
+        ],
+        tags = ["manual"],
+    )
+
+    android_test_name = name + "_android_test"
+    action_flags_absent_for_mnemonic_test(
+        name = android_test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic, link_action_mnemonic],
+        expected_absent_flags = [generated_sanitizer_constants.CfiCrossDsoFlag],
+        target_compatible_with = ["//build/bazel/platforms/os:android"],
+    )
+
+    linux_test_name = name + "_linux_test"
+    action_flags_absent_for_mnemonic_test(
+        name = linux_test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic, link_action_mnemonic],
+        expected_absent_flags = [generated_sanitizer_constants.CfiCrossDsoFlag],
+        target_compatible_with = ["//build/bazel/platforms/os:linux_glibc"],
+    )
+
+    return [
+        android_test_name,
+        linux_test_name,
     ]
 
 def test_cfi_assembly_support_has_correct_flags():
@@ -171,6 +221,50 @@ def test_cfi_exports_map_has_correct_flags():
 
     return test_name
 
+def test_cfi_cross_dso_has_correct_flags():
+    name = "cfi_cross_dso_has_correct_flags"
+    native.cc_binary(
+        name = name,
+        srcs = ["foo.c", "bar.cpp"],
+        features = [
+            "android_cfi",
+            "android_cfi_cross_dso",
+        ],
+        tags = ["manual"],
+    )
+
+    test_name = name + "_test"
+    action_flags_present_only_for_mnemonic_test(
+        name = test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic, link_action_mnemonic],
+        expected_flags = [generated_sanitizer_constants.CfiCrossDsoFlag],
+    )
+
+    return test_name
+
+def test_cfi_cross_dso_does_not_add_flags_for_s():
+    name = "cfi_cross_dso_does_not_add_flags_for_s"
+    native.cc_binary(
+        name = name,
+        srcs = ["baz.s", "blah.S"],
+        features = [
+            "android_cfi",
+            "android_cfi_cross_dso",
+        ],
+        tags = ["manual"],
+    )
+
+    test_name = name + "_test"
+    action_flags_absent_for_mnemonic_test(
+        name = test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_absent_flags = [generated_sanitizer_constants.CfiCrossDsoFlag],
+    )
+
+    return test_name
+
 def test_cfi_implies_lto():
     name = "cfi_implies_lto"
     native.cc_binary(
@@ -186,6 +280,44 @@ def test_cfi_implies_lto():
         target_under_test = name,
         mnemonics = [compile_action_mnemonic],
         expected_flags = ["-flto=thin"],
+    )
+
+    return test_name
+
+def test_cfi_implies_vis_default_if_not_hidden():
+    name = "cfi_implies_vis_default_if_not_hidden"
+    native.cc_binary(
+        name = name,
+        srcs = ["foo.c", "bar.cpp"],
+        features = ["android_cfi"],
+        tags = ["manual"],
+    )
+
+    test_name = name + "_test"
+    action_flags_present_only_for_mnemonic_test(
+        name = test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_flags = ["-fvisibility=default"],
+    )
+
+    return test_name
+
+def test_cfi_does_not_add_vis_default_if_hidden():
+    name = "cfi_does_not_add_vis_default_if_hidden"
+    native.cc_binary(
+        name = name,
+        srcs = ["foo.c", "bar.cpp"],
+        features = ["android_cfi", "visibility_hidden"],
+        tags = ["manual"],
+    )
+
+    test_name = name + "_test"
+    action_flags_absent_for_mnemonic_test(
+        name = test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_absent_flags = ["-fvisibility=default"],
     )
 
     return test_name
@@ -239,10 +371,15 @@ def test_cfi_and_arm_uses_thumb():
 
 def cc_toolchain_features_cfi_test_suite(name):
     individual_tests = [
+        test_cross_dso_not_added_when_cfi_disabled(),
         test_cfi_assembly_support_has_correct_flags(),
         test_cfi_assembly_support_does_not_add_flags_for_s(),
         test_cfi_exports_map_has_correct_flags(),
+        test_cfi_cross_dso_has_correct_flags(),
+        test_cfi_cross_dso_does_not_add_flags_for_s(),
         test_cfi_implies_lto(),
+        test_cfi_implies_vis_default_if_not_hidden(),
+        test_cfi_does_not_add_vis_default_if_hidden(),
         test_cfi_and_arm_uses_thumb(),
         # TODO(b/274924237): Uncomment after Darwin and Windows have toolchains
         # test_cfi_absent_on_unsupported_oses(),
@@ -251,5 +388,6 @@ def cc_toolchain_features_cfi_test_suite(name):
         name = name,
         tests = individual_tests +
                 test_cfi_c_and_cpp_has_correct_flags() +
-                test_cfi_s_has_correct_flags(),
+                test_cfi_s_has_correct_flags() +
+                test_cross_dso_not_added_when_static_binary(),
     )
