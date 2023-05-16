@@ -39,6 +39,10 @@ load(
     _bionic_crt = "bionic_crt",
     _musl_crt = "musl_crt",
 )
+load(
+    ":cc_toolchain_features_arm_isa_test.bzl",
+    "cc_toolchain_features_arm_isa_test_suite",
+)
 load(":cc_toolchain_clang_version_test.bzl", "cc_toolchain_clang_version_test_suite")
 load(
     ":cc_toolchain_features_cfi_test.bzl",
@@ -419,6 +423,10 @@ filegroup(
     srcs = [":clang"],
     output_group = "clang_test_tools",
     visibility = ["//build/bazel/tests:__subpackages__"],
+)
+
+cc_toolchain_features_arm_isa_test_suite(
+    name = "cc_toolchain_features_arm_isa_test",
 )
 
 cc_toolchain_clang_version_test_suite(
