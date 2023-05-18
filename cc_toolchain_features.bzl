@@ -345,50 +345,6 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
         ],
     ))
 
-    features.append(feature(
-        name = "asm_compiler_flags",
-        enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = _actions.assemble,
-                flag_groups = [
-                    flag_group(
-                        flags = asm_only_flags,
-                    ),
-                ],
-            ),
-        ],
-    ))
-    features.append(feature(
-        name = "cpp_compiler_flags",
-        enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = [_actions.cpp_compile],
-                flag_groups = [
-                    flag_group(
-                        flags = cpp_only_flags,
-                    ),
-                ],
-            ),
-        ],
-    ))
-    if c_only_flags:
-        features.append(feature(
-            name = "c_compiler_flags",
-            enabled = True,
-            flag_sets = [
-                flag_set(
-                    actions = [_actions.c_compile],
-                    flag_groups = [
-                        flag_group(
-                            flags = c_only_flags,
-                        ),
-                    ],
-                ),
-            ],
-        ))
-
     if target_arch == _arches.Arm:
         features.append(feature(
             name = "arm_isa_arm",
@@ -440,6 +396,52 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
             ),
         ],
     ))
+
+    features.append(feature(
+        name = "asm_compiler_flags",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = _actions.assemble,
+                flag_groups = [
+                    flag_group(
+                        flags = asm_only_flags,
+                    ),
+                ],
+            ),
+        ],
+    ))
+
+    features.append(feature(
+        name = "cpp_compiler_flags",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = [_actions.cpp_compile],
+                flag_groups = [
+                    flag_group(
+                        flags = cpp_only_flags,
+                    ),
+                ],
+            ),
+        ],
+    ))
+
+    if c_only_flags:
+        features.append(feature(
+            name = "c_compiler_flags",
+            enabled = True,
+            flag_sets = [
+                flag_set(
+                    actions = [_actions.c_compile],
+                    flag_groups = [
+                        flag_group(
+                            flags = c_only_flags,
+                        ),
+                    ],
+                ),
+            ],
+        ))
 
     features.append(feature(
         name = "external_compiler_flags",
