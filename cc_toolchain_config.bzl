@@ -75,6 +75,14 @@ _libclang_rt_ubsan_minimal_prebuilt_map = {
     "linux_musl_x86_64": "x86_64-unknown-linux-musl/lib/linux/libclang_rt.ubsan_minimal-x86_64.a",
 }
 
+def _is_relative_path(path, root):
+    path_parts = paths.normalize(path).split("/")
+    root_parts = paths.normalize(root).split("/")
+    for i in range(len(root_parts)):
+        if path_parts[i] != root_parts[i]:
+            return False
+    return True
+
 def _clang_version_info_impl(ctx):
     clang_version = ctx.attr.clang_version[BuildSettingInfo].value
     clang_version_directory = paths.join(ctx.label.package, clang_version)
@@ -90,12 +98,12 @@ def _clang_version_info_impl(ctx):
     }
 
     for file in ctx.files.clang_files:
-        file_path = file.short_path
-        if not file_path.startswith(clang_version_directory):
+        if not _is_relative_path(file.short_path, clang_version_directory):
             continue
-        file_path = file_path[len(clang_version_directory) + 1:]  # +1 for trailing slash
+        file_path = paths.relativize(file.short_path, clang_version_directory)
         all_files[file_path] = file
-        file_path_parts = [p for p in file_path.split("/") if p != ""]
+
+        file_path_parts = file_path.split("/")
         if file_path_parts[:2] == ["lib", "clang"] and file_path_parts[4] == "include":
             output_groups["compiler_clang_includes"].append(file)  # /lib/clang/*/include/**
         if file_path_parts[0] == "bin" and len(file_path_parts) == 2:
@@ -114,10 +122,14 @@ def _clang_version_info_impl(ctx):
         file_path = paths.join(libclang_rt_prefix, path)
         if file_path in all_files:
             output_groups["libclang_rt_builtins_" + arch] = [all_files[file_path]]
+        else:
+            fail("could not find libclang_rt_builtin for `%s` at path `%s`" % (arch, file_path))
     for arch, path in _libclang_rt_ubsan_minimal_prebuilt_map.items():
         file_path = paths.join(libclang_rt_prefix, path)
         if file_path in all_files:
             output_groups["libclang_rt_ubsan_minimal_" + arch] = [all_files[file_path]]
+        else:
+            fail("could not find libclang_rt_ubsan_minimal for `%s` at path `%s`" % (arch, file_path))
 
     return [
         _ClangVersionInfo(
@@ -171,6 +183,10 @@ def _tool_paths(clang_version_info):
         tool_path(
             name = "nm",
             path = clang_version_info.clang_version + "/bin/llvm-nm",
+        ),
+        tool_path(
+            name = "objcopy",
+            path = clang_version_info.clang_version + "/bin/llvm-objcopy",
         ),
         tool_path(
             name = "objdump",
@@ -295,6 +311,13 @@ def _create_action_configs(tool_paths, target_os):
         tools = [tool_name_to_tool["strip"]],
         # This doesn't imply any feature, because Bazel currently mimics
         # Soong by running strip actions in a rule (stripped_shared_library).
+    ))
+
+    # use llvm-objcopy to remove addrsig sections from partially linked objects
+    action_configs.append(action_config(
+        action_name = "objcopy",
+        enabled = True,
+        tools = [tool_name_to_tool["objcopy"]],
     ))
 
     return action_configs
