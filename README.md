@@ -8,8 +8,8 @@ LLVM Users
 ----------
 
 * [**Android Platform**](https://android.googlesource.com/platform/)
-  * Currently clang-r487747
-  * clang-r487747 for Android U release
+  * Currently clang-r487747c
+  * clang-r487747c for Android U release
   * clang-r450784d for Android T release
   * clang-r416183b1 for Android S release
   * clang-r383902b1 for Android R-QPR2 release
@@ -37,19 +37,21 @@ LLVM Users
     * Look for "clang-" in [mainline build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android-mainline/build.config.constants).
     * Look for "clang-" in [android14-6.1 build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android14-6.1/build.config.constants)
     * Look for "clang-" in [android14-5.15 build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android14-5.15/build.config.constants)
+  * When adding or removing a clang prebuilt, the list in `kleaf/versions.bzl` needs to be updated.
   * Internal LLVM developers should look in the partner gerrit for more kernel configurations.
 
 * [**NDK**](https://developer.android.com/ndk)
-  * Currently clang-r450784d1
+  * Currently clang-r487747b
   * Look for "clang-" in [ndk/toolchains.py](https://android.googlesource.com/platform/ndk/+/refs/heads/master/ndk/toolchains.py)
 
 * [**Trusty**](https://source.android.com/security/trusty/)
-  * LINUX_CLANG_BINDIR: clang-r450784e
-  * CLANG_BINDIR: clang-r450784e
+  * LINUX_CLANG_BINDIR: clang-r475365b
+  * CLANG_BINDIR: clang-r475365b
   * Look for "clang-" in [vendor/google/aosp/scripts/envsetup.sh](https://android.googlesource.com/trusty/vendor/google/aosp/+/master/scripts/envsetup.sh).
 
 * [**Android Emulator**](https://developer.android.com/studio/run/emulator.html)
-  * Currently clang-r450784e
+  * Currently clang-r487747
+  * Linux emulator is temporarily hardcoded to clang-r450784e, see b/268674933
   * Look for "clang-" in [external/qemu/android/build/cmake/toolchain.cmake](https://android.googlesource.com/platform/external/qemu/+/emu-master-dev/android/build/cmake/toolchain.cmake#25).
     * Note that they work out of the emu-master-dev branch.
     * [Android Code Search link](https://cs.android.com/android/platform/superproject/+/emu-master-dev:external/qemu/android/build/cmake/toolchain.cmake?q=clang-)
@@ -139,6 +141,8 @@ Prebuilt Versions
 * [clang-r468909b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+log/refs/heads/master/clang-r468909b) - October 2022
 * [clang-r475365b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-r475365b) - December 2022
 * [clang-r487747](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-r487747) - March 2023
+* [clang-r487747b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-r487747b) - April 2023
+* [clang-r487747c](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-r487747c) - May 2023
 
 
 More Information

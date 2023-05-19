@@ -528,6 +528,31 @@ def _test_no_undefined_flag_present_when_bionic_or_musl():
 
     return test_names
 
+# TODO(b/274924237): Uncomment after Darwin and Windows have toolchains
+#def _test_undefined_flag_absent_when_windows_or_darwin():
+#    name = "no_undefined_flag_absent_when_windows_or_darwin"
+#
+#    native.cc_binary(
+#        name = name,
+#        srcs = test_srcs,
+#        features = ["ubsan_undefined"],
+#        tags = ["manual"],
+#    )
+#
+#    test_name = name + "_test"
+#    action_flags_absent_for_mnemonic_test(
+#        name = test_name,
+#        target_under_test = name,
+#        mnemonics = [compile_action_mnemonic],
+#        expected_absent_flags = [ubsan_prefix_format % "undefined"]
+#        target_compatible_with = [
+#            "//build/bazel/platforms/os:darwin",
+#            "//build/bazel/platforms/os:windows",
+#        ]
+#    )
+#
+#    return test_name
+
 def _test_no_undefined_flag_absent_when_not_bionic_or_musl():
     name = "no_undefined_flag_absent_when_not_bionic_or_musl"
     test_name = name + "_test"
@@ -647,88 +672,143 @@ def _test_device_only_and_host_only_features_absent_when_ubsan_disabled():
 
     return test_names
 
-_exclude_ubsan_rt_name = "ubsan_exclude_rt"
-
-def _exclude_ubsan_rt_test_for_os_arch(os_arch_platform, os, arch):
+def _exclude_rt_test_for_os_arch(target_name, os, arch, flag):
     test_name = "%s_%s_test" % (
-        _exclude_ubsan_rt_name,
-        os_arch_platform.split(":")[-1],
+        target_name,
+        os + "_" + arch,
     )
 
     action_flags_present_only_for_mnemonic_test(
         name = test_name,
-        target_under_test = _exclude_ubsan_rt_name,
+        target_under_test = target_name,
         mnemonics = [link_action_mnemonic],
-        expected_flags = [
-            (
-                "-Wl,--exclude-libs=%s" %
-                paths.join(
-                    "prebuilts/clang/host/linux-x86",
-                    libclang_ubsan_minimal_rt_prebuilt_map[os_arch_platform],
-                )
-            ),
+        expected_flags = [flag],
+        target_compatible_with = [
+            "//build/bazel/platforms/os:" + os,
+            "//build/bazel/platforms/arch:" + arch,
         ],
-        target_compatible_with = [os, arch],
     )
 
     return test_name
 
 def _test_exclude_ubsan_rt():
+    _exclude_ubsan_rt_name = "ubsan_exclude_rt"
     native.cc_binary(
         name = _exclude_ubsan_rt_name,
         srcs = test_srcs,
         features = ["ubsan_undefined"],
         tags = ["manual"],
     )
+    test_cases = [
+        {
+            "os": "android",
+            "arch": "arm",
+            "flag": "-Wl,--exclude-libs=libclang_rt.ubsan_minimal-arm-android.a",
+        },
+        {
+            "os": "android",
+            "arch": "arm64",
+            "flag": "-Wl,--exclude-libs=libclang_rt.ubsan_minimal-aarch64-android.a",
+        },
+        {
+            "os": "android",
+            "arch": "x86",
+            "flag": "-Wl,--exclude-libs=libclang_rt.ubsan_minimal-i686-android.a",
+        },
+        {
+            "os": "android",
+            "arch": "x86_64",
+            "flag": "-Wl,--exclude-libs=libclang_rt.ubsan_minimal-x86_64-android.a",
+        },
+        {
+            "os": "linux_bionic",
+            "arch": "x86_64",
+            "flag": "-Wl,--exclude-libs=libclang_rt.ubsan_minimal-x86_64-android.a",
+        },
+        {
+            "os": "linux",
+            "arch": "x86",
+            "flag": "-Wl,--exclude-libs=libclang_rt.ubsan_minimal-i386.a",
+        },
+        {
+            "os": "linux",
+            "arch": "x86_64",
+            "flag": "-Wl,--exclude-libs=libclang_rt.ubsan_minimal-x86_64.a",
+        },
+        {
+            "os": "linux_musl",
+            "arch": "x86",
+            "flag": "-Wl,--exclude-libs=libclang_rt.ubsan_minimal-i386.a",
+        },
+        {
+            "os": "linux_musl",
+            "arch": "x86_64",
+            "flag": "-Wl,--exclude-libs=libclang_rt.ubsan_minimal-x86_64.a",
+        },
+    ]
+    return [
+        _exclude_rt_test_for_os_arch(_exclude_ubsan_rt_name, **tc)
+        for tc in test_cases
+    ]
 
-    test_names = []
-    test_names += [_exclude_ubsan_rt_test_for_os_arch(
-        "//build/bazel/platforms/os_arch:android_arm",
-        "//build/bazel/platforms/os:android",
-        "//build/bazel/platforms/arch:arm",
-    )]
-    test_names += [_exclude_ubsan_rt_test_for_os_arch(
-        "//build/bazel/platforms/os_arch:android_arm64",
-        "//build/bazel/platforms/os:android",
-        "//build/bazel/platforms/arch:arm64",
-    )]
-    test_names += [_exclude_ubsan_rt_test_for_os_arch(
-        "//build/bazel/platforms/os_arch:android_x86",
-        "//build/bazel/platforms/os:android",
-        "//build/bazel/platforms/arch:x86",
-    )]
-    test_names += [_exclude_ubsan_rt_test_for_os_arch(
-        "//build/bazel/platforms/os_arch:android_x86_64",
-        "//build/bazel/platforms/os:android",
-        "//build/bazel/platforms/arch:x86_64",
-    )]
-    test_names += [_exclude_ubsan_rt_test_for_os_arch(
-        "//build/bazel/platforms/os_arch:linux_bionic_x86_64",
-        "//build/bazel/platforms/os:linux_bionic",
-        "//build/bazel/platforms/arch:x86_64",
-    )]
-    test_names += [_exclude_ubsan_rt_test_for_os_arch(
-        "//build/bazel/platforms/os_arch:linux_glibc_x86",
-        "//build/bazel/platforms/os:linux",
-        "//build/bazel/platforms/arch:x86",
-    )]
-    test_names += [_exclude_ubsan_rt_test_for_os_arch(
-        "//build/bazel/platforms/os_arch:linux_glibc_x86_64",
-        "//build/bazel/platforms/os:linux",
-        "//build/bazel/platforms/arch:x86_64",
-    )]
-    test_names += [_exclude_ubsan_rt_test_for_os_arch(
-        "//build/bazel/platforms/os_arch:linux_musl_x86",
-        "//build/bazel/platforms/os:linux_musl",
-        "//build/bazel/platforms/arch:x86",
-    )]
-    test_names += [_exclude_ubsan_rt_test_for_os_arch(
-        "//build/bazel/platforms/os_arch:linux_musl_x86_64",
-        "//build/bazel/platforms/os:linux_musl",
-        "//build/bazel/platforms/arch:x86_64",
-    )]
-
-    return test_names
+def _test_exclude_builtins_rt():
+    _exclude_builtins_rt_name = "builtins_exclude_rt"
+    native.cc_binary(
+        name = _exclude_builtins_rt_name,
+        srcs = test_srcs,
+        tags = ["manual"],
+    )
+    test_cases = [
+        {
+            "os": "android",
+            "arch": "arm",
+            "flag": "-Wl,--exclude-libs=libclang_rt.builtins-arm-android.a",
+        },
+        {
+            "os": "android",
+            "arch": "arm64",
+            "flag": "-Wl,--exclude-libs=libclang_rt.builtins-aarch64-android.a",
+        },
+        {
+            "os": "android",
+            "arch": "x86",
+            "flag": "-Wl,--exclude-libs=libclang_rt.builtins-i686-android.a",
+        },
+        {
+            "os": "android",
+            "arch": "x86_64",
+            "flag": "-Wl,--exclude-libs=libclang_rt.builtins-x86_64-android.a",
+        },
+        {
+            "os": "linux_bionic",
+            "arch": "x86_64",
+            "flag": "-Wl,--exclude-libs=libclang_rt.builtins-x86_64-android.a",
+        },
+        {
+            "os": "linux",
+            "arch": "x86",
+            "flag": "-Wl,--exclude-libs=libclang_rt.builtins-i386.a",
+        },
+        {
+            "os": "linux",
+            "arch": "x86_64",
+            "flag": "-Wl,--exclude-libs=libclang_rt.builtins-x86_64.a",
+        },
+        {
+            "os": "linux_musl",
+            "arch": "x86",
+            "flag": "-Wl,--exclude-libs=libclang_rt.builtins-i386.a",
+        },
+        {
+            "os": "linux_musl",
+            "arch": "x86_64",
+            "flag": "-Wl,--exclude-libs=libclang_rt.builtins-x86_64.a",
+        },
+    ]
+    return [
+        _exclude_rt_test_for_os_arch(_exclude_builtins_rt_name, **tc)
+        for tc in test_cases
+    ]
 
 def cc_toolchain_features_ubsan_test_suite(name):
     individual_tests = [
@@ -745,6 +825,8 @@ def cc_toolchain_features_ubsan_test_suite(name):
         _test_ubsan_unsupported_non_bionic_checks_not_disabled_when_android(),
         _test_ubsan_unsupported_non_bionic_checks_not_disabled_when_no_ubsan(),
         _test_ubsan_link_runtime_when_not_bionic_or_musl(),
+        # TODO(b/274924237): Uncomment after Darwin and Windows have toolchains
+        #        _test_undefined_flag_absent_when_windows_or_darwin(),
     ]
     native.test_suite(
         name = name,
@@ -755,5 +837,6 @@ def cc_toolchain_features_ubsan_test_suite(name):
                 _test_host_only_features() +
                 _test_device_only_features() +
                 _test_device_only_and_host_only_features_absent_when_ubsan_disabled() +
-                _test_exclude_ubsan_rt(),
+                _test_exclude_ubsan_rt() +
+                _test_exclude_builtins_rt(),
     )
