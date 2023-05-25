@@ -497,6 +497,11 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
         ],
     ))
 
+    return features
+
+def _get_no_override_compile_flags(target_os):
+    features = []
+
     # These cannot be overriden by the user.
     features.append(feature(
         name = "no_override_clang_global_copts",
@@ -2107,6 +2112,12 @@ def get_features(
         _get_sdk_version_features(os_is_device, target_arch),
         _compiler_flag_features(ctx, target_arch, target_os, target_flags + compile_only_flags),
         _rpath_features(target_os, arch_is_64_bit),
+        # Sanitizers
+        _get_cfi_features(target_arch, target_os),
+        _get_ubsan_features(target_os, libclang_rt_ubsan_minimal),
+        # Misc features
+        _get_visibiility_hidden_feature(),
+        # RTTI
         _rtti_features(rtti_toggle),
         _use_libcrt_feature(libclang_rt_builtin),
         # Shared compile/link flags that should also be part of the link actions.
@@ -2121,6 +2132,7 @@ def get_features(
         _binary_linker_flag_feature("static_flag", flags = ["-static"], enabled = False),
         # default for executables is dynamic linking
         _binary_linker_flag_feature("static_executable", flags = _static_binary_linker_flags(os_is_device), enabled = False),
+        _manual_binder_interface_feature(),
         _pack_dynamic_relocations_features(target_os),
         # System include directories features
         _toolchain_include_feature(system_includes = builtin_include_dirs),
@@ -2129,14 +2141,10 @@ def get_features(
         _get_legacy_features_end(),
         # Optimization
         _get_thinlto_features(),
-        # Sanitizers
-        _get_cfi_features(target_arch, target_os),
-        _get_ubsan_features(target_os, libclang_rt_ubsan_minimal),
-        # Misc features
-        _get_visibiility_hidden_feature(),
+        # Flags that cannot be overridden must be at the end
+        _get_no_override_compile_flags(target_os),
         # This must always come last.
         _link_crtend(crt_files),
-        _manual_binder_interface_feature(),
     ]
 
     return _flatten([f for f in features if f != None])
