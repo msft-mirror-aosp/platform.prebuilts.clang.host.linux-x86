@@ -21,11 +21,8 @@ load(
     _c_std_versions = "c_std_versions",
     _cpp_std_versions = "cpp_std_versions",
     _default_c_std_version = "default_c_std_version",
-    _default_c_std_version_no_gnu = "default_c_std_version_no_gnu",
     _default_cpp_std_version = "default_cpp_std_version",
     _default_cpp_std_version_no_gnu = "default_cpp_std_version_no_gnu",
-    _experimental_c_std_version = "experimental_c_std_version",
-    _experimental_c_std_version_no_gnu = "experimental_c_std_version_no_gnu",
     _experimental_cpp_std_version = "experimental_cpp_std_version",
     _experimental_cpp_std_version_no_gnu = "experimental_cpp_std_version_no_gnu",
     _flags = "flags",
@@ -210,14 +207,14 @@ def _env_based_common_global_cflags(ctx):
     auto_pattern_initialize = ctx.attr._auto_pattern_initialize[BuildSettingInfo].value
     auto_uninitialize = ctx.attr._auto_uninitialize[BuildSettingInfo].value
     if ctx.attr._auto_zero_initialize[BuildSettingInfo].value:
-        flags.extend(["-ftrivial-auto-var-init=zero", "-enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang"])
+        flags.extend(["-ftrivial-auto-var-init=zero"])
     elif auto_pattern_initialize:
         flags.extend(["-ftrivial-auto-var-init=pattern"])
     elif auto_uninitialize:
         flags.extend(["-ftrivial-auto-var-init=uninitialized"])
     else:
         # Default to zero initialization.
-        flags.extend(["-ftrivial-auto-var-init=zero", "-enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang"])
+        flags.extend(["-ftrivial-auto-var-init=zero"])
 
     if ctx.attr._use_ccache[BuildSettingInfo].value or (not auto_pattern_initialize and not auto_uninitialize):
         flags.extend(["-Wno-unused-command-line-argument"])
@@ -685,9 +682,9 @@ def _dynamic_linker_flag_feature(target_os, arch_is_64_bit):
         dynamic_linker_path = "/system/bin/linker"
         if arch_is_64_bit:
             dynamic_linker_path += "64"
-        flags += ["-Wl,-dynamic-linker," + dynamic_linker_path]
+        flags.append("-Wl,-dynamic-linker," + dynamic_linker_path)
     elif is_os_bionic(target_os) or target_os == _oses.LinuxMusl:
-        flags += ["-Wl,--no-dynamic-linker"]
+        flags.append("-Wl,--no-dynamic-linker")
     return _binary_linker_flag_feature(name = "dynamic_linker", flags = flags) if len(flags) else []
 
 # TODO(b/202167934): Darwin uses @loader_path in place of $ORIGIN
@@ -745,7 +742,7 @@ def _rpath_features(target_os, arch_is_64_bit):
     ]
 
     if (not is_os_device(target_os)) and arch_is_64_bit:
-        runtime_library_search_directories_flag_sets += [flag_set(
+        runtime_library_search_directories_flag_sets.append(flag_set(
             actions = _actions.link,
             flag_groups = [
                 flag_group(
@@ -762,7 +759,7 @@ def _rpath_features(target_os, arch_is_64_bit):
             with_features = [
                 with_feature_set(not_features = ["static_link_cpp_runtimes"]),
             ],
-        )]
+        ))
 
     runtime_library_search_directories_feature = feature(
         name = "runtime_library_search_directories",
@@ -1657,7 +1654,7 @@ def _get_cfi_features(target_arch, target_os):
         ),
     ]
 
-    features += [
+    features.append(
         feature(
             name = "android_cfi_cross_dso",
             enabled = True,
@@ -1671,9 +1668,9 @@ def _get_cfi_features(target_arch, target_os):
                 ),
             ],
         ),
-    ]
+    )
 
-    features += [
+    features.append(
         feature(
             name = "android_cfi_assembly_support",
             enabled = False,
@@ -1685,9 +1682,9 @@ def _get_cfi_features(target_arch, target_os):
                 ),
             ],
         ),
-    ]
+    )
 
-    features += [
+    features.append(
         feature(
             name = "android_cfi_exports_map",
             enabled = False,
@@ -1704,9 +1701,9 @@ def _get_cfi_features(target_arch, target_os):
                 ),
             ],
         ),
-    ]
+    )
 
-    features += [
+    features.append(
         feature(
             name = "android_cfi_visibility_default",
             enabled = True,
@@ -1729,7 +1726,7 @@ def _get_cfi_features(target_arch, target_os):
                 ),
             ],
         ),
-    ]
+    )
 
     return features
 
@@ -1815,7 +1812,7 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
         ),
     ]
 
-    ubsan_features += [
+    ubsan_features.append(
         feature(
             name = "ubsan_integer_overflow",
             enabled = False,
@@ -1847,7 +1844,7 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
             ],
             implies = ["ubsan_minimal_runtime", "ubsan_enabled"],
         ),
-    ]
+    )
 
     ubsan_checks = [
         "alignment",
@@ -1911,7 +1908,7 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
         for check_name in ubsan_checks
     ]
 
-    ubsan_features += [
+    ubsan_features.append(
         feature(
             name = "ubsan_no_sanitize_link_runtime",
             enabled = target_os in [
@@ -1937,13 +1934,13 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
                 ),
             ],
         ),
-    ]
+    )
 
     # non-Bionic toolchain prebuilts are missing UBSan's vptr and function san.
     # Musl toolchain prebuilts have vptr and function sanitizers, but enabling
     # them implicitly enables RTTI which causes RTTI mismatch issues with
     # dependencies.
-    ubsan_features += [
+    ubsan_features.append(
         feature(
             name = "ubsan_disable_unsupported_non_bionic_checks",
             enabled = target_os not in [_oses.LinuxBionic, _oses.Android],
@@ -1968,14 +1965,14 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
                 ),
             ],
         ),
-    ]
+    )
 
     ubsan_features += [
         _host_or_device_specific_ubsan_feature(target_os),
         _exclude_ubsan_rt_feature(libclang_rt_ubsan_minimal),
     ]
 
-    ubsan_features += [
+    ubsan_features.append(
         feature(
             name = "ubsan_minimal_runtime",
             enabled = False,
@@ -1994,9 +1991,9 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
                 ),
             ],
         ),
-    ]
+    )
 
-    ubsan_features += [
+    ubsan_features.append(
         feature(
             name = "ubsan_disable_unsupported_integer_checks",
             enabled = True,
@@ -2043,7 +2040,7 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
                 ),
             ],
         ),
-    ]
+    )
 
     return ubsan_features
 
