@@ -128,6 +128,26 @@ libclang_rt_prebuilt_library_shared {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.asan.static",
+    defaults: ["libclang_rt-prebuilt-default"],
+    host_supported: true,
+    recovery_available: true,
+    native_bridge_supported: true,
+    sdk_version: "24",
+}
+
+///////////////////////////////////////////////////////////////////////////////
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.asan_cxx.static",
+    defaults: ["libclang_rt-prebuilt-default"],
+    host_supported: true,
+    recovery_available: true,
+    native_bridge_supported: true,
+    sdk_version: "24",
+}
+
+///////////////////////////////////////////////////////////////////////////////
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.ubsan_standalone",
     defaults: ["libclang_rt-prebuilt-default"],
