@@ -1607,6 +1607,22 @@ def _get_thinlto_features():
                 ),
             ],
         ),
+        # Used for CFI
+        # TODO(b/283951987): Remove after full LTO support is removed in Soong
+        feature(
+            name = "android_full_lto",
+            enabled = False,
+            flag_sets = [
+                flag_set(
+                    actions = _actions.compile + _actions.link + _actions.assemble,
+                    flag_groups = [
+                        flag_group(
+                            flags = ["-flto"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
     ]
     return features
 
@@ -1630,6 +1646,7 @@ def _make_flag_set(actions, flags, with_features = [], with_not_features = []):
 # TODO(b/276756319): Restrict for riscv64 when we have riscv64 in Bazel
 # TODO(b/276932249): Restrict for Fuzzer when we have Fuzzer in Bazel
 # TODO(b/276931992): Restrict for Asan when we have Asan in Bazel
+# TODO(b/283951987): Switch to thin LTO when possible
 def _get_cfi_features(target_arch, target_os):
     if target_os in [_oses.Windows, _oses.Darwin, _oses.LinuxMusl]:
         return []
@@ -1651,7 +1668,7 @@ def _get_cfi_features(target_arch, target_os):
                     _generated_sanitizer_constants.CfiAsFlags,
                 ),
             ],
-            implies = ["android_thin_lto"] + (
+            implies = ["android_full_lto"] + (
                 ["arm_isa_thumb"] if target_arch == _arches.Arm else []
             ),
         ),
