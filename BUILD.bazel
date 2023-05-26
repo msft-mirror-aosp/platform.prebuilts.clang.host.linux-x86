@@ -44,6 +44,7 @@ load(
     "cc_toolchain_features_arm_isa_test_suite",
 )
 load(":cc_toolchain_clang_version_test.bzl", "cc_toolchain_clang_version_test_suite")
+load(":cc_toolchain_features_misc_test.bzl", "cc_toolchain_features_test_suite")
 load(
     ":cc_toolchain_features_cfi_test.bzl",
     "cc_toolchain_features_cfi_test_suite",
@@ -431,6 +432,10 @@ cc_toolchain_features_arm_isa_test_suite(
 
 cc_toolchain_clang_version_test_suite(
     name = "cc_toolchain_clang_version_tests",
+)
+
+cc_toolchain_features_test_suite(
+    name = "cc_toolchain_features_tests",
 )
 
 cc_toolchain_features_cfi_test_suite(
