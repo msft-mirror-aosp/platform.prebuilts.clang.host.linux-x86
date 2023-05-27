@@ -265,6 +265,7 @@ def test_cfi_cross_dso_does_not_add_flags_for_s():
 
     return test_name
 
+# TODO(b/283951987): Swtich to thin LTO when possible
 def test_cfi_implies_lto():
     name = "cfi_implies_lto"
     native.cc_binary(
@@ -279,7 +280,7 @@ def test_cfi_implies_lto():
         name = test_name,
         target_under_test = name,
         mnemonics = [compile_action_mnemonic],
-        expected_flags = ["-flto=thin"],
+        expected_flags = ["-flto"],
     )
 
     return test_name
