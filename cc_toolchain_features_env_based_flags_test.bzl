@@ -130,7 +130,6 @@ def test_auto_zero_initialize_flags():
         target_under_test = CC_LIB_NAME,
         expected_flags = [
             "-ftrivial-auto-var-init=zero",
-            "-enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang",
             "-Wno-unused-command-line-argument",
         ],
     )
@@ -145,7 +144,6 @@ def test_auto_initialize_default_flags():
         target_under_test = CC_LIB_NAME,
         expected_flags = [
             "-ftrivial-auto-var-init=zero",
-            "-enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang",
             "-Wno-unused-command-line-argument",
         ],
     )
