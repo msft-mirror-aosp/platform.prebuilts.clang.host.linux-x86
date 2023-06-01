@@ -4,6 +4,8 @@ load(
     "tool",
     "tool_path",
 )
+load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load(
     ":cc_toolchain_constants.bzl",
     "arch_to_variants",
@@ -28,21 +30,127 @@ load(
 load("//build/bazel/platforms/arch/variants:constants.bzl", _arch_constants = "constants")
 
 # Clang-specific configuration.
-_ClangVersionInfo = provider(fields = ["directory", "includes"])
+_ClangVersionInfo = provider(fields = ["clang_version", "includes"])
 
-def _clang_version_impl(ctx):
-    directory = ctx.file.directory
-    provider = _ClangVersionInfo(
-        directory = directory,
-        includes = [directory.short_path + "/" + d for d in ctx.attr.includes],
-    )
-    return [provider]
+CLANG_TOOLS = [
+    "llvm-ar",
+    "llvm-nm",
+    "llvm-objcopy",
+    "llvm-readelf",
+    "llvm-strip",
+    "clang-tidy",
+    "clang-tidy.sh",
+    "clang-tidy.real",
+]
 
-clang_version = rule(
-    implementation = _clang_version_impl,
+CLANG_TEST_TOOLS = [
+    "llvm-readelf",
+    "llvm-nm",
+]
+
+def clang_tool_output_group(tool_name):
+    return tool_name.replace("-", "_").replace(".", "_")
+
+_libclang_rt_prebuilt_map = {
+    "android_arm": "libclang_rt.builtins-arm-android.a",
+    "android_arm64": "libclang_rt.builtins-aarch64-android.a",
+    "android_x86": "libclang_rt.builtins-i686-android.a",
+    "android_x86_64": "libclang_rt.builtins-x86_64-android.a",
+    "linux_bionic_x86_64": "libclang_rt.builtins-x86_64-android.a",
+    "linux_glibc_x86": "libclang_rt.builtins-i386.a",
+    "linux_glibc_x86_64": "libclang_rt.builtins-x86_64.a",
+    "linux_musl_x86": "i686-unknown-linux-musl/lib/linux/libclang_rt.builtins-i386.a",
+    "linux_musl_x86_64": "x86_64-unknown-linux-musl/lib/linux/libclang_rt.builtins-x86_64.a",
+}
+
+_libclang_rt_ubsan_minimal_prebuilt_map = {
+    "android_arm": "libclang_rt.ubsan_minimal-arm-android.a",
+    "android_arm64": "libclang_rt.ubsan_minimal-aarch64-android.a",
+    "android_x86": "libclang_rt.ubsan_minimal-i686-android.a",
+    "android_x86_64": "libclang_rt.ubsan_minimal-x86_64-android.a",
+    "linux_bionic_x86_64": "libclang_rt.ubsan_minimal-x86_64-android.a",
+    "linux_glibc_x86": "libclang_rt.ubsan_minimal-i386.a",
+    "linux_glibc_x86_64": "libclang_rt.ubsan_minimal-x86_64.a",
+    "linux_musl_x86": "i686-unknown-linux-musl/lib/linux/libclang_rt.ubsan_minimal-i386.a",
+    "linux_musl_x86_64": "x86_64-unknown-linux-musl/lib/linux/libclang_rt.ubsan_minimal-x86_64.a",
+}
+
+def _is_relative_path(path, root):
+    path_parts = paths.normalize(path).split("/")
+    root_parts = paths.normalize(root).split("/")
+    for i in range(len(root_parts)):
+        if path_parts[i] != root_parts[i]:
+            return False
+    return True
+
+def _clang_version_info_impl(ctx):
+    clang_version = ctx.attr.clang_version[BuildSettingInfo].value
+    clang_version_directory = paths.join(ctx.label.package, clang_version)
+    clang_short_version = ctx.attr.clang_short_version[BuildSettingInfo].value
+
+    all_files = {}  # a set to do fast prebuilt lookups later
+    output_groups = {
+        "compiler_clang_includes": [],
+        "compiler_binaries": [],
+        "linker_binaries": [],
+        "ar_files": [],
+        "clang_test_tools": [],
+    }
+
+    for file in ctx.files.clang_files:
+        if not _is_relative_path(file.short_path, clang_version_directory):
+            continue
+        file_path = paths.relativize(file.short_path, clang_version_directory)
+        all_files[file_path] = file
+
+        file_path_parts = file_path.split("/")
+        if file_path_parts[:2] == ["lib", "clang"] and file_path_parts[4] == "include":
+            output_groups["compiler_clang_includes"].append(file)  # /lib/clang/*/include/**
+        if file_path_parts[0] == "bin" and len(file_path_parts) == 2:
+            output_groups["linker_binaries"].append(file)  # /bin/*
+            if file.basename.startswith("clang"):
+                output_groups["compiler_binaries"].append(file)  # /bin/clang*
+            if file.basename == "llvm-ar":
+                output_groups["ar_files"].append(file)  # /bin/llvm-ar
+            if file.basename in CLANG_TEST_TOOLS:
+                output_groups["clang_test_tools"].append(file)
+            if file.basename in CLANG_TOOLS:
+                output_groups[clang_tool_output_group(file.basename)] = [file]
+
+    libclang_rt_prefix = "lib/clang/%s/lib/linux" % clang_short_version
+    for arch, path in _libclang_rt_prebuilt_map.items():
+        file_path = paths.join(libclang_rt_prefix, path)
+        if file_path in all_files:
+            output_groups["libclang_rt_builtins_" + arch] = [all_files[file_path]]
+        else:
+            fail("could not find libclang_rt_builtin for `%s` at path `%s`" % (arch, file_path))
+    for arch, path in _libclang_rt_ubsan_minimal_prebuilt_map.items():
+        file_path = paths.join(libclang_rt_prefix, path)
+        if file_path in all_files:
+            output_groups["libclang_rt_ubsan_minimal_" + arch] = [all_files[file_path]]
+        else:
+            fail("could not find libclang_rt_ubsan_minimal for `%s` at path `%s`" % (arch, file_path))
+
+    return [
+        _ClangVersionInfo(
+            clang_version = clang_version,
+            includes = [
+                paths.join(clang_version_directory, "lib", "clang", clang_short_version, "include"),
+            ],
+        ),
+        OutputGroupInfo(
+            **output_groups
+        ),
+    ]
+
+clang_version_info = rule(
+    implementation = _clang_version_info_impl,
     attrs = {
-        "directory": attr.label(allow_single_file = True, mandatory = True),
-        "includes": attr.string_list(default = []),
+        "clang_version": attr.label(mandatory = True),
+        "clang_short_version": attr.label(mandatory = True),
+        "clang_files": attr.label_list(
+            allow_files = True,
+        ),
     },
 )
 
@@ -50,15 +158,15 @@ def _tool_paths(clang_version_info):
     return [
         tool_path(
             name = "gcc",
-            path = clang_version_info.directory.basename + "/bin/clang",
+            path = clang_version_info.clang_version + "/bin/clang",
         ),
         tool_path(
             name = "ld",
-            path = clang_version_info.directory.basename + "/bin/ld.lld",
+            path = clang_version_info.clang_version + "/bin/ld.lld",
         ),
         tool_path(
             name = "ar",
-            path = clang_version_info.directory.basename + "/bin/llvm-ar",
+            path = clang_version_info.clang_version + "/bin/llvm-ar",
         ),
         tool_path(
             name = "cpp",
@@ -66,30 +174,34 @@ def _tool_paths(clang_version_info):
         ),
         tool_path(
             name = "gcov",
-            path = clang_version_info.directory.basename + "/bin/llvm-profdata",
+            path = clang_version_info.clang_version + "/bin/llvm-profdata",
         ),
         tool_path(
             name = "llvm-cov",
-            path = clang_version_info.directory.basename + "/bin/llvm-cov",
+            path = clang_version_info.clang_version + "/bin/llvm-cov",
         ),
         tool_path(
             name = "nm",
-            path = clang_version_info.directory.basename + "/bin/llvm-nm",
+            path = clang_version_info.clang_version + "/bin/llvm-nm",
+        ),
+        tool_path(
+            name = "objcopy",
+            path = clang_version_info.clang_version + "/bin/llvm-objcopy",
         ),
         tool_path(
             name = "objdump",
-            path = clang_version_info.directory.basename + "/bin/llvm-objdump",
+            path = clang_version_info.clang_version + "/bin/llvm-objdump",
         ),
         # Soong has a wrapper around strip.
         # https://cs.android.com/android/platform/superproject/+/master:build/soong/cc/strip.go;l=62;drc=master
         # https://cs.android.com/android/platform/superproject/+/master:build/soong/cc/builder.go;l=991-1025;drc=master
         tool_path(
             name = "strip",
-            path = clang_version_info.directory.basename + "/bin/llvm-strip",
+            path = clang_version_info.clang_version + "/bin/llvm-strip",
         ),
         tool_path(
             name = "clang++",
-            path = clang_version_info.directory.basename + "/bin/clang++",
+            path = clang_version_info.clang_version + "/bin/clang++",
         ),
     ]
 
@@ -201,6 +313,13 @@ def _create_action_configs(tool_paths, target_os):
         # Soong by running strip actions in a rule (stripped_shared_library).
     ))
 
+    # use llvm-objcopy to remove addrsig sections from partially linked objects
+    action_configs.append(action_config(
+        action_name = "objcopy",
+        enabled = True,
+        tools = [tool_name_to_tool["objcopy"]],
+    ))
+
     return action_configs
 
 def _cc_toolchain_config_impl(ctx):
@@ -293,6 +412,9 @@ _cc_toolchain_config = rule(
         "_allow_unknown_warning_option": attr.label(
             default = "//prebuilts/clang/host/linux-x86:allow_unknown_warning_option_env",
         ),
+        "_product_variables": attr.label(
+            default = "//build/bazel/product_config:product_vars",
+        ),
     },
     provides = [CcToolchainConfigInfo],
 )
@@ -313,9 +435,6 @@ def android_cc_toolchain(
         target_os = None,
         target_arch = None,
         clang_version = None,
-        # This should come from the clang_version provider.
-        # Instead, it's hard-coded because this is a macro, not a rule.
-        clang_version_directory = None,
         gcc_toolchain = None,
         # If false, the crt version and "normal" version of this toolchain are identical.
         crt = None,
@@ -330,7 +449,7 @@ def android_cc_toolchain(
     libclang_rt_path = None
     if libclang_rt_builtin:
         libclang_rt_path = libclang_rt_builtin
-        extra_linker_paths.append(":" + libclang_rt_path)
+        extra_linker_paths.append(libclang_rt_path)
     libclang_rt_ubsan_minimal_path = None
     if libclang_rt_ubsan_minimal:
         libclang_rt_ubsan_minimal_path = libclang_rt_ubsan_minimal
@@ -369,24 +488,26 @@ def android_cc_toolchain(
     # Create the filegroups needed for sandboxing toolchain inputs to C++ actions.
     native.filegroup(
         name = "%s_compiler_clang_includes" % name,
-        srcs = native.glob([clang_version_directory + "/lib/clang/*/include/**"]),
+        srcs = [clang_version],
+        output_group = "compiler_clang_includes",
     )
 
     native.filegroup(
         name = "%s_compiler_binaries" % name,
-        srcs = native.glob([clang_version_directory + "/bin/clang*"]),
+        srcs = [clang_version],
+        output_group = "compiler_binaries",
     )
 
     native.filegroup(
         name = "%s_linker_binaries" % name,
-        srcs = native.glob([
-            clang_version_directory + "/bin/*",
-        ]),
+        srcs = [clang_version],
+        output_group = "linker_binaries",
     )
 
     native.filegroup(
         name = "%s_ar_files" % name,
-        srcs = [clang_version_directory + "/bin/llvm-ar"],
+        srcs = [clang_version],
+        output_group = "ar_files",
     )
 
     native.filegroup(

@@ -12,55 +12,85 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load(
     "@kernel_toolchain_info//:dict.bzl",
     "VARS",
 )
-load(":clang_toolchain.bzl", "clang_toolchain")
+load(
+    ":clang_toolchain.bzl",
+    "android_arm64_clang_toolchain",
+    "android_riscv64_clang_toolchain",
+    "android_x86_64_clang_toolchain",
+    "linux_x86_64_clang_toolchain",
+)
+load(":versions.bzl", "VERSIONS")
 
-clang_toolchain(
+bzl_library(
+    name = "versions",
+    srcs = ["versions.bzl"],
+    visibility = ["//visibility:public"],
+)
+
+bzl_library(
+    name = "register",
+    srcs = ["register.bzl"],
+    visibility = ["//visibility:public"],
+    deps = [":versions"],
+)
+
+# Default toolchain for cc_* rules.
+
+linux_x86_64_clang_toolchain(
     name = "linux_x86_64_clang_toolchain",
     clang_version = VARS["CLANG_VERSION"],
-    linker_files = [
-        # From _setup_env.sh, HOSTLDFLAGS
-        "//prebuilts/kernel-build-tools:linux-x86-libs",
-    ],
-    # From _setup_env.sh
-    # sysroot_flags+="--sysroot=${ROOT_DIR}/build/kernel/build-tools/sysroot "
-    sysroot_label = "//build/kernel:sysroot",
-    sysroot_path = "build/kernel/build-tools/sysroot",
-    target_cpu = "x86_64",
-    target_os = "linux",
 )
 
-clang_toolchain(
+android_arm64_clang_toolchain(
     name = "android_arm64_clang_toolchain",
     clang_version = VARS["CLANG_VERSION"],
-    ndk_triple = VARS.get("AARCH64_NDK_TRIPLE"),
-    # From _setup_env.sh: when NDK triple is set,
-    # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
-    sysroot_label = "@prebuilt_ndk//:sysroot" if "AARCH64_NDK_TRIPLE" in VARS else None,
-    sysroot_path = "external/prebuilt_ndk/toolchains/llvm/prebuilt/linux-x86_64/sysroot" if "AARCH64_NDK_TRIPLE" in VARS else None,
-    target_cpu = "arm64",
-    target_os = "android",
 )
 
-clang_toolchain(
+android_x86_64_clang_toolchain(
     name = "android_x86_64_clang_toolchain",
     clang_version = VARS["CLANG_VERSION"],
-    ndk_triple = VARS.get("X86_64_NDK_TRIPLE"),
-    # From _setup_env.sh: when NDK triple is set,
-    # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
-    sysroot_label = "@prebuilt_ndk//:sysroot" if "X86_64_NDK_TRIPLE" in VARS else None,
-    sysroot_path = "external/prebuilt_ndk/toolchains/llvm/prebuilt/linux-x86_64/sysroot" if "X86_64_NDK_TRIPLE" in VARS else None,
-    target_cpu = "x86_64",
-    target_os = "android",
 )
 
-clang_toolchain(
+android_riscv64_clang_toolchain(
     name = "android_riscv64_clang_toolchain",
     clang_version = VARS["CLANG_VERSION"],
-    target_cpu = "riscv64",
-    target_os = "android",
-    # TODO(b/271919464): We need NDK_TRIPLE for riscv
 )
+
+# Extra toolchain for kernel_* rules
+
+constraint_setting(name = "clang_version")
+
+[constraint_value(
+    name = version,
+    constraint_setting = ":clang_version",
+    visibility = ["//visibility:public"],
+) for version in VERSIONS]
+
+[linux_x86_64_clang_toolchain(
+    name = version + "_linux_x86_64_clang_toolchain",
+    clang_version = version,
+    extra_compatible_with = [version],
+) for version in VERSIONS]
+
+[android_arm64_clang_toolchain(
+    name = version + "_android_arm64_clang_toolchain",
+    clang_version = version,
+    extra_compatible_with = [version],
+) for version in VERSIONS]
+
+[android_x86_64_clang_toolchain(
+    name = version + "_android_x86_64_clang_toolchain",
+    clang_version = version,
+    extra_compatible_with = [version],
+) for version in VERSIONS]
+
+[android_riscv64_clang_toolchain(
+    name = version + "_android_riscv64_clang_toolchain",
+    clang_version = version,
+    extra_compatible_with = [version],
+) for version in VERSIONS]
