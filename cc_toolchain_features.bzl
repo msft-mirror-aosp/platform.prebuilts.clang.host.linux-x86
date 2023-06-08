@@ -1821,6 +1821,30 @@ def _exclude_ubsan_rt_feature(path):
 int_overflow_ignorelist_path = "build/soong/cc/config"
 int_overflow_ignorelist_filename = "integer_overflow_blocklist.txt"
 
+def _get_unsupported_integer_check_with_feature_sets(feature_check):
+    integer_sanitizers = [
+        "implicit-unsigned-integer-truncation",
+        "implicit-signed-integer-truncation",
+        "implicit-integer-sign-change",
+        "integer-divide-by-zero",
+        "signed-integer-overflow",
+        "unsigned-integer-overflow",
+        "implicit-integer-truncation",
+        "implicit-integer-arithmetic-value-change",
+        "integer",
+        "integer_overflow",
+    ]
+    if feature_check in integer_sanitizers:
+        integer_sanitizers.remove(feature_check)
+
+    return [
+        with_feature_set(
+            features = ["ubsan_" + integer_sanitizer],
+            not_features = ["ubsan_" + feature_check],
+        )
+        for integer_sanitizer in integer_sanitizers
+    ]
+
 def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
     if target_os in [_oses.Windows, _oses.Darwin]:
         return []
@@ -2031,14 +2055,9 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
                             ],
                         ),
                     ],
-                    with_features = [
-                        with_feature_set(
-                            features = ["ubsan_integer"],
-                            not_features = [
-                                "ubsan_implicit-integer-sign-change",
-                            ],
-                        ),
-                    ],
+                    with_features = _get_unsupported_integer_check_with_feature_sets(
+                        "implicit-integer-sign-change",
+                    ),
                 ),
                 # TODO(b/171275751): If this bug is fixed, this shouldn't be
                 #                    needed anymore
@@ -2051,14 +2070,9 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
                             ],
                         ),
                     ],
-                    with_features = [
-                        with_feature_set(
-                            features = ["ubsan_integer"],
-                            not_features = [
-                                "ubsan_unsigned-shift-base",
-                            ],
-                        ),
-                    ],
+                    with_features = _get_unsupported_integer_check_with_feature_sets(
+                        "unsigned-shift-base",
+                    ),
                 ),
             ],
         ),
