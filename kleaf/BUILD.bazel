@@ -20,6 +20,7 @@ load(
 load(
     ":clang_toolchain.bzl",
     "android_arm64_clang_toolchain",
+    "android_arm_clang_toolchain",
     "android_riscv64_clang_toolchain",
     "android_x86_64_clang_toolchain",
     "linux_x86_64_clang_toolchain",
@@ -51,6 +52,11 @@ android_arm64_clang_toolchain(
     clang_version = VARS["CLANG_VERSION"],
 )
 
+android_arm_clang_toolchain(
+    name = "android_arm_clang_toolchain",
+    clang_version = VARS["CLANG_VERSION"],
+)
+
 android_x86_64_clang_toolchain(
     name = "android_x86_64_clang_toolchain",
     clang_version = VARS["CLANG_VERSION"],
@@ -79,6 +85,12 @@ constraint_setting(name = "clang_version")
 
 [android_arm64_clang_toolchain(
     name = version + "_android_arm64_clang_toolchain",
+    clang_version = version,
+    extra_compatible_with = [version],
+) for version in VERSIONS]
+
+[android_arm_clang_toolchain(
+    name = version + "_android_arm_clang_toolchain",
     clang_version = version,
     extra_compatible_with = [version],
 ) for version in VERSIONS]
