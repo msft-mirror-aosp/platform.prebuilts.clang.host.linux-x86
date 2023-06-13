@@ -15,11 +15,29 @@
 """Registers all clang toolchains defined in this package."""
 
 load(":architecture_constants.bzl", "SUPPORTED_ARCHITECTURES")
+load(":user_clang_toolchain_repository.bzl", "user_clang_toolchain_repository")
 load(":versions.bzl", "VERSIONS")
 
 # buildifier: disable=unnamed-macro
 def register_clang_toolchains():
-    """Registers all clang toolchains defined in this package."""
+    """Registers all clang toolchains defined in this package.
+
+    The user clang toolchain is expected from the path defined in the
+    `KLEAF_USER_CLANG_TOOLCHAIN_PATH` environment variable, if set.
+    """
+
+    user_clang_toolchain_repository(
+        name = "kleaf_user_clang_toolchain",
+    )
+
+    for target_os, target_cpu in SUPPORTED_ARCHITECTURES:
+        native.register_toolchains(
+            "@kleaf_user_clang_toolchain//:user_{}_{}_clang_toolchain".format(
+                target_os,
+                target_cpu,
+            ),
+        )
+
     for version in VERSIONS:
         for target_os, target_cpu in SUPPORTED_ARCHITECTURES:
             native.register_toolchains(

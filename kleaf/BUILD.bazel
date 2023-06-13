@@ -28,6 +28,12 @@ bzl_library(
 )
 
 bzl_library(
+    name = "user_clang_toolchain_repository",
+    srcs = ["user_clang_toolchain_repository.bzl"],
+    visibility = ["//visibility:private"],
+)
+
+bzl_library(
     name = "versions",
     srcs = ["versions.bzl"],
     visibility = ["//visibility:public"],
@@ -39,6 +45,7 @@ bzl_library(
     visibility = ["//visibility:public"],
     deps = [
         ":architecture_constants",
+        ":user_clang_toolchain_repository",
         ":versions",
     ],
 )
