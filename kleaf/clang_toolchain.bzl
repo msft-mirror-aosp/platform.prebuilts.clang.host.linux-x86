@@ -207,6 +207,30 @@ def android_arm64_clang_toolchain(
         extra_compatible_with = extra_compatible_with,
     )
 
+def android_arm_clang_toolchain(
+        name,
+        clang_version,
+        extra_compatible_with = None):
+    """Declare an android_arm (32-bit) toolchain.
+
+    Args:
+        name: name prefix
+        clang_version: `CLANG_VERSION`
+        extra_compatible_with: extra `exec_compatible_with` and `target_compatible_with`
+    """
+    clang_toolchain(
+        name = name,
+        clang_version = clang_version,
+        ndk_triple = VARS.get("ARM_NDK_TRIPLE"),
+        # From _setup_env.sh: when NDK triple is set,
+        # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
+        sysroot_label = "@prebuilt_ndk//:sysroot" if "ARM_NDK_TRIPLE" in VARS else None,
+        sysroot_path = "external/prebuilt_ndk/toolchains/llvm/prebuilt/linux-x86_64/sysroot" if "AARCH64_NDK_TRIPLE" in VARS else None,
+        target_cpu = "arm",
+        target_os = "android",
+        extra_compatible_with = extra_compatible_with,
+    )
+
 def android_x86_64_clang_toolchain(
         name,
         clang_version,

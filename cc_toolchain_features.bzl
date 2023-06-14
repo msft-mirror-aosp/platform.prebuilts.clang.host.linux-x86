@@ -1821,6 +1821,80 @@ def _exclude_ubsan_rt_feature(path):
 int_overflow_ignorelist_path = "build/soong/cc/config"
 int_overflow_ignorelist_filename = "integer_overflow_blocklist.txt"
 
+def _get_unsupported_integer_check_with_feature_sets(feature_check):
+    integer_sanitizers = [
+        "implicit-unsigned-integer-truncation",
+        "implicit-signed-integer-truncation",
+        "implicit-integer-sign-change",
+        "integer-divide-by-zero",
+        "signed-integer-overflow",
+        "unsigned-integer-overflow",
+        "implicit-integer-truncation",
+        "implicit-integer-arithmetic-value-change",
+        "integer",
+        "integer_overflow",
+    ]
+    if feature_check in integer_sanitizers:
+        integer_sanitizers.remove(feature_check)
+
+    return [
+        with_feature_set(
+            features = ["ubsan_" + integer_sanitizer],
+            not_features = ["ubsan_" + feature_check],
+        )
+        for integer_sanitizer in integer_sanitizers
+    ]
+
+# The key of this dict is the package path to the blocklist, while the value is
+# its filename.
+# TODO: b/286872909 - When the blocking bug is complete, put these in their
+#                     respective packages
+sanitizer_blocklist_dict = {
+    "external/libavc": "libavc_blocklist.txt",
+    "external/libaom": "libaom_blocklist.txt",
+    "external/libvpx": "libvpx_blocklist.txt",
+    "frameworks/base/libs/androidfw": "libandroidfw_blocklist.txt",
+    "external/libhevc": "libhevc_blocklist.txt",
+    "external/libexif": "libexif_blocklist.txt",
+    "external/libopus": "libopus_blocklist.txt",
+    "external/libmpeg2": "libmpeg2dec_blocklist.txt",
+    "external/expat": "libexpat_blocklist.txt",
+    "external/flac/src/libFLAC": "libFLAC_blocklist.txt",
+    "system/extras/toolchain-extras": "libprofile_clang_extras_blocklist.txt",
+}
+
+def _get_ubsan_blocklist_features():
+    features = []
+    for blocklist in sanitizer_blocklist_dict.items():
+        # Format the blocklist name to be used in a feature name
+        blocklist_feature_name_suffix = blocklist[1].lower().replace(".", "_")
+        features.append(
+            feature(
+                name = "ubsan_blocklist_" + blocklist_feature_name_suffix,
+                enabled = False,
+                requires = [
+                    feature_set(features = ["ubsan_enabled"]),
+                ],
+                flag_sets = [
+                    flag_set(
+                        actions = _actions.c_and_cpp_compile,
+                        flag_groups = [
+                            flag_group(
+                                flags = [
+                                    "%s%s/%s" % (
+                                        _generated_sanitizer_constants.SanitizeIgnorelistPrefix,
+                                        blocklist[0],
+                                        blocklist[1],
+                                    ),
+                                ],
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        )
+    return features
+
 def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
     if target_os in [_oses.Windows, _oses.Darwin]:
         return []
@@ -2031,14 +2105,9 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
                             ],
                         ),
                     ],
-                    with_features = [
-                        with_feature_set(
-                            features = ["ubsan_integer"],
-                            not_features = [
-                                "ubsan_implicit-integer-sign-change",
-                            ],
-                        ),
-                    ],
+                    with_features = _get_unsupported_integer_check_with_feature_sets(
+                        "implicit-integer-sign-change",
+                    ),
                 ),
                 # TODO(b/171275751): If this bug is fixed, this shouldn't be
                 #                    needed anymore
@@ -2051,18 +2120,15 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
                             ],
                         ),
                     ],
-                    with_features = [
-                        with_feature_set(
-                            features = ["ubsan_integer"],
-                            not_features = [
-                                "ubsan_unsigned-shift-base",
-                            ],
-                        ),
-                    ],
+                    with_features = _get_unsupported_integer_check_with_feature_sets(
+                        "unsigned-shift-base",
+                    ),
                 ),
             ],
         ),
     )
+
+    ubsan_features.extend(_get_ubsan_blocklist_features())
 
     return ubsan_features
 
