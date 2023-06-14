@@ -51,6 +51,7 @@ clang_config = rule(
     attrs = {
         "target_cpu": attr.string(mandatory = True, values = [
             "arm64",
+            "arm",
             "riscv64",
             "x86_64",
         ]),
