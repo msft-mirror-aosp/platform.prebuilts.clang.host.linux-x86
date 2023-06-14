@@ -172,11 +172,11 @@ def linux_x86_64_clang_toolchain(
         clang_version = clang_version,
         linker_files = [
             # From _setup_env.sh, HOSTLDFLAGS
-            "//prebuilts/kernel-build-tools:linux-x86-libs",
+            Label("//prebuilts/kernel-build-tools:linux-x86-libs"),
         ],
         # From _setup_env.sh
         # sysroot_flags+="--sysroot=${ROOT_DIR}/build/kernel/build-tools/sysroot "
-        sysroot_label = "//build/kernel:sysroot",
+        sysroot_label = Label("//build/kernel:sysroot"),
         sysroot_path = "build/kernel/build-tools/sysroot",
         target_cpu = "x86_64",
         target_os = "linux",
