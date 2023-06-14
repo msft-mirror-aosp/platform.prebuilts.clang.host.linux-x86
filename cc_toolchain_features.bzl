@@ -1766,7 +1766,7 @@ def _get_visibiility_hidden_feature():
         ),
     ]
 
-def _ubsan_flag_feature(name, actions, flags):
+def _sanitizer_flag_feature(name, actions, flags):
     return feature(
         name = name,
         enabled = True,
@@ -1778,24 +1778,29 @@ def _ubsan_flag_feature(name, actions, flags):
                         flags = flags,
                     ),
                 ],
+                # Any new sanitizers that are enabled need to have a
+                # with_feature_set added here.
                 with_features = [
                     with_feature_set(
                         features = ["ubsan_enabled"],
+                    ),
+                    with_feature_set(
+                        features = ["android_cfi"],
                     ),
                 ],
             ),
         ],
     )
 
-def _host_or_device_specific_ubsan_feature(target_os):
+def _host_or_device_specific_sanitizer_feature(target_os):
     if is_os_device(target_os):
-        return _ubsan_flag_feature(
-            "ubsan_device_only_flags",
+        return _sanitizer_flag_feature(
+            "sanitizer_device_only_flags",
             _actions.compile,
             _generated_sanitizer_constants.DeviceOnlySanitizeFlags,
         )
-    return _ubsan_flag_feature(
-        "ubsan_host_only_flags",
+    return _sanitizer_flag_feature(
+        "sanitizer_host_only_flags",
         _actions.compile,
         _generated_sanitizer_constants.HostOnlySanitizeFlags,
     )
@@ -2064,7 +2069,7 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
     )
 
     ubsan_features += [
-        _host_or_device_specific_ubsan_feature(target_os),
+        _host_or_device_specific_sanitizer_feature(target_os),
         _exclude_ubsan_rt_feature(libclang_rt_ubsan_minimal),
     ]
 
