@@ -172,11 +172,11 @@ def linux_x86_64_clang_toolchain(
         clang_version = clang_version,
         linker_files = [
             # From _setup_env.sh, HOSTLDFLAGS
-            "//prebuilts/kernel-build-tools:linux-x86-libs",
+            Label("//prebuilts/kernel-build-tools:linux-x86-libs"),
         ],
         # From _setup_env.sh
         # sysroot_flags+="--sysroot=${ROOT_DIR}/build/kernel/build-tools/sysroot "
-        sysroot_label = "//build/kernel:sysroot",
+        sysroot_label = Label("//build/kernel:sysroot"),
         sysroot_path = "build/kernel/build-tools/sysroot",
         target_cpu = "x86_64",
         target_os = "linux",
@@ -207,6 +207,30 @@ def android_arm64_clang_toolchain(
         extra_compatible_with = extra_compatible_with,
     )
 
+def android_arm_clang_toolchain(
+        name,
+        clang_version,
+        extra_compatible_with = None):
+    """Declare an android_arm (32-bit) toolchain.
+
+    Args:
+        name: name prefix
+        clang_version: `CLANG_VERSION`
+        extra_compatible_with: extra `exec_compatible_with` and `target_compatible_with`
+    """
+    clang_toolchain(
+        name = name,
+        clang_version = clang_version,
+        ndk_triple = VARS.get("ARM_NDK_TRIPLE"),
+        # From _setup_env.sh: when NDK triple is set,
+        # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
+        sysroot_label = "@prebuilt_ndk//:sysroot" if "ARM_NDK_TRIPLE" in VARS else None,
+        sysroot_path = "external/prebuilt_ndk/toolchains/llvm/prebuilt/linux-x86_64/sysroot" if "AARCH64_NDK_TRIPLE" in VARS else None,
+        target_cpu = "arm",
+        target_os = "android",
+        extra_compatible_with = extra_compatible_with,
+    )
+
 def android_x86_64_clang_toolchain(
         name,
         clang_version,
@@ -227,6 +251,31 @@ def android_x86_64_clang_toolchain(
         sysroot_label = "@prebuilt_ndk//:sysroot" if "X86_64_NDK_TRIPLE" in VARS else None,
         sysroot_path = "external/prebuilt_ndk/toolchains/llvm/prebuilt/linux-x86_64/sysroot" if "X86_64_NDK_TRIPLE" in VARS else None,
         target_cpu = "x86_64",
+        target_os = "android",
+        extra_compatible_with = extra_compatible_with,
+    )
+
+def android_i386_clang_toolchain(
+        name,
+        clang_version,
+        extra_compatible_with = None):
+    """Declare an android_i386 toolchain.
+
+    Args:
+        name: name prefix
+        clang_version: `CLANG_VERSION`
+        extra_compatible_with: extra `exec_compatible_with` and `target_compatible_with`
+    """
+    clang_toolchain(
+        name = name,
+        clang_version = clang_version,
+        # i386 uses the same NDK_TRIPLE as x86_64
+        ndk_triple = VARS.get("X86_64_NDK_TRIPLE"),
+        # From _setup_env.sh: when NDK triple is set,
+        # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
+        sysroot_label = "@prebuilt_ndk//:sysroot" if "X86_64_NDK_TRIPLE" in VARS else None,
+        sysroot_path = "external/prebuilt_ndk/toolchains/llvm/prebuilt/linux-x86_64/sysroot" if "X86_64_NDK_TRIPLE" in VARS else None,
+        target_cpu = "i386",
         target_os = "android",
         extra_compatible_with = extra_compatible_with,
     )

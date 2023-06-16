@@ -21,13 +21,26 @@ load(
 )
 load(
     "//build/bazel/rules/test_common:flags.bzl",
+    "action_flags_absent_for_mnemonic_aosp_arm64_host_test",
+    "action_flags_absent_for_mnemonic_aosp_arm64_test",
     "action_flags_absent_for_mnemonic_test",
     "action_flags_present_for_mnemonic_nonexclusive_test",
+    "action_flags_present_only_for_mnemonic_aosp_arm64_host_test",
+    "action_flags_present_only_for_mnemonic_aosp_arm64_test",
     "action_flags_present_only_for_mnemonic_test",
 )
 
 compile_action_mnemonic = "CppCompile"
 link_action_mnemonic = "CppLink"
+
+# Include these different file types to make sure that all actions types are
+# triggered
+test_srcs = [
+    "foo.cpp",
+    "bar.c",
+    "baz.s",
+    "blah.S",
+]
 
 def test_cfi_c_and_cpp_has_correct_flags():
     name = "cfi_c_and_cpp_has_correct_flags"
@@ -265,6 +278,7 @@ def test_cfi_cross_dso_does_not_add_flags_for_s():
 
     return test_name
 
+# TODO(b/283951987): Swtich to thin LTO when possible
 def test_cfi_implies_lto():
     name = "cfi_implies_lto"
     native.cc_binary(
@@ -279,7 +293,7 @@ def test_cfi_implies_lto():
         name = test_name,
         target_under_test = name,
         mnemonics = [compile_action_mnemonic],
-        expected_flags = ["-flto=thin"],
+        expected_flags = ["-flto"],
     )
 
     return test_name
@@ -369,6 +383,58 @@ def test_cfi_and_arm_uses_thumb():
 #
 #    return test_name
 
+def _test_host_only_and_device_only_features():
+    name = "cfi_host_only_and_device_only_features"
+    test_names = []
+
+    native.cc_binary(
+        name = name,
+        srcs = ["foo.c", "bar.cpp"],
+        features = ["android_cfi"],
+        tags = ["manual"],
+    )
+
+    host_with_host_flags_test_name = name + "_host_flags_present_when_host_test"
+    test_names += [host_with_host_flags_test_name]
+    action_flags_present_only_for_mnemonic_aosp_arm64_host_test(
+        name = host_with_host_flags_test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_flags = generated_sanitizer_constants.HostOnlySanitizeFlags,
+    )
+
+    device_with_host_flags_test_name = name + "_host_flags_absent_when_device_test"
+    test_names += [device_with_host_flags_test_name]
+    action_flags_absent_for_mnemonic_aosp_arm64_test(
+        name = device_with_host_flags_test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_absent_flags = generated_sanitizer_constants.HostOnlySanitizeFlags,
+    )
+
+    device_with_device_flags_test_name = name + "_device_flags_present_when_device_test"
+    test_names += [device_with_device_flags_test_name]
+    action_flags_present_only_for_mnemonic_aosp_arm64_test(
+        name = device_with_device_flags_test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_flags = generated_sanitizer_constants.DeviceOnlySanitizeFlags,
+    )
+
+    host_with_device_flags_test_name = name + "_device_flags_absent_when_host_test"
+    test_names += [host_with_device_flags_test_name]
+    action_flags_absent_for_mnemonic_aosp_arm64_host_test(
+        name = host_with_device_flags_test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_absent_flags = generated_sanitizer_constants.DeviceOnlySanitizeFlags,
+    )
+
+    return test_names
+
+def _test_device_only_and_host_only_features_absent_when_cfi_disabled():
+    pass
+
 def cc_toolchain_features_cfi_test_suite(name):
     individual_tests = [
         test_cross_dso_not_added_when_cfi_disabled(),
@@ -389,5 +455,6 @@ def cc_toolchain_features_cfi_test_suite(name):
         tests = individual_tests +
                 test_cfi_c_and_cpp_has_correct_flags() +
                 test_cfi_s_has_correct_flags() +
-                test_cross_dso_not_added_when_static_binary(),
+                test_cross_dso_not_added_when_static_binary() +
+                _test_host_only_and_device_only_features(),
     )

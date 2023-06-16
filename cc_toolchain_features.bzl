@@ -21,11 +21,8 @@ load(
     _c_std_versions = "c_std_versions",
     _cpp_std_versions = "cpp_std_versions",
     _default_c_std_version = "default_c_std_version",
-    _default_c_std_version_no_gnu = "default_c_std_version_no_gnu",
     _default_cpp_std_version = "default_cpp_std_version",
     _default_cpp_std_version_no_gnu = "default_cpp_std_version_no_gnu",
-    _experimental_c_std_version = "experimental_c_std_version",
-    _experimental_c_std_version_no_gnu = "experimental_c_std_version_no_gnu",
     _experimental_cpp_std_version = "experimental_cpp_std_version",
     _experimental_cpp_std_version_no_gnu = "experimental_cpp_std_version_no_gnu",
     _flags = "flags",
@@ -210,14 +207,14 @@ def _env_based_common_global_cflags(ctx):
     auto_pattern_initialize = ctx.attr._auto_pattern_initialize[BuildSettingInfo].value
     auto_uninitialize = ctx.attr._auto_uninitialize[BuildSettingInfo].value
     if ctx.attr._auto_zero_initialize[BuildSettingInfo].value:
-        flags.extend(["-ftrivial-auto-var-init=zero", "-enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang"])
+        flags.extend(["-ftrivial-auto-var-init=zero"])
     elif auto_pattern_initialize:
         flags.extend(["-ftrivial-auto-var-init=pattern"])
     elif auto_uninitialize:
         flags.extend(["-ftrivial-auto-var-init=uninitialized"])
     else:
         # Default to zero initialization.
-        flags.extend(["-ftrivial-auto-var-init=zero", "-enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang"])
+        flags.extend(["-ftrivial-auto-var-init=zero"])
 
     if ctx.attr._use_ccache[BuildSettingInfo].value or (not auto_pattern_initialize and not auto_uninitialize):
         flags.extend(["-Wno-unused-command-line-argument"])
@@ -500,6 +497,11 @@ def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
         ],
     ))
 
+    return features
+
+def _get_no_override_compile_flags(target_os):
+    features = []
+
     # These cannot be overriden by the user.
     features.append(feature(
         name = "no_override_clang_global_copts",
@@ -685,9 +687,9 @@ def _dynamic_linker_flag_feature(target_os, arch_is_64_bit):
         dynamic_linker_path = "/system/bin/linker"
         if arch_is_64_bit:
             dynamic_linker_path += "64"
-        flags += ["-Wl,-dynamic-linker," + dynamic_linker_path]
+        flags.append("-Wl,-dynamic-linker," + dynamic_linker_path)
     elif is_os_bionic(target_os) or target_os == _oses.LinuxMusl:
-        flags += ["-Wl,--no-dynamic-linker"]
+        flags.append("-Wl,--no-dynamic-linker")
     return _binary_linker_flag_feature(name = "dynamic_linker", flags = flags) if len(flags) else []
 
 # TODO(b/202167934): Darwin uses @loader_path in place of $ORIGIN
@@ -745,7 +747,7 @@ def _rpath_features(target_os, arch_is_64_bit):
     ]
 
     if (not is_os_device(target_os)) and arch_is_64_bit:
-        runtime_library_search_directories_flag_sets += [flag_set(
+        runtime_library_search_directories_flag_sets.append(flag_set(
             actions = _actions.link,
             flag_groups = [
                 flag_group(
@@ -762,7 +764,7 @@ def _rpath_features(target_os, arch_is_64_bit):
             with_features = [
                 with_feature_set(not_features = ["static_link_cpp_runtimes"]),
             ],
-        )]
+        ))
 
     runtime_library_search_directories_feature = feature(
         name = "runtime_library_search_directories",
@@ -1607,6 +1609,22 @@ def _get_thinlto_features():
                 ),
             ],
         ),
+        # Used for CFI
+        # TODO(b/283951987): Remove after full LTO support is removed in Soong
+        feature(
+            name = "android_full_lto",
+            enabled = False,
+            flag_sets = [
+                flag_set(
+                    actions = _actions.compile + _actions.link + _actions.assemble,
+                    flag_groups = [
+                        flag_group(
+                            flags = ["-flto"],
+                        ),
+                    ],
+                ),
+            ],
+        ),
     ]
     return features
 
@@ -1630,6 +1648,7 @@ def _make_flag_set(actions, flags, with_features = [], with_not_features = []):
 # TODO(b/276756319): Restrict for riscv64 when we have riscv64 in Bazel
 # TODO(b/276932249): Restrict for Fuzzer when we have Fuzzer in Bazel
 # TODO(b/276931992): Restrict for Asan when we have Asan in Bazel
+# TODO(b/283951987): Switch to thin LTO when possible
 def _get_cfi_features(target_arch, target_os):
     if target_os in [_oses.Windows, _oses.Darwin, _oses.LinuxMusl]:
         return []
@@ -1651,13 +1670,13 @@ def _get_cfi_features(target_arch, target_os):
                     _generated_sanitizer_constants.CfiAsFlags,
                 ),
             ],
-            implies = ["android_thin_lto"] + (
+            implies = ["android_full_lto"] + (
                 ["arm_isa_thumb"] if target_arch == _arches.Arm else []
             ),
         ),
     ]
 
-    features += [
+    features.append(
         feature(
             name = "android_cfi_cross_dso",
             enabled = True,
@@ -1671,9 +1690,9 @@ def _get_cfi_features(target_arch, target_os):
                 ),
             ],
         ),
-    ]
+    )
 
-    features += [
+    features.append(
         feature(
             name = "android_cfi_assembly_support",
             enabled = False,
@@ -1685,9 +1704,9 @@ def _get_cfi_features(target_arch, target_os):
                 ),
             ],
         ),
-    ]
+    )
 
-    features += [
+    features.append(
         feature(
             name = "android_cfi_exports_map",
             enabled = False,
@@ -1704,9 +1723,9 @@ def _get_cfi_features(target_arch, target_os):
                 ),
             ],
         ),
-    ]
+    )
 
-    features += [
+    features.append(
         feature(
             name = "android_cfi_visibility_default",
             enabled = True,
@@ -1729,7 +1748,7 @@ def _get_cfi_features(target_arch, target_os):
                 ),
             ],
         ),
-    ]
+    )
 
     return features
 
@@ -1747,7 +1766,7 @@ def _get_visibiility_hidden_feature():
         ),
     ]
 
-def _ubsan_flag_feature(name, actions, flags):
+def _sanitizer_flag_feature(name, actions, flags):
     return feature(
         name = name,
         enabled = True,
@@ -1759,24 +1778,29 @@ def _ubsan_flag_feature(name, actions, flags):
                         flags = flags,
                     ),
                 ],
+                # Any new sanitizers that are enabled need to have a
+                # with_feature_set added here.
                 with_features = [
                     with_feature_set(
                         features = ["ubsan_enabled"],
+                    ),
+                    with_feature_set(
+                        features = ["android_cfi"],
                     ),
                 ],
             ),
         ],
     )
 
-def _host_or_device_specific_ubsan_feature(target_os):
+def _host_or_device_specific_sanitizer_feature(target_os):
     if is_os_device(target_os):
-        return _ubsan_flag_feature(
-            "ubsan_device_only_flags",
+        return _sanitizer_flag_feature(
+            "sanitizer_device_only_flags",
             _actions.compile,
             _generated_sanitizer_constants.DeviceOnlySanitizeFlags,
         )
-    return _ubsan_flag_feature(
-        "ubsan_host_only_flags",
+    return _sanitizer_flag_feature(
+        "sanitizer_host_only_flags",
         _actions.compile,
         _generated_sanitizer_constants.HostOnlySanitizeFlags,
     )
@@ -1802,6 +1826,80 @@ def _exclude_ubsan_rt_feature(path):
 int_overflow_ignorelist_path = "build/soong/cc/config"
 int_overflow_ignorelist_filename = "integer_overflow_blocklist.txt"
 
+def _get_unsupported_integer_check_with_feature_sets(feature_check):
+    integer_sanitizers = [
+        "implicit-unsigned-integer-truncation",
+        "implicit-signed-integer-truncation",
+        "implicit-integer-sign-change",
+        "integer-divide-by-zero",
+        "signed-integer-overflow",
+        "unsigned-integer-overflow",
+        "implicit-integer-truncation",
+        "implicit-integer-arithmetic-value-change",
+        "integer",
+        "integer_overflow",
+    ]
+    if feature_check in integer_sanitizers:
+        integer_sanitizers.remove(feature_check)
+
+    return [
+        with_feature_set(
+            features = ["ubsan_" + integer_sanitizer],
+            not_features = ["ubsan_" + feature_check],
+        )
+        for integer_sanitizer in integer_sanitizers
+    ]
+
+# The key of this dict is the package path to the blocklist, while the value is
+# its filename.
+# TODO: b/286872909 - When the blocking bug is complete, put these in their
+#                     respective packages
+sanitizer_blocklist_dict = {
+    "external/libavc": "libavc_blocklist.txt",
+    "external/libaom": "libaom_blocklist.txt",
+    "external/libvpx": "libvpx_blocklist.txt",
+    "frameworks/base/libs/androidfw": "libandroidfw_blocklist.txt",
+    "external/libhevc": "libhevc_blocklist.txt",
+    "external/libexif": "libexif_blocklist.txt",
+    "external/libopus": "libopus_blocklist.txt",
+    "external/libmpeg2": "libmpeg2dec_blocklist.txt",
+    "external/expat": "libexpat_blocklist.txt",
+    "external/flac/src/libFLAC": "libFLAC_blocklist.txt",
+    "system/extras/toolchain-extras": "libprofile_clang_extras_blocklist.txt",
+}
+
+def _get_ubsan_blocklist_features():
+    features = []
+    for blocklist in sanitizer_blocklist_dict.items():
+        # Format the blocklist name to be used in a feature name
+        blocklist_feature_name_suffix = blocklist[1].lower().replace(".", "_")
+        features.append(
+            feature(
+                name = "ubsan_blocklist_" + blocklist_feature_name_suffix,
+                enabled = False,
+                requires = [
+                    feature_set(features = ["ubsan_enabled"]),
+                ],
+                flag_sets = [
+                    flag_set(
+                        actions = _actions.c_and_cpp_compile,
+                        flag_groups = [
+                            flag_group(
+                                flags = [
+                                    "%s%s/%s" % (
+                                        _generated_sanitizer_constants.SanitizeIgnorelistPrefix,
+                                        blocklist[0],
+                                        blocklist[1],
+                                    ),
+                                ],
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        )
+    return features
+
 def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
     if target_os in [_oses.Windows, _oses.Darwin]:
         return []
@@ -1815,7 +1913,7 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
         ),
     ]
 
-    ubsan_features += [
+    ubsan_features.append(
         feature(
             name = "ubsan_integer_overflow",
             enabled = False,
@@ -1847,7 +1945,7 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
             ],
             implies = ["ubsan_minimal_runtime", "ubsan_enabled"],
         ),
-    ]
+    )
 
     ubsan_checks = [
         "alignment",
@@ -1911,7 +2009,7 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
         for check_name in ubsan_checks
     ]
 
-    ubsan_features += [
+    ubsan_features.append(
         feature(
             name = "ubsan_no_sanitize_link_runtime",
             enabled = target_os in [
@@ -1937,13 +2035,13 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
                 ),
             ],
         ),
-    ]
+    )
 
     # non-Bionic toolchain prebuilts are missing UBSan's vptr and function san.
     # Musl toolchain prebuilts have vptr and function sanitizers, but enabling
     # them implicitly enables RTTI which causes RTTI mismatch issues with
     # dependencies.
-    ubsan_features += [
+    ubsan_features.append(
         feature(
             name = "ubsan_disable_unsupported_non_bionic_checks",
             enabled = target_os not in [_oses.LinuxBionic, _oses.Android],
@@ -1968,14 +2066,14 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
                 ),
             ],
         ),
-    ]
+    )
 
     ubsan_features += [
-        _host_or_device_specific_ubsan_feature(target_os),
+        _host_or_device_specific_sanitizer_feature(target_os),
         _exclude_ubsan_rt_feature(libclang_rt_ubsan_minimal),
     ]
 
-    ubsan_features += [
+    ubsan_features.append(
         feature(
             name = "ubsan_minimal_runtime",
             enabled = False,
@@ -1994,9 +2092,9 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
                 ),
             ],
         ),
-    ]
+    )
 
-    ubsan_features += [
+    ubsan_features.append(
         feature(
             name = "ubsan_disable_unsupported_integer_checks",
             enabled = True,
@@ -2012,14 +2110,9 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
                             ],
                         ),
                     ],
-                    with_features = [
-                        with_feature_set(
-                            features = ["ubsan_integer"],
-                            not_features = [
-                                "ubsan_implicit-integer-sign-change",
-                            ],
-                        ),
-                    ],
+                    with_features = _get_unsupported_integer_check_with_feature_sets(
+                        "implicit-integer-sign-change",
+                    ),
                 ),
                 # TODO(b/171275751): If this bug is fixed, this shouldn't be
                 #                    needed anymore
@@ -2032,18 +2125,15 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
                             ],
                         ),
                     ],
-                    with_features = [
-                        with_feature_set(
-                            features = ["ubsan_integer"],
-                            not_features = [
-                                "ubsan_unsigned-shift-base",
-                            ],
-                        ),
-                    ],
+                    with_features = _get_unsupported_integer_check_with_feature_sets(
+                        "unsigned-shift-base",
+                    ),
                 ),
             ],
         ),
-    ]
+    )
+
+    ubsan_features.extend(_get_ubsan_blocklist_features())
 
     return ubsan_features
 
@@ -2110,6 +2200,12 @@ def get_features(
         _get_sdk_version_features(os_is_device, target_arch),
         _compiler_flag_features(ctx, target_arch, target_os, target_flags + compile_only_flags),
         _rpath_features(target_os, arch_is_64_bit),
+        # Sanitizers
+        _get_cfi_features(target_arch, target_os),
+        _get_ubsan_features(target_os, libclang_rt_ubsan_minimal),
+        # Misc features
+        _get_visibiility_hidden_feature(),
+        # RTTI
         _rtti_features(rtti_toggle),
         _use_libcrt_feature(libclang_rt_builtin),
         # Shared compile/link flags that should also be part of the link actions.
@@ -2124,6 +2220,7 @@ def get_features(
         _binary_linker_flag_feature("static_flag", flags = ["-static"], enabled = False),
         # default for executables is dynamic linking
         _binary_linker_flag_feature("static_executable", flags = _static_binary_linker_flags(os_is_device), enabled = False),
+        _manual_binder_interface_feature(),
         _pack_dynamic_relocations_features(target_os),
         # System include directories features
         _toolchain_include_feature(system_includes = builtin_include_dirs),
@@ -2132,14 +2229,10 @@ def get_features(
         _get_legacy_features_end(),
         # Optimization
         _get_thinlto_features(),
-        # Sanitizers
-        _get_cfi_features(target_arch, target_os),
-        _get_ubsan_features(target_os, libclang_rt_ubsan_minimal),
-        # Misc features
-        _get_visibiility_hidden_feature(),
+        # Flags that cannot be overridden must be at the end
+        _get_no_override_compile_flags(target_os),
         # This must always come last.
         _link_crtend(crt_files),
-        _manual_binder_interface_feature(),
     ]
 
     return _flatten([f for f in features if f != None])
