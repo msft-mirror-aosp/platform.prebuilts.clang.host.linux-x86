@@ -52,9 +52,9 @@ LLVM Users
 * [**Android Emulator**](https://developer.android.com/studio/run/emulator.html)
   * Currently clang-r487747c
   * Linux emulator is temporarily hardcoded to clang-r487747c, see b/268674933
-  * Look for "clang-" in [external/qemu/android/build/cmake/toolchain.cmake](https://android.googlesource.com/platform/external/qemu/+/emu-master-dev/android/build/cmake/toolchain.cmake#25).
+  * Look for "clang-" in [external/qemu/android/build/toolchains.json](https://android.googlesource.com/platform/external/qemu/+/emu-master-dev/android/build/toolchains.json#2).
     * Note that they work out of the emu-master-dev branch.
-    * [Android Code Search link](https://cs.android.com/android/platform/superproject/+/emu-master-dev:external/qemu/android/build/cmake/toolchain.cmake?q=clang-)
+    * [Android Code Search link](https://cs.android.com/android/platform/superproject/+/emu-master-dev:external/qemu/android/build/toolchains.json?q=clang)
 
 * [**Context Hub Runtime Environment (CHRE)**](https://android.googlesource.com/platform/system/chre/)
   * Currently clang-r487747c
