@@ -47,6 +47,7 @@ bzl_library(
 
 [clang_toolchain(
     name = "{}_{}_clang_toolchain".format(target_os, target_cpu),
+    clang_pkg = "//prebuilts/clang/host/linux-x86/clang-{}".format(VARS["CLANG_VERSION"]),
     clang_version = VARS["CLANG_VERSION"],
     target_cpu = target_cpu,
     target_os = target_os,
@@ -64,6 +65,7 @@ constraint_setting(name = "clang_version")
 
 [clang_toolchain(
     name = "{}_{}_{}_clang_toolchain".format(version, target_os, target_cpu),
+    clang_pkg = "//prebuilts/clang/host/linux-x86/clang-{}".format(version),
     clang_version = version,
     extra_compatible_with = [version],
     target_cpu = target_cpu,

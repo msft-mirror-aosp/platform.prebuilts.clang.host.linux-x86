@@ -27,6 +27,7 @@ def _clang_toolchain_internal(
         clang_version,
         target_cpu,
         target_os,
+        clang_pkg,
         linker_files = None,
         sysroot_label = None,
         sysroot_path = None,
@@ -39,6 +40,10 @@ def _clang_toolchain_internal(
         clang_version: value of `CLANG_VERSION`, e.g. `r475365b`.
         target_cpu: CPU that the toolchain cross-compiles to
         target_os: OS that the toolchain cross-compiles to
+        clang_pkg: Label to any target in the clang toolchain package.
+
+            This is used as an anchor to locate other targets in the package.
+            Name of the label is ignored.
         linker_files: Additional dependencies to the linker
         sysroot_label: Label to a list of files from sysroot
         sysroot_path: Path to sysroot
@@ -59,13 +64,13 @@ def _clang_toolchain_internal(
     if extra_compatible_with == None:
         extra_compatible_with = []
 
-    clang_pkg = "//prebuilts/clang/host/linux-x86/clang-{}".format(clang_version)
-    clang_includes = Label("{}:includes".format(clang_pkg))
+    clang_pkg = native.package_relative_label(clang_pkg)
+    clang_includes = clang_pkg.relative(":includes")
 
     # Technically we can split the binaries into those for compiler, linker
     # etc., but since these binaries are usually updated together, it is okay
     # to use a superset here.
-    clang_all_binaries = Label("{}:binaries".format(clang_pkg))
+    clang_all_binaries = clang_pkg.relative(":binaries")
 
     # Individual binaries
     # From _setup_env.sh
@@ -83,12 +88,12 @@ def _clang_toolchain_internal(
     #
     # Note: ld.lld does not recognize --target etc. from android.bzl,
     # so just use clang directly
-    clang = Label("{}:bin/clang".format(clang_pkg))
-    clang_plus_plus = Label("{}:bin/clang++".format(clang_pkg))
+    clang = clang_pkg.relative(":bin/clang")
+    clang_plus_plus = clang_pkg.relative(":bin/clang++")
     ld = clang
-    strip = Label("{}:bin/llvm-strip".format(clang_pkg))
-    ar = Label("{}:bin/llvm-ar".format(clang_pkg))
-    objcopy = Label("{}:bin/llvm-objcopy".format(clang_pkg))
+    strip = clang_pkg.relative(":bin/llvm-strip")
+    ar = clang_pkg.relative(":bin/llvm-ar")
+    objcopy = clang_pkg.relative(":bin/llvm-objcopy")
     # cc_* rules doesn't seem to need nm, obj-dump, size, and readelf
 
     native.filegroup(
@@ -160,6 +165,7 @@ def _clang_toolchain_internal(
 def clang_toolchain(
         name,
         clang_version,
+        clang_pkg,
         target_cpu,
         target_os,
         extra_compatible_with = None):
@@ -170,6 +176,10 @@ def clang_toolchain(
     Args:
         name: name of the toolchain
         clang_version: nonconfigurable. version of the toolchain
+        clang_pkg: Label to any target in the clang toolchain package.
+
+            This is used as an anchor to locate other targets in the package.
+            Name of the label is ignored.
         target_cpu: nonconfigurable. CPU of the toolchain
         target_os: nonconfigurable. OS of the toolchain
         extra_compatible_with: nonconfigurable. extra `exec_compatible_with` and `target_compatible_with`
@@ -185,6 +195,7 @@ def clang_toolchain(
         clang_version = clang_version,
         target_os = target_os,
         target_cpu = target_cpu,
+        clang_pkg = clang_pkg,
         extra_compatible_with = extra_compatible_with,
         **extra_kwargs
     )
