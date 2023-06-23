@@ -19,9 +19,10 @@ load(
     "@kernel_toolchain_info//:dict.bzl",
     "VARS",
 )
+load(":architecture_constants.bzl", "SUPPORTED_ARCHITECTURES")
 load(":clang_config.bzl", "clang_config")
 
-def clang_toolchain(
+def _clang_toolchain_internal(
         name,
         clang_version,
         target_cpu,
@@ -156,20 +157,42 @@ def clang_toolchain(
         toolchain_type = CPP_TOOLCHAIN_TYPE,
     )
 
-def linux_x86_64_clang_toolchain(
+def clang_toolchain(
         name,
         clang_version,
+        target_cpu,
+        target_os,
         extra_compatible_with = None):
-    """Declare an linux_x86_64 toolchain.
+    """Declare a clang toolchain for the given OS-architecture.
+
+    The toolchain should be under `prebuilts/clang/host/linux-x86`.
 
     Args:
-        name: name prefix
-        clang_version: `CLANG_VERSION`
-        extra_compatible_with: extra `exec_compatible_with` and `target_compatible_with`
+        name: name of the toolchain
+        clang_version: nonconfigurable. version of the toolchain
+        target_cpu: nonconfigurable. CPU of the toolchain
+        target_os: nonconfigurable. OS of the toolchain
+        extra_compatible_with: nonconfigurable. extra `exec_compatible_with` and `target_compatible_with`
     """
-    clang_toolchain(
+
+    if sorted(ARCH_CONFIG.keys()) != sorted(SUPPORTED_ARCHITECTURES):
+        fail("FATAL: ARCH_CONFIG is not up-to-date with SUPPORTED_ARCHITECTURES!")
+
+    extra_kwargs = ARCH_CONFIG[(target_os, target_cpu)]
+
+    _clang_toolchain_internal(
         name = name,
         clang_version = clang_version,
+        target_os = target_os,
+        target_cpu = target_cpu,
+        extra_compatible_with = extra_compatible_with,
+        **extra_kwargs
+    )
+
+# Keys: (target_os, target_cpu)
+# Values: arguments to clang_toolchain()
+ARCH_CONFIG = {
+    ("linux", "x86_64"): dict(
         linker_files = [
             # From _setup_env.sh, HOSTLDFLAGS
             Label("//prebuilts/kernel-build-tools:linux-x86-libs"),
@@ -178,124 +201,37 @@ def linux_x86_64_clang_toolchain(
         # sysroot_flags+="--sysroot=${ROOT_DIR}/build/kernel/build-tools/sysroot "
         sysroot_label = Label("//build/kernel:sysroot"),
         sysroot_path = "build/kernel/build-tools/sysroot",
-        target_cpu = "x86_64",
-        target_os = "linux",
-        extra_compatible_with = extra_compatible_with,
-    )
-
-def android_arm64_clang_toolchain(
-        name,
-        clang_version,
-        extra_compatible_with = None):
-    """Declare an android_arm64 toolchain.
-
-    Args:
-        name: name prefix
-        clang_version: `CLANG_VERSION`
-        extra_compatible_with: extra `exec_compatible_with` and `target_compatible_with`
-    """
-    clang_toolchain(
-        name = name,
-        clang_version = clang_version,
+    ),
+    ("android", "arm64"): dict(
         ndk_triple = VARS.get("AARCH64_NDK_TRIPLE"),
         # From _setup_env.sh: when NDK triple is set,
         # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
         sysroot_label = "@prebuilt_ndk//:sysroot" if "AARCH64_NDK_TRIPLE" in VARS else None,
         sysroot_path = "external/prebuilt_ndk/toolchains/llvm/prebuilt/linux-x86_64/sysroot" if "AARCH64_NDK_TRIPLE" in VARS else None,
-        target_cpu = "arm64",
-        target_os = "android",
-        extra_compatible_with = extra_compatible_with,
-    )
-
-def android_arm_clang_toolchain(
-        name,
-        clang_version,
-        extra_compatible_with = None):
-    """Declare an android_arm (32-bit) toolchain.
-
-    Args:
-        name: name prefix
-        clang_version: `CLANG_VERSION`
-        extra_compatible_with: extra `exec_compatible_with` and `target_compatible_with`
-    """
-    clang_toolchain(
-        name = name,
-        clang_version = clang_version,
+    ),
+    ("android", "arm"): dict(
         ndk_triple = VARS.get("ARM_NDK_TRIPLE"),
         # From _setup_env.sh: when NDK triple is set,
         # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
         sysroot_label = "@prebuilt_ndk//:sysroot" if "ARM_NDK_TRIPLE" in VARS else None,
         sysroot_path = "external/prebuilt_ndk/toolchains/llvm/prebuilt/linux-x86_64/sysroot" if "AARCH64_NDK_TRIPLE" in VARS else None,
-        target_cpu = "arm",
-        target_os = "android",
-        extra_compatible_with = extra_compatible_with,
-    )
-
-def android_x86_64_clang_toolchain(
-        name,
-        clang_version,
-        extra_compatible_with = None):
-    """Declare an android_x86_64 toolchain.
-
-    Args:
-        name: name prefix
-        clang_version: `CLANG_VERSION`
-        extra_compatible_with: extra `exec_compatible_with` and `target_compatible_with`
-    """
-    clang_toolchain(
-        name = name,
-        clang_version = clang_version,
+    ),
+    ("android", "x86_64"): dict(
         ndk_triple = VARS.get("X86_64_NDK_TRIPLE"),
         # From _setup_env.sh: when NDK triple is set,
         # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
         sysroot_label = "@prebuilt_ndk//:sysroot" if "X86_64_NDK_TRIPLE" in VARS else None,
         sysroot_path = "external/prebuilt_ndk/toolchains/llvm/prebuilt/linux-x86_64/sysroot" if "X86_64_NDK_TRIPLE" in VARS else None,
-        target_cpu = "x86_64",
-        target_os = "android",
-        extra_compatible_with = extra_compatible_with,
-    )
-
-def android_i386_clang_toolchain(
-        name,
-        clang_version,
-        extra_compatible_with = None):
-    """Declare an android_i386 toolchain.
-
-    Args:
-        name: name prefix
-        clang_version: `CLANG_VERSION`
-        extra_compatible_with: extra `exec_compatible_with` and `target_compatible_with`
-    """
-    clang_toolchain(
-        name = name,
-        clang_version = clang_version,
+    ),
+    ("android", "i386"): dict(
         # i386 uses the same NDK_TRIPLE as x86_64
         ndk_triple = VARS.get("X86_64_NDK_TRIPLE"),
         # From _setup_env.sh: when NDK triple is set,
         # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
         sysroot_label = "@prebuilt_ndk//:sysroot" if "X86_64_NDK_TRIPLE" in VARS else None,
         sysroot_path = "external/prebuilt_ndk/toolchains/llvm/prebuilt/linux-x86_64/sysroot" if "X86_64_NDK_TRIPLE" in VARS else None,
-        target_cpu = "i386",
-        target_os = "android",
-        extra_compatible_with = extra_compatible_with,
-    )
-
-def android_riscv64_clang_toolchain(
-        name,
-        clang_version,
-        extra_compatible_with = None):
-    """Declare an android_riscv toolchain.
-
-    Args:
-        name: name prefix
-        clang_version: `CLANG_VERSION`
-        extra_compatible_with: extra `exec_compatible_with` and `target_compatible_with`
-    """
-    clang_toolchain(
-        name = name,
-        clang_version = clang_version,
-        target_cpu = "riscv64",
-        target_os = "android",
-        extra_compatible_with = extra_compatible_with,
+    ),
+    ("android", "riscv64"): dict(
         # TODO(b/271919464): We need NDK_TRIPLE for riscv
-    )
+    ),
+}
