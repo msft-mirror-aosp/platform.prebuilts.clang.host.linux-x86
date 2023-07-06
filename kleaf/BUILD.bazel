@@ -17,16 +17,21 @@ load(
     "@kernel_toolchain_info//:dict.bzl",
     "VARS",
 )
-load(
-    ":clang_toolchain.bzl",
-    "android_arm64_clang_toolchain",
-    "android_arm_clang_toolchain",
-    "android_i386_clang_toolchain",
-    "android_riscv64_clang_toolchain",
-    "android_x86_64_clang_toolchain",
-    "linux_x86_64_clang_toolchain",
-)
+load(":architecture_constants.bzl", "SUPPORTED_ARCHITECTURES")
+load(":clang_toolchain.bzl", "clang_toolchain")
 load(":versions.bzl", "VERSIONS")
+
+bzl_library(
+    name = "architecture_constants",
+    srcs = ["architecture_constants.bzl"],
+    visibility = ["//visibility:private"],
+)
+
+bzl_library(
+    name = "user_clang_toolchain_repository",
+    srcs = ["user_clang_toolchain_repository.bzl"],
+    visibility = ["//visibility:private"],
+)
 
 bzl_library(
     name = "versions",
@@ -38,42 +43,24 @@ bzl_library(
     name = "register",
     srcs = ["register.bzl"],
     visibility = ["//visibility:public"],
-    deps = [":versions"],
+    deps = [
+        ":architecture_constants",
+        ":user_clang_toolchain_repository",
+        ":versions",
+    ],
 )
 
-# Default toolchain for cc_* rules.
+# Default toolchains.
 
-linux_x86_64_clang_toolchain(
-    name = "linux_x86_64_clang_toolchain",
+[clang_toolchain(
+    name = "{}_{}_clang_toolchain".format(target_os, target_cpu),
+    clang_pkg = "//prebuilts/clang/host/linux-x86/clang-{}".format(VARS["CLANG_VERSION"]),
     clang_version = VARS["CLANG_VERSION"],
-)
+    target_cpu = target_cpu,
+    target_os = target_os,
+) for target_os, target_cpu in SUPPORTED_ARCHITECTURES]
 
-android_arm64_clang_toolchain(
-    name = "android_arm64_clang_toolchain",
-    clang_version = VARS["CLANG_VERSION"],
-)
-
-android_arm_clang_toolchain(
-    name = "android_arm_clang_toolchain",
-    clang_version = VARS["CLANG_VERSION"],
-)
-
-android_i386_clang_toolchain(
-    name = "android_i386_clang_toolchain",
-    clang_version = VARS["CLANG_VERSION"],
-)
-
-android_x86_64_clang_toolchain(
-    name = "android_x86_64_clang_toolchain",
-    clang_version = VARS["CLANG_VERSION"],
-)
-
-android_riscv64_clang_toolchain(
-    name = "android_riscv64_clang_toolchain",
-    clang_version = VARS["CLANG_VERSION"],
-)
-
-# Extra toolchain for kernel_* rules
+# Versioned toolchains: extra toolchains when a certain version is requested.
 
 constraint_setting(name = "clang_version")
 
@@ -83,38 +70,11 @@ constraint_setting(name = "clang_version")
     visibility = ["//visibility:public"],
 ) for version in VERSIONS]
 
-[linux_x86_64_clang_toolchain(
-    name = version + "_linux_x86_64_clang_toolchain",
+[clang_toolchain(
+    name = "{}_{}_{}_clang_toolchain".format(version, target_os, target_cpu),
+    clang_pkg = "//prebuilts/clang/host/linux-x86/clang-{}".format(version),
     clang_version = version,
     extra_compatible_with = [version],
-) for version in VERSIONS]
-
-[android_arm64_clang_toolchain(
-    name = version + "_android_arm64_clang_toolchain",
-    clang_version = version,
-    extra_compatible_with = [version],
-) for version in VERSIONS]
-
-[android_arm_clang_toolchain(
-    name = version + "_android_arm_clang_toolchain",
-    clang_version = version,
-    extra_compatible_with = [version],
-) for version in VERSIONS]
-
-[android_i386_clang_toolchain(
-    name = version + "_android_i386_clang_toolchain",
-    clang_version = version,
-    extra_compatible_with = [version],
-) for version in VERSIONS]
-
-[android_x86_64_clang_toolchain(
-    name = version + "_android_x86_64_clang_toolchain",
-    clang_version = version,
-    extra_compatible_with = [version],
-) for version in VERSIONS]
-
-[android_riscv64_clang_toolchain(
-    name = version + "_android_riscv64_clang_toolchain",
-    clang_version = version,
-    extra_compatible_with = [version],
-) for version in VERSIONS]
+    target_cpu = target_cpu,
+    target_os = target_os,
+) for version in VERSIONS for target_os, target_cpu in SUPPORTED_ARCHITECTURES]
