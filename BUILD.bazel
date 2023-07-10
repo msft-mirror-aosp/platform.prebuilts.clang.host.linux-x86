@@ -54,6 +54,10 @@ load(
     "cc_toolchain_features_pack_relocation_test_suite",
 )
 load(
+    ":cc_toolchain_features_sanitizer_blocklist_test.bzl",
+    "cc_toolchain_features_sanitizer_blocklist_test_suite",
+)
+load(
     ":cc_toolchain_features_thinlto_test.bzl",
     "cc_toolchain_features_lto_test_suite",
 )
@@ -448,6 +452,10 @@ cc_toolchain_features_pack_relocation_test_suite(
 
 cc_toolchain_features_lto_test_suite(
     name = "cc_toolchain_features_thinlto_tests",
+)
+
+cc_toolchain_features_sanitizer_blocklist_test_suite(
+    name = "cc_toolchain_features_sanitizer_blocklist_tests",
 )
 
 cc_toolchain_features_ubsan_test_suite(

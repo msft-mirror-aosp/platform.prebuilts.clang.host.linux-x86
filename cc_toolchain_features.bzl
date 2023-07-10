@@ -1644,6 +1644,15 @@ def _make_flag_set(actions, flags, with_features = [], with_not_features = []):
         ],
     )
 
+def _get_misc_sanitizer_features():
+    return [
+        # New sanitizers must imply this feature
+        feature(
+            name = "sanitizers_enabled",
+            enabled = False,
+        ),
+    ]
+
 # TODO(b/276756817): Restrict for VNDK when we have VNDK in Bazel
 # TODO(b/276756319): Restrict for riscv64 when we have riscv64 in Bazel
 # TODO(b/276932249): Restrict for Fuzzer when we have Fuzzer in Bazel
@@ -1670,7 +1679,7 @@ def _get_cfi_features(target_arch, target_os):
                     _generated_sanitizer_constants.CfiAsFlags,
                 ),
             ],
-            implies = ["android_full_lto"] + (
+            implies = ["android_full_lto", "sanitizers_enabled"] + (
                 ["arm_isa_thumb"] if target_arch == _arches.Arm else []
             ),
         ),
@@ -1782,10 +1791,7 @@ def _sanitizer_flag_feature(name, actions, flags):
                 # with_feature_set added here.
                 with_features = [
                     with_feature_set(
-                        features = ["ubsan_enabled"],
-                    ),
-                    with_feature_set(
-                        features = ["android_cfi"],
+                        features = ["sanitizers_enabled"],
                     ),
                 ],
             ),
@@ -1868,17 +1874,17 @@ sanitizer_blocklist_dict = {
     "system/extras/toolchain-extras": "libprofile_clang_extras_blocklist.txt",
 }
 
-def _get_ubsan_blocklist_features():
+def _get_sanitizer_blocklist_features():
     features = []
     for blocklist in sanitizer_blocklist_dict.items():
         # Format the blocklist name to be used in a feature name
         blocklist_feature_name_suffix = blocklist[1].lower().replace(".", "_")
         features.append(
             feature(
-                name = "ubsan_blocklist_" + blocklist_feature_name_suffix,
+                name = "sanitizer_blocklist_" + blocklist_feature_name_suffix,
                 enabled = False,
                 requires = [
-                    feature_set(features = ["ubsan_enabled"]),
+                    feature_set(features = ["sanitizers_enabled"]),
                 ],
                 flag_sets = [
                     flag_set(
@@ -1910,6 +1916,7 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
         feature(
             name = "ubsan_enabled",
             enabled = False,
+            implies = ["sanitizers_enabled"],
         ),
     ]
 
@@ -2133,8 +2140,6 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
         ),
     )
 
-    ubsan_features.extend(_get_ubsan_blocklist_features())
-
     return ubsan_features
 
 def _manual_binder_interface_feature():
@@ -2203,6 +2208,8 @@ def get_features(
         # Sanitizers
         _get_cfi_features(target_arch, target_os),
         _get_ubsan_features(target_os, libclang_rt_ubsan_minimal),
+        _get_sanitizer_blocklist_features(),
+        _get_misc_sanitizer_features(),
         # Misc features
         _get_visibiility_hidden_feature(),
         # RTTI
