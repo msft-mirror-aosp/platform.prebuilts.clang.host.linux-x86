@@ -1900,6 +1900,12 @@ def _get_ubsan_blocklist_features():
         )
     return features
 
+minimal_runtime_flags = [
+    "-fsanitize-minimal-runtime",
+    "-fno-sanitize-trap=integer,undefined",
+    "-fno-sanitize-recover=integer,undefined",
+]
+
 def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
     if target_os in [_oses.Windows, _oses.Darwin]:
         return []
@@ -1930,7 +1936,7 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
                     ],
                 ),
                 flag_set(
-                    actions = _actions.compile,
+                    actions = _actions.c_and_cpp_compile,
                     flag_groups = [
                         flag_group(
                             flags = [
@@ -2047,7 +2053,7 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
             enabled = target_os not in [_oses.LinuxBionic, _oses.Android],
             flag_sets = [
                 flag_set(
-                    actions = _actions.compile,
+                    actions = _actions.c_and_cpp_compile,
                     flag_groups = [
                         flag_group(
                             flags = [
@@ -2079,14 +2085,10 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
             enabled = False,
             flag_sets = [
                 flag_set(
-                    actions = ALL_UBSAN_ACTIONS,
+                    actions = _actions.c_and_cpp_compile,
                     flag_groups = [
                         flag_group(
-                            flags = [
-                                "-fsanitize-minimal-runtime",
-                                "-fno-sanitize-trap=integer,undefined",
-                                "-fno-sanitize-recover=integer,undefined",
-                            ],
+                            flags = minimal_runtime_flags,
                         ),
                     ],
                 ),
@@ -2102,7 +2104,7 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
                 # TODO(b/119329758): If this bug is fixed, this shouldn't be
                 #                    needed anymore
                 flag_set(
-                    actions = _actions.compile,
+                    actions = _actions.c_and_cpp_compile,
                     flag_groups = [
                         flag_group(
                             flags = [
@@ -2117,7 +2119,7 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
                 # TODO(b/171275751): If this bug is fixed, this shouldn't be
                 #                    needed anymore
                 flag_set(
-                    actions = _actions.compile,
+                    actions = _actions.c_and_cpp_compile,
                     flag_groups = [
                         flag_group(
                             flags = [
