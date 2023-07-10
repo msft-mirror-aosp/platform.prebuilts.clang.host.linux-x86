@@ -416,6 +416,9 @@ _cc_toolchain_config = rule(
         "_product_variables": attr.label(
             default = "//build/bazel/product_config:product_vars",
         ),
+        "_clang_default_debug_level": attr.label(
+            default = "//prebuilts/clang/host/linux-x86:clang_default_debug_level",
+        ),
     },
     provides = [CcToolchainConfigInfo],
 )

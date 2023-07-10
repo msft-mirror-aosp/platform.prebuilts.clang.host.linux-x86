@@ -145,6 +145,7 @@ def test_auto_initialize_default_flags():
         expected_flags = [
             "-ftrivial-auto-var-init=zero",
             "-Wno-unused-command-line-argument",
+            "-g",
         ],
     )
 
