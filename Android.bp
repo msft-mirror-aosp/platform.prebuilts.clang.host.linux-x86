@@ -329,6 +329,24 @@ llvm_prebuilt_library_static {
     ],
 }
 
+llvm_prebuilt_library_static {
+    name: "libsimpleperf_readelf",
+    host_supported: true,
+    sdk_version: "minimum",
+    sanitize: {
+        never: true,
+    },
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
+    visibility: [
+        "//cts/tests/tests/simpleperf",
+        "//system/extras/simpleperf",
+    ],
+}
+
 // -----------------------------------------------------------------------------
 // Export shared libraries for host tools (libLLVM, libclang, libc++).  These
 // are exported only when the LLVM_BUILD_HOST_TOOLS environment variable is set.
