@@ -1654,6 +1654,22 @@ def _get_cfi_features(target_arch, target_os):
         return []
     features = [
         feature(
+            name = "android_cfi_cross_dso",
+            enabled = True,
+            requires = [feature_set(features = ["android_cfi"])],
+            flag_sets = [
+                _make_flag_set(
+                    actions = _actions.c_and_cpp_compile + _actions.link,
+                    flags = [_generated_sanitizer_constants.CfiCrossDsoFlag],
+                    with_features = ["dynamic_executable"],
+                    with_not_features = ["static_executable"],
+                ),
+            ],
+        ),
+    ]
+
+    features.append(
+        feature(
             name = "android_cfi",
             enabled = False,
             flag_sets = [
@@ -1673,22 +1689,6 @@ def _get_cfi_features(target_arch, target_os):
             implies = ["android_full_lto"] + (
                 ["arm_isa_thumb"] if target_arch == _arches.Arm else []
             ),
-        ),
-    ]
-
-    features.append(
-        feature(
-            name = "android_cfi_cross_dso",
-            enabled = True,
-            requires = [feature_set(features = ["android_cfi"])],
-            flag_sets = [
-                _make_flag_set(
-                    actions = _actions.c_and_cpp_compile + _actions.link,
-                    flags = [_generated_sanitizer_constants.CfiCrossDsoFlag],
-                    with_features = ["dynamic_executable"],
-                    with_not_features = ["static_executable"],
-                ),
-            ],
         ),
     )
 
@@ -2200,6 +2200,8 @@ def get_features(
         _get_sdk_version_features(os_is_device, target_arch),
         _compiler_flag_features(ctx, target_arch, target_os, target_flags + compile_only_flags),
         _rpath_features(target_os, arch_is_64_bit),
+        # Optimization
+        _get_thinlto_features(),
         # Sanitizers
         _get_cfi_features(target_arch, target_os),
         _get_ubsan_features(target_os, libclang_rt_ubsan_minimal),
@@ -2227,8 +2229,6 @@ def get_features(
         # Compiling stub.c sources to stub libraries
         _stub_library_feature(),
         _get_legacy_features_end(),
-        # Optimization
-        _get_thinlto_features(),
         # Flags that cannot be overridden must be at the end
         _get_no_override_compile_flags(target_os),
         # This must always come last.
