@@ -225,6 +225,20 @@ def _env_based_common_global_cflags(ctx):
     if ctx.attr._allow_unknown_warning_option[BuildSettingInfo].value:
         flags.extend(["-Wno-error=unknown-warning-option"])
 
+    clang_debug_env_value = ctx.attr._clang_default_debug_level[BuildSettingInfo].value
+    if clang_debug_env_value == "":
+        flags.extend(["-g"])
+    elif clang_debug_env_value == "debug_level_g":
+        flags.extend(["-g"])
+    elif clang_debug_env_value == "debug_level_0":
+        flags.extend(["-g0"])
+    elif clang_debug_env_value == "debug_level_1":
+        flags.extend(["-g1"])
+    elif clang_debug_env_value == "debug_level_2":
+        flags.extend(["-g2"])
+    elif clang_debug_env_value == "debug_level_3":
+        flags.extend(["-g3"])
+
     return flags
 
 def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
