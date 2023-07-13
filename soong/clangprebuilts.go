@@ -17,7 +17,6 @@
 package clangprebuilts
 
 import (
-	"fmt"
 	"path"
 	"strings"
 
@@ -29,16 +28,16 @@ import (
 	"android/soong/genrule"
 )
 
-const libclangCppSoFormat = "libclang-cpp.so.%s"
-const libcxxSoName = "libc++.so.1"
-const libcxxabiSoName = "libc++abi.so.1"
+const libclangCppSoName = "libclang-cpp.so"
+const libcxxSoName = "libc++.so"
+const libcxxabiSoName = "libc++abi.so"
 
 var (
 	// Files included in the llvm-tools filegroup in ../Android.bp
 	llvmToolsFiles = []string{
 		"bin/llvm-symbolizer",
 		"bin/llvm-cxxfilt",
-		"lib/libc++.so.1",
+		"lib/libc++.so",
 	}
 )
 
@@ -93,13 +92,9 @@ func trimVersionNumbers(ver string, retain int) string {
 }
 
 func getHostLibrary(ctx android.LoadHookContext) string {
-	releaseVersion := ctx.Config().GetenvWithDefault("LLVM_RELEASE_VERSION",
-		config.ClangDefaultShortVersion)
-
 	switch ctx.ModuleName() {
 	case "prebuilt_libclang-cpp_host":
-		versionStr := trimVersionNumbers(releaseVersion, 1)
-		return fmt.Sprintf(libclangCppSoFormat, versionStr)
+		return libclangCppSoName
 	case "prebuilt_libc++_host":
 		return libcxxSoName
 	case "prebuilt_libc++abi_host":
