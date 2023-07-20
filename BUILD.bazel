@@ -54,6 +54,10 @@ load(
     "cc_toolchain_features_pack_relocation_test_suite",
 )
 load(
+    ":cc_toolchain_features_sanitizer_blocklist_test.bzl",
+    "cc_toolchain_features_sanitizer_blocklist_test_suite",
+)
+load(
     ":cc_toolchain_features_thinlto_test.bzl",
     "cc_toolchain_features_lto_test_suite",
 )
@@ -450,6 +454,10 @@ cc_toolchain_features_lto_test_suite(
     name = "cc_toolchain_features_thinlto_tests",
 )
 
+cc_toolchain_features_sanitizer_blocklist_test_suite(
+    name = "cc_toolchain_features_sanitizer_blocklist_tests",
+)
+
 cc_toolchain_features_ubsan_test_suite(
     name = "cc_toolchain_features_ubsan_tests",
 )
@@ -510,4 +518,17 @@ string_flag(
         "LLVM_RELEASE_VERSION",
         generated_config_constants.CLANG_DEFAULT_SHORT_VERSION,
     ),
+)
+
+string_flag(
+    name = "clang_default_debug_level",
+    build_setting_default = env.get("CLANG_DEFAULT_DEBUG_LEVEL") or "",
+    values = [
+        "debug_level_g",
+        "debug_level_0",
+        "debug_level_1",
+        "debug_level_2",
+        "debug_level_3",
+        "",
+    ],
 )

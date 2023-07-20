@@ -225,6 +225,20 @@ def _env_based_common_global_cflags(ctx):
     if ctx.attr._allow_unknown_warning_option[BuildSettingInfo].value:
         flags.extend(["-Wno-error=unknown-warning-option"])
 
+    clang_debug_env_value = ctx.attr._clang_default_debug_level[BuildSettingInfo].value
+    if clang_debug_env_value == "":
+        flags.extend(["-g"])
+    elif clang_debug_env_value == "debug_level_g":
+        flags.extend(["-g"])
+    elif clang_debug_env_value == "debug_level_0":
+        flags.extend(["-g0"])
+    elif clang_debug_env_value == "debug_level_1":
+        flags.extend(["-g1"])
+    elif clang_debug_env_value == "debug_level_2":
+        flags.extend(["-g2"])
+    elif clang_debug_env_value == "debug_level_3":
+        flags.extend(["-g3"])
+
     return flags
 
 def _compiler_flag_features(ctx, target_arch, target_os, flags = []):
@@ -1644,6 +1658,15 @@ def _make_flag_set(actions, flags, with_features = [], with_not_features = []):
         ],
     )
 
+def _get_misc_sanitizer_features():
+    return [
+        # New sanitizers must imply this feature
+        feature(
+            name = "sanitizers_enabled",
+            enabled = False,
+        ),
+    ]
+
 # TODO(b/276756817): Restrict for VNDK when we have VNDK in Bazel
 # TODO(b/276756319): Restrict for riscv64 when we have riscv64 in Bazel
 # TODO(b/276932249): Restrict for Fuzzer when we have Fuzzer in Bazel
@@ -1653,6 +1676,22 @@ def _get_cfi_features(target_arch, target_os):
     if target_os in [_oses.Windows, _oses.Darwin, _oses.LinuxMusl]:
         return []
     features = [
+        feature(
+            name = "android_cfi_cross_dso",
+            enabled = True,
+            requires = [feature_set(features = ["android_cfi"])],
+            flag_sets = [
+                _make_flag_set(
+                    actions = _actions.c_and_cpp_compile + _actions.link,
+                    flags = [_generated_sanitizer_constants.CfiCrossDsoFlag],
+                    with_features = ["dynamic_executable"],
+                    with_not_features = ["static_executable"],
+                ),
+            ],
+        ),
+    ]
+
+    features.append(
         feature(
             name = "android_cfi",
             enabled = False,
@@ -1670,25 +1709,9 @@ def _get_cfi_features(target_arch, target_os):
                     _generated_sanitizer_constants.CfiAsFlags,
                 ),
             ],
-            implies = ["android_full_lto"] + (
+            implies = ["android_full_lto", "sanitizers_enabled"] + (
                 ["arm_isa_thumb"] if target_arch == _arches.Arm else []
             ),
-        ),
-    ]
-
-    features.append(
-        feature(
-            name = "android_cfi_cross_dso",
-            enabled = True,
-            requires = [feature_set(features = ["android_cfi"])],
-            flag_sets = [
-                _make_flag_set(
-                    actions = _actions.c_and_cpp_compile + _actions.link,
-                    flags = [_generated_sanitizer_constants.CfiCrossDsoFlag],
-                    with_features = ["dynamic_executable"],
-                    with_not_features = ["static_executable"],
-                ),
-            ],
         ),
     )
 
@@ -1782,10 +1805,7 @@ def _sanitizer_flag_feature(name, actions, flags):
                 # with_feature_set added here.
                 with_features = [
                     with_feature_set(
-                        features = ["ubsan_enabled"],
-                    ),
-                    with_feature_set(
-                        features = ["android_cfi"],
+                        features = ["sanitizers_enabled"],
                     ),
                 ],
             ),
@@ -1868,17 +1888,17 @@ sanitizer_blocklist_dict = {
     "system/extras/toolchain-extras": "libprofile_clang_extras_blocklist.txt",
 }
 
-def _get_ubsan_blocklist_features():
+def _get_sanitizer_blocklist_features():
     features = []
     for blocklist in sanitizer_blocklist_dict.items():
         # Format the blocklist name to be used in a feature name
         blocklist_feature_name_suffix = blocklist[1].lower().replace(".", "_")
         features.append(
             feature(
-                name = "ubsan_blocklist_" + blocklist_feature_name_suffix,
+                name = "sanitizer_blocklist_" + blocklist_feature_name_suffix,
                 enabled = False,
                 requires = [
-                    feature_set(features = ["ubsan_enabled"]),
+                    feature_set(features = ["sanitizers_enabled"]),
                 ],
                 flag_sets = [
                     flag_set(
@@ -1900,6 +1920,12 @@ def _get_ubsan_blocklist_features():
         )
     return features
 
+minimal_runtime_flags = [
+    "-fsanitize-minimal-runtime",
+    "-fno-sanitize-trap=integer,undefined",
+    "-fno-sanitize-recover=integer,undefined",
+]
+
 def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
     if target_os in [_oses.Windows, _oses.Darwin]:
         return []
@@ -1910,6 +1936,7 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
         feature(
             name = "ubsan_enabled",
             enabled = False,
+            implies = ["sanitizers_enabled"],
         ),
     ]
 
@@ -1930,7 +1957,7 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
                     ],
                 ),
                 flag_set(
-                    actions = _actions.compile,
+                    actions = _actions.c_and_cpp_compile,
                     flag_groups = [
                         flag_group(
                             flags = [
@@ -2047,7 +2074,7 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
             enabled = target_os not in [_oses.LinuxBionic, _oses.Android],
             flag_sets = [
                 flag_set(
-                    actions = _actions.compile,
+                    actions = _actions.c_and_cpp_compile,
                     flag_groups = [
                         flag_group(
                             flags = [
@@ -2079,14 +2106,10 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
             enabled = False,
             flag_sets = [
                 flag_set(
-                    actions = ALL_UBSAN_ACTIONS,
+                    actions = _actions.c_and_cpp_compile,
                     flag_groups = [
                         flag_group(
-                            flags = [
-                                "-fsanitize-minimal-runtime",
-                                "-fno-sanitize-trap=integer,undefined",
-                                "-fno-sanitize-recover=integer,undefined",
-                            ],
+                            flags = minimal_runtime_flags,
                         ),
                     ],
                 ),
@@ -2102,7 +2125,7 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
                 # TODO(b/119329758): If this bug is fixed, this shouldn't be
                 #                    needed anymore
                 flag_set(
-                    actions = _actions.compile,
+                    actions = _actions.c_and_cpp_compile,
                     flag_groups = [
                         flag_group(
                             flags = [
@@ -2117,7 +2140,7 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
                 # TODO(b/171275751): If this bug is fixed, this shouldn't be
                 #                    needed anymore
                 flag_set(
-                    actions = _actions.compile,
+                    actions = _actions.c_and_cpp_compile,
                     flag_groups = [
                         flag_group(
                             flags = [
@@ -2132,8 +2155,6 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
             ],
         ),
     )
-
-    ubsan_features.extend(_get_ubsan_blocklist_features())
 
     return ubsan_features
 
@@ -2200,9 +2221,13 @@ def get_features(
         _get_sdk_version_features(os_is_device, target_arch),
         _compiler_flag_features(ctx, target_arch, target_os, target_flags + compile_only_flags),
         _rpath_features(target_os, arch_is_64_bit),
+        # Optimization
+        _get_thinlto_features(),
         # Sanitizers
         _get_cfi_features(target_arch, target_os),
         _get_ubsan_features(target_os, libclang_rt_ubsan_minimal),
+        _get_sanitizer_blocklist_features(),
+        _get_misc_sanitizer_features(),
         # Misc features
         _get_visibiility_hidden_feature(),
         # RTTI
@@ -2227,8 +2252,6 @@ def get_features(
         # Compiling stub.c sources to stub libraries
         _stub_library_feature(),
         _get_legacy_features_end(),
-        # Optimization
-        _get_thinlto_features(),
         # Flags that cannot be overridden must be at the end
         _get_no_override_compile_flags(target_os),
         # This must always come last.
