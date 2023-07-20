@@ -1766,7 +1766,7 @@ def _get_visibiility_hidden_feature():
         ),
     ]
 
-def _ubsan_flag_feature(name, actions, flags):
+def _sanitizer_flag_feature(name, actions, flags):
     return feature(
         name = name,
         enabled = True,
@@ -1778,24 +1778,29 @@ def _ubsan_flag_feature(name, actions, flags):
                         flags = flags,
                     ),
                 ],
+                # Any new sanitizers that are enabled need to have a
+                # with_feature_set added here.
                 with_features = [
                     with_feature_set(
                         features = ["ubsan_enabled"],
+                    ),
+                    with_feature_set(
+                        features = ["android_cfi"],
                     ),
                 ],
             ),
         ],
     )
 
-def _host_or_device_specific_ubsan_feature(target_os):
+def _host_or_device_specific_sanitizer_feature(target_os):
     if is_os_device(target_os):
-        return _ubsan_flag_feature(
-            "ubsan_device_only_flags",
+        return _sanitizer_flag_feature(
+            "sanitizer_device_only_flags",
             _actions.compile,
             _generated_sanitizer_constants.DeviceOnlySanitizeFlags,
         )
-    return _ubsan_flag_feature(
-        "ubsan_host_only_flags",
+    return _sanitizer_flag_feature(
+        "sanitizer_host_only_flags",
         _actions.compile,
         _generated_sanitizer_constants.HostOnlySanitizeFlags,
     )
@@ -1844,6 +1849,56 @@ def _get_unsupported_integer_check_with_feature_sets(feature_check):
         )
         for integer_sanitizer in integer_sanitizers
     ]
+
+# The key of this dict is the package path to the blocklist, while the value is
+# its filename.
+# TODO: b/286872909 - When the blocking bug is complete, put these in their
+#                     respective packages
+sanitizer_blocklist_dict = {
+    "external/libavc": "libavc_blocklist.txt",
+    "external/libaom": "libaom_blocklist.txt",
+    "external/libvpx": "libvpx_blocklist.txt",
+    "frameworks/base/libs/androidfw": "libandroidfw_blocklist.txt",
+    "external/libhevc": "libhevc_blocklist.txt",
+    "external/libexif": "libexif_blocklist.txt",
+    "external/libopus": "libopus_blocklist.txt",
+    "external/libmpeg2": "libmpeg2dec_blocklist.txt",
+    "external/expat": "libexpat_blocklist.txt",
+    "external/flac/src/libFLAC": "libFLAC_blocklist.txt",
+    "system/extras/toolchain-extras": "libprofile_clang_extras_blocklist.txt",
+}
+
+def _get_ubsan_blocklist_features():
+    features = []
+    for blocklist in sanitizer_blocklist_dict.items():
+        # Format the blocklist name to be used in a feature name
+        blocklist_feature_name_suffix = blocklist[1].lower().replace(".", "_")
+        features.append(
+            feature(
+                name = "ubsan_blocklist_" + blocklist_feature_name_suffix,
+                enabled = False,
+                requires = [
+                    feature_set(features = ["ubsan_enabled"]),
+                ],
+                flag_sets = [
+                    flag_set(
+                        actions = _actions.c_and_cpp_compile,
+                        flag_groups = [
+                            flag_group(
+                                flags = [
+                                    "%s%s/%s" % (
+                                        _generated_sanitizer_constants.SanitizeIgnorelistPrefix,
+                                        blocklist[0],
+                                        blocklist[1],
+                                    ),
+                                ],
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        )
+    return features
 
 def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
     if target_os in [_oses.Windows, _oses.Darwin]:
@@ -2014,7 +2069,7 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
     )
 
     ubsan_features += [
-        _host_or_device_specific_ubsan_feature(target_os),
+        _host_or_device_specific_sanitizer_feature(target_os),
         _exclude_ubsan_rt_feature(libclang_rt_ubsan_minimal),
     ]
 
@@ -2077,6 +2132,8 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
             ],
         ),
     )
+
+    ubsan_features.extend(_get_ubsan_blocklist_features())
 
     return ubsan_features
 
