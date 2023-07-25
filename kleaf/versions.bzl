@@ -16,8 +16,6 @@
 
 VERSIONS = [
     # keep sorted
-    "r450784e",
-    "r475365b",
     "r487747c",
     "r498229",
 ]
