@@ -38,6 +38,7 @@ license {
 
 llvm_prebuilt_library_static {
     name: "libFuzzer",
+    vendor_available: true,
     sdk_version: "minimum",
     sanitize: {
         never: true,
