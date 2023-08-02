@@ -23,6 +23,7 @@ load(
 load(
     ":cc_toolchain_constants.bzl",
     "libclang_ubsan_minimal_rt_prebuilt_map",
+    _generated_sanitizer_constants = "generated_sanitizer_constants",
 )
 load(
     ":cc_toolchain_features.bzl",
@@ -375,8 +376,6 @@ def _test_ubsan_unsupported_non_bionic_checks_not_disabled_when_no_ubsan():
 
     return test_name
 
-sanitizer_no_link_runtime_flag = "-fno-sanitize-link-runtime"
-
 def _test_ubsan_no_link_runtime():
     name = "ubsan_no_link_runtime"
 
@@ -393,7 +392,7 @@ def _test_ubsan_no_link_runtime():
         name = android_test_name,
         target_under_test = name,
         mnemonics = [link_action_mnemonic],
-        expected_flags = [sanitizer_no_link_runtime_flag],
+        expected_flags = [_generated_sanitizer_constants.NoSanitizeLinkRuntimeFlag],
     )
 
     # TODO(b/263787980): Uncomment when bionic toolchain is implemented
@@ -402,7 +401,7 @@ def _test_ubsan_no_link_runtime():
     #        name = bionic_test_name,
     #        target_under_test = name,
     #        mnemonics = [link_action_mnemonic],
-    #        expected_flags = [sanitizer_no_link_runtime_flag],
+    #        expected_flags = [_generated_sanitizer_constants.NoSanitizeLinkRuntimeFlag],
     #    )
     #    test_names += [bionic_test_name]
 
@@ -412,7 +411,7 @@ def _test_ubsan_no_link_runtime():
     #        name = musl_test_name,
     #        target_under_test = name,
     #        mnemonics = [link_action_mnemonic],
-    #        expected_flags = [sanitizer_no_link_runtime_flag],
+    #        expected_flags = [_generated_sanitizer_constants.NoSanitizeLinkRuntimeFlag],
     #    )
     #    test_names += [musl_test_name]
 
@@ -484,7 +483,7 @@ def _test_ubsan_link_runtime_when_not_bionic_or_musl():
         name = test_name,
         target_under_test = name,
         mnemonics = [link_action_mnemonic],
-        expected_absent_flags = [sanitizer_no_link_runtime_flag],
+        expected_absent_flags = [_generated_sanitizer_constants.NoSanitizeLinkRuntimeFlag],
     )
 
     return test_name
