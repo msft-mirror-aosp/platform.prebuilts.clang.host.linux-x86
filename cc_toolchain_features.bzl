@@ -1920,12 +1920,6 @@ def _get_sanitizer_blocklist_features():
         )
     return features
 
-minimal_runtime_flags = [
-    "-fsanitize-minimal-runtime",
-    "-fno-sanitize-trap=integer,undefined",
-    "-fno-sanitize-recover=integer,undefined",
-]
-
 def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
     if target_os in [_oses.Windows, _oses.Darwin]:
         return []
@@ -2109,7 +2103,7 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
                     actions = _actions.c_and_cpp_compile,
                     flag_groups = [
                         flag_group(
-                            flags = minimal_runtime_flags,
+                            flags = _generated_sanitizer_constants.MinimalRuntimeFlags,
                         ),
                     ],
                 ),
