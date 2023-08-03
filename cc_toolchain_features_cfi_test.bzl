@@ -435,6 +435,43 @@ def _test_host_only_and_device_only_features():
 def _test_device_only_and_host_only_features_absent_when_cfi_disabled():
     pass
 
+def _test_cfi_no_link_runtime():
+    name = "cfi_no_link_runtime"
+
+    native.cc_binary(
+        name = name,
+        srcs = test_srcs,
+        features = ["android_cfi"],
+        tags = ["manual"],
+    )
+
+    android_test_name = name + "_when_android_test"
+    test_names = [android_test_name]
+    action_flags_present_only_for_mnemonic_aosp_arm64_test(
+        name = android_test_name,
+        target_under_test = name,
+        mnemonics = [link_action_mnemonic],
+        expected_flags = [
+            generated_sanitizer_constants.NoSanitizeLinkRuntimeFlag,
+        ],
+    )
+
+    host_test_name = name + "_not_supplied_when_host_test"
+    test_names += [host_test_name]
+    action_flags_absent_for_mnemonic_aosp_arm64_host_test(
+        name = host_test_name,
+        target_under_test = name,
+        mnemonics = [link_action_mnemonic],
+        expected_absent_flags = [
+            generated_sanitizer_constants.NoSanitizeLinkRuntimeFlag,
+        ],
+    )
+
+    # TODO: b/263787980 - Implement test for bionic
+    # TODO: b/263787526 - Implement test for musl
+
+    return test_names
+
 def cc_toolchain_features_cfi_test_suite(name):
     individual_tests = [
         test_cross_dso_not_added_when_cfi_disabled(),
@@ -456,5 +493,6 @@ def cc_toolchain_features_cfi_test_suite(name):
                 test_cfi_c_and_cpp_has_correct_flags() +
                 test_cfi_s_has_correct_flags() +
                 test_cross_dso_not_added_when_static_binary() +
-                _test_host_only_and_device_only_features(),
+                _test_host_only_and_device_only_features() +
+                _test_cfi_no_link_runtime(),
     )
