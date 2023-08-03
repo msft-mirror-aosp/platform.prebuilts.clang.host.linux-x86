@@ -13,7 +13,6 @@ load(
     "variable_with_value",
     "with_feature_set",
 )
-load("//build/bazel/product_config:product_variables_providing_rule.bzl", "ProductVariablesInfo")
 load(
     ":cc_toolchain_constants.bzl",
     _actions = "actions",
@@ -2180,7 +2179,7 @@ def get_features(
     target_flags = ctx.attr.target_flags
     compile_only_flags = ctx.attr.compiler_flags
     linker_only_flags = ctx.attr.linker_flags
-    deviceMaxPageSize = ctx.attr._product_variables[ProductVariablesInfo].DeviceMaxPageSizeSupported
+    deviceMaxPageSize = ctx.attr._device_max_page_size_supported[BuildSettingInfo].value
     if deviceMaxPageSize and (target_arch == "arm" or target_arch == "arm64"):
         linker_only_flags = ctx.attr.linker_flags + \
                             ["-Wl,-z,max-page-size=" + deviceMaxPageSize]
