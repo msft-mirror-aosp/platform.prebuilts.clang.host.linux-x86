@@ -23,6 +23,7 @@ load(
 load(
     ":cc_toolchain_constants.bzl",
     "libclang_ubsan_minimal_rt_prebuilt_map",
+    _generated_sanitizer_constants = "generated_sanitizer_constants",
 )
 load(
     ":cc_toolchain_features.bzl",
@@ -53,6 +54,9 @@ def _ubsan_sanitizer_test(
 test_srcs = [
     "foo.cpp",
     "bar.c",
+]
+
+all_test_srcs = test_srcs + [
     "baz.s",
     "blah.S",
 ]
@@ -95,7 +99,7 @@ def _test_ubsan_misc_undefined_feature():
     test_name = name + "_test"
     native.cc_binary(
         name = name,
-        srcs = test_srcs,
+        srcs = all_test_srcs,
         features = ["ubsan_undefined"],  # Just pick one; doesn't matter which
         tags = ["manual"],
     )
@@ -371,8 +375,6 @@ def _test_ubsan_unsupported_non_bionic_checks_not_disabled_when_no_ubsan():
 
     return test_name
 
-sanitizer_no_link_runtime_flag = "-fno-sanitize-link-runtime"
-
 def _test_ubsan_no_link_runtime():
     name = "ubsan_no_link_runtime"
 
@@ -389,7 +391,7 @@ def _test_ubsan_no_link_runtime():
         name = android_test_name,
         target_under_test = name,
         mnemonics = [link_action_mnemonic],
-        expected_flags = [sanitizer_no_link_runtime_flag],
+        expected_flags = [_generated_sanitizer_constants.NoSanitizeLinkRuntimeFlag],
     )
 
     # TODO(b/263787980): Uncomment when bionic toolchain is implemented
@@ -398,7 +400,7 @@ def _test_ubsan_no_link_runtime():
     #        name = bionic_test_name,
     #        target_under_test = name,
     #        mnemonics = [link_action_mnemonic],
-    #        expected_flags = [sanitizer_no_link_runtime_flag],
+    #        expected_flags = [_generated_sanitizer_constants.NoSanitizeLinkRuntimeFlag],
     #    )
     #    test_names += [bionic_test_name]
 
@@ -408,7 +410,7 @@ def _test_ubsan_no_link_runtime():
     #        name = musl_test_name,
     #        target_under_test = name,
     #        mnemonics = [link_action_mnemonic],
-    #        expected_flags = [sanitizer_no_link_runtime_flag],
+    #        expected_flags = [_generated_sanitizer_constants.NoSanitizeLinkRuntimeFlag],
     #    )
     #    test_names += [musl_test_name]
 
@@ -480,7 +482,7 @@ def _test_ubsan_link_runtime_when_not_bionic_or_musl():
         name = test_name,
         target_under_test = name,
         mnemonics = [link_action_mnemonic],
-        expected_absent_flags = [sanitizer_no_link_runtime_flag],
+        expected_absent_flags = [_generated_sanitizer_constants.NoSanitizeLinkRuntimeFlag],
     )
 
     return test_name
@@ -672,6 +674,26 @@ def _test_device_only_and_host_only_features_absent_when_ubsan_disabled():
 
     return test_names
 
+def _test_minimal_runtime_flags_added_to_compilation():
+    name = "minimal_runtime_flags_added_to_compilation"
+
+    native.cc_binary(
+        name = name,
+        srcs = test_srcs,
+        features = ["ubsan_undefined"],
+        tags = ["manual"],
+    )
+
+    test_name = name + "_test"
+    action_flags_present_only_for_mnemonic_test(
+        name = test_name,
+        target_under_test = name,
+        mnemonics = [compile_action_mnemonic],
+        expected_flags = _generated_sanitizer_constants.MinimalRuntimeFlags,
+    )
+
+    return test_name
+
 def _exclude_rt_test_for_os_arch(target_name, os, arch, flag):
     test_name = "%s_%s_test" % (
         target_name,
@@ -825,6 +847,7 @@ def cc_toolchain_features_ubsan_test_suite(name):
         _test_ubsan_unsupported_non_bionic_checks_not_disabled_when_android(),
         _test_ubsan_unsupported_non_bionic_checks_not_disabled_when_no_ubsan(),
         _test_ubsan_link_runtime_when_not_bionic_or_musl(),
+        _test_minimal_runtime_flags_added_to_compilation(),
         # TODO(b/274924237): Uncomment after Darwin and Windows have toolchains
         #        _test_undefined_flag_absent_when_windows_or_darwin(),
     ]

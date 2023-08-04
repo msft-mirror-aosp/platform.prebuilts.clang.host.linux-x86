@@ -38,6 +38,7 @@ license {
 
 llvm_prebuilt_library_static {
     name: "libFuzzer",
+    vendor_available: true,
     sdk_version: "minimum",
     sanitize: {
         never: true,
@@ -326,6 +327,24 @@ llvm_prebuilt_library_static {
     visibility: [
         "//bionic:__subpackages__",
         "//frameworks/libs/native_bridge_support/libc:__subpackages__",
+    ],
+}
+
+llvm_prebuilt_library_static {
+    name: "libsimpleperf_readelf",
+    host_supported: true,
+    sdk_version: "minimum",
+    sanitize: {
+        never: true,
+    },
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
+    visibility: [
+        "//cts/tests/tests/simpleperf",
+        "//system/extras/simpleperf",
     ],
 }
 
