@@ -413,14 +413,6 @@ llvm_tools_filegroup {
     // ./soong/clangprebuilts.go:llvmToolsFiles
 }
 
-llvm_prebuilt_build_tool {
-    name: "llvm-dwarfdump",
-}
-
-llvm_prebuilt_build_tool {
-    name: "llvm-objdump",
-}
-
 subdirs = [
     "soong",
 ]
