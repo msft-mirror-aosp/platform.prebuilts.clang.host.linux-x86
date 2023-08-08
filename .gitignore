@@ -1,4 +1,2 @@
-*/lib/python3/site-packages/clang/*.pyc
-*/lib/python3/site-packages/clang/__pycache__
-*/lib64/python3/site-packages/clang/*.pyc
-*/lib64/python3/site-packages/clang/__pycache__
+**/python3/**/*.pyc
+**/python3/**/__pycache__
