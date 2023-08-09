@@ -52,6 +52,8 @@ func init() {
 		llvmHostPrebuiltLibrarySharedFactory)
 	android.RegisterModuleType("llvm_prebuilt_library_static",
 		llvmPrebuiltLibraryStaticFactory)
+	android.RegisterModuleType("llvm_prebuilt_build_tool",
+		llvmPrebuiltBuildToolFactory)
 	android.RegisterModuleType("libclang_rt_prebuilt_library_shared",
 		libClangRtPrebuiltLibrarySharedFactory)
 	android.RegisterModuleType("libclang_rt_prebuilt_library_static",
@@ -209,6 +211,30 @@ func llvmPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 		p.Target.Linux_musl_arm64.Srcs = []string{path.Join(libDir, "aarch64-unknown-linux-musl/lib", name)}
 	}
 
+	ctx.AppendProperties(p)
+}
+
+func llvmPrebuiltBuildTool(ctx android.LoadHookContext) {
+	clangDir := getClangPrebuiltDir(ctx)
+	name := strings.TrimPrefix(ctx.ModuleName(), "prebuilt_")
+	src := path.Join(clangDir, "bin", name)
+	deps := []string{path.Join(clangDir, "lib", "libc++.so")}
+
+	type props struct {
+		Enabled *bool
+		Target  struct {
+			Linux struct {
+				Enabled *bool
+				Src     *string
+				Deps    []string
+			}
+		}
+	}
+	p := &props{}
+	p.Enabled = proptools.BoolPtr(false)
+	p.Target.Linux.Enabled = proptools.BoolPtr(true)
+	p.Target.Linux.Src = &src
+	p.Target.Linux.Deps = deps
 	ctx.AppendProperties(p)
 }
 
@@ -403,6 +429,12 @@ func llvmPrebuiltLibraryStaticFactory() android.Module {
 	module, _ := cc.NewPrebuiltStaticLibrary(android.HostAndDeviceSupported)
 	android.AddLoadHook(module, llvmPrebuiltLibraryStatic)
 	return module.Init()
+}
+
+func llvmPrebuiltBuildToolFactory() android.Module {
+	module := android.NewPrebuiltBuildTool()
+	android.AddLoadHook(module, llvmPrebuiltBuildTool)
+	return module
 }
 
 func llvmHostPrebuiltLibrarySharedFactory() android.Module {
