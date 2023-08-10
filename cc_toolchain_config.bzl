@@ -35,8 +35,10 @@ _ClangVersionInfo = provider(fields = ["clang_version", "includes"])
 
 CLANG_TOOLS = [
     "llvm-ar",
+    "llvm-dwarfdump",
     "llvm-nm",
     "llvm-objcopy",
+    "llvm-objdump",
     "llvm-readelf",
     "llvm-strip",
     "clang-tidy",
