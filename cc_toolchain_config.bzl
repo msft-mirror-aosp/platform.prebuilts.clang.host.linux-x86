@@ -35,8 +35,10 @@ _ClangVersionInfo = provider(fields = ["clang_version", "includes"])
 
 CLANG_TOOLS = [
     "llvm-ar",
+    "llvm-dwarfdump",
     "llvm-nm",
     "llvm-objcopy",
+    "llvm-objdump",
     "llvm-readelf",
     "llvm-strip",
     "clang-tidy",
@@ -413,8 +415,8 @@ _cc_toolchain_config = rule(
         "_allow_unknown_warning_option": attr.label(
             default = "//prebuilts/clang/host/linux-x86:allow_unknown_warning_option_env",
         ),
-        "_product_variables": attr.label(
-            default = "//build/bazel/product_config:product_vars",
+        "_device_max_page_size_supported": attr.label(
+            default = "//build/bazel/product_config:device_max_page_size_supported",
         ),
         "_clang_default_debug_level": attr.label(
             default = "//prebuilts/clang/host/linux-x86:clang_default_debug_level",
