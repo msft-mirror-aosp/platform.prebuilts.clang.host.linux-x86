@@ -13,7 +13,6 @@ load(
     "variable_with_value",
     "with_feature_set",
 )
-load("//build/bazel/product_config:product_variables_providing_rule.bzl", "ProductVariablesInfo")
 load(
     ":cc_toolchain_constants.bzl",
     _actions = "actions",
@@ -1920,12 +1919,6 @@ def _get_sanitizer_blocklist_features():
         )
     return features
 
-minimal_runtime_flags = [
-    "-fsanitize-minimal-runtime",
-    "-fno-sanitize-trap=integer,undefined",
-    "-fno-sanitize-recover=integer,undefined",
-]
-
 def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
     if target_os in [_oses.Windows, _oses.Darwin]:
         return []
@@ -2050,13 +2043,13 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
                     flag_groups = [
                         flag_group(
                             flags = [
-                                "-fno-sanitize-link-runtime",
+                                _generated_sanitizer_constants.NoSanitizeLinkRuntimeFlag,
                             ],
                         ),
                     ],
                     with_features = [
                         with_feature_set(
-                            features = ["ubsan_enabled"],
+                            features = ["sanitizers_enabled"],
                         ),
                     ],
                 ),
@@ -2109,7 +2102,7 @@ def _get_ubsan_features(target_os, libclang_rt_ubsan_minimal):
                     actions = _actions.c_and_cpp_compile,
                     flag_groups = [
                         flag_group(
-                            flags = minimal_runtime_flags,
+                            flags = _generated_sanitizer_constants.MinimalRuntimeFlags,
                         ),
                     ],
                 ),
@@ -2186,7 +2179,7 @@ def get_features(
     target_flags = ctx.attr.target_flags
     compile_only_flags = ctx.attr.compiler_flags
     linker_only_flags = ctx.attr.linker_flags
-    deviceMaxPageSize = ctx.attr._product_variables[ProductVariablesInfo].DeviceMaxPageSizeSupported
+    deviceMaxPageSize = ctx.attr._device_max_page_size_supported[BuildSettingInfo].value
     if deviceMaxPageSize and (target_arch == "arm" or target_arch == "arm64"):
         linker_only_flags = ctx.attr.linker_flags + \
                             ["-Wl,-z,max-page-size=" + deviceMaxPageSize]
