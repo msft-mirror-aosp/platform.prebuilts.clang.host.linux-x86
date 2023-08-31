@@ -9,13 +9,13 @@
 
   <superproject name="platform/superproject" remote="aosp" revision="llvm-toolchain" />
 
-  <project path="bionic" name="platform/bionic" revision="0398f8ab3a87a70f31ee664fcca293e3e3031db8" />
+  <project path="bionic" name="platform/bionic" revision="4de14c7499b6145e13d4be6f985c061ef843bbb8" />
 
   <project path="toolchain/binutils" name="toolchain/binutils" revision="c19795e958ed532462948fd14b1bdfd4f6e96e03" />
 
   <project path="toolchain/llvm-project" name="toolchain/llvm-project" revision="e34ed7d63863b45858e74126edaa738e75887800" />
 
-  <project path="toolchain/llvm_android" name="toolchain/llvm_android" revision="06876be73af951e214a3ff1cae96ce45bcef3c8b" />
+  <project path="toolchain/llvm_android" name="toolchain/llvm_android" revision="67b7374615b157459d52e8e145745c9ee6dc86aa" />
 
   <project path="toolchain/common" name="toolchain/common" revision="0bce8b062126242872e9f3fc66760d3f76773c49" />
 
@@ -45,7 +45,7 @@
 
   <project path="toolchain/xz" name="toolchain/xz" revision="47426872d1366c32538a8e9c8f559b03cb45b648" />
 
-  <project path="external/libxml2" name="platform/external/libxml2" revision="b9f5891f6feb751efcc47ffc75c9b54bcc24c350" />
+  <project path="external/libxml2" name="platform/external/libxml2" revision="1534e7566c98415eafe52403ff5131ab0374547c" />
 
   <project path="external/libncurses" name="platform/external/ncurses" revision="34cc24447dc9e5700110580c784d9606f6cff5f0" />
 
@@ -55,13 +55,13 @@
 
   <project path="prebuilts/python/windows-x86" name="platform/prebuilts/python/windows-x86" clone-depth="1" revision="7119932cd3cea23f16db62e683b69c23e415ff09" />
 
-  <project path="prebuilts/clang/host/darwin-x86" name="platform/prebuilts/clang/host/darwin-x86" clone-depth="1" revision="e35bd5a5deb20564ba215648866510e0a4f54e13" />
+  <project path="prebuilts/clang/host/darwin-x86" name="platform/prebuilts/clang/host/darwin-x86" clone-depth="1" revision="81e56e022e0ef3d5c9d0ca03024f7b7905ab64ab" />
 
   <project path="prebuilts/clang/host/darwin-universal" name="platform/prebuilts/clang/host/darwin-universal" clone-depth="1" revision="592f071af1df99cb463ff5b670cd383efd49a6e1" />
 
-  <project path="prebuilts/clang/host/linux-x86" name="platform/prebuilts/clang/host/linux-x86" clone-depth="1" revision="d3a7e8f0c1904b60a5b177f6716cf8c3d1e37eca" />
+  <project path="prebuilts/clang/host/linux-x86" name="platform/prebuilts/clang/host/linux-x86" clone-depth="1" revision="364c8e147968351050f730fa0a48c4eea3d6eaf1" />
 
-  <project path="prebuilts/clang/host/windows-x86" name="platform/prebuilts/clang/host/windows-x86" clone-depth="1" revision="2721d5bce5c51298af9a7d5337089cc82728bd1f" />
+  <project path="prebuilts/clang/host/windows-x86" name="platform/prebuilts/clang/host/windows-x86" clone-depth="1" revision="b0eb17478733f5616e8e217c552b7e5d4ad24116" />
 
   <project path="toolchain/prebuilts/ndk/r25" name="toolchain/prebuilts/ndk/r25" revision="1622e087e1b881a0c7c744091d314662d12f0997" />
 
