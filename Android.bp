@@ -421,26 +421,6 @@ llvm_prebuilt_build_tool {
     name: "llvm-objdump",
 }
 
-llvm_prebuilt_build_tool {
-    name: "clang++",
-}
-
-llvm_prebuilt_build_tool {
-    name: "clang++.real",
-}
-
-llvm_prebuilt_build_tool {
-    name: "lld",
-}
-
-llvm_prebuilt_build_tool {
-    name: "ld.lld",
-}
-
-llvm_prebuilt_build_tool {
-    name: "llvm-ar",
-}
-
 subdirs = [
     "soong",
 ]
