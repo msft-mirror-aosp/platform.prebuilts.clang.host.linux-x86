@@ -14,6 +14,7 @@
 
 """Defines a cc toolchain for kernel build, based on clang."""
 
+load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "CPP_TOOLCHAIN_TYPE")
 load(
     "@kernel_toolchain_info//:dict.bzl",
@@ -211,7 +212,10 @@ ARCH_CONFIG = {
         # From _setup_env.sh
         # sysroot_flags+="--sysroot=${ROOT_DIR}/build/kernel/build-tools/sysroot "
         sysroot_label = Label("//build/kernel:sysroot"),
-        sysroot_path = "build/kernel/build-tools/sysroot",
+        sysroot_path = paths.join(
+            Label("//build/kernel:sysroot").workspace_root,
+            "build/kernel/build-tools/sysroot",
+        ),
     ),
     ("android", "arm64"): dict(
         ndk_triple = VARS.get("AARCH64_NDK_TRIPLE"),
