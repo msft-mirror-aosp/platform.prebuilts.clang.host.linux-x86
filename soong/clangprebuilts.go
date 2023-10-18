@@ -403,9 +403,6 @@ func libClangRtPrebuiltObject(ctx android.LoadHookContext) {
 func llvmDarwinFileGroup(ctx android.LoadHookContext) {
 	clangDir := getClangPrebuiltDir(ctx)
 	libName := strings.TrimSuffix(ctx.ModuleName(), "_darwin")
-	if libName == "libc++" || libName == "libc++abi" {
-		libName += ".1"
-	}
 	if libName == "libsimpleperf_readelf" {
 		libName += ".a"
 	} else {
