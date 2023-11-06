@@ -23,12 +23,12 @@ load(
 load(
     ":cc_toolchain_constants.bzl",
     "libclang_ubsan_minimal_rt_prebuilt_map",
-    _generated_sanitizer_constants = "generated_sanitizer_constants",
 )
 load(
     ":cc_toolchain_features.bzl",
     "int_overflow_ignorelist_filename",
     "int_overflow_ignorelist_path",
+    "minimal_runtime_flags",
 )
 
 compile_action_mnemonic = "CppCompile"
@@ -375,6 +375,8 @@ def _test_ubsan_unsupported_non_bionic_checks_not_disabled_when_no_ubsan():
 
     return test_name
 
+sanitizer_no_link_runtime_flag = "-fno-sanitize-link-runtime"
+
 def _test_ubsan_no_link_runtime():
     name = "ubsan_no_link_runtime"
 
@@ -391,7 +393,7 @@ def _test_ubsan_no_link_runtime():
         name = android_test_name,
         target_under_test = name,
         mnemonics = [link_action_mnemonic],
-        expected_flags = [_generated_sanitizer_constants.NoSanitizeLinkRuntimeFlag],
+        expected_flags = [sanitizer_no_link_runtime_flag],
     )
 
     # TODO(b/263787980): Uncomment when bionic toolchain is implemented
@@ -400,7 +402,7 @@ def _test_ubsan_no_link_runtime():
     #        name = bionic_test_name,
     #        target_under_test = name,
     #        mnemonics = [link_action_mnemonic],
-    #        expected_flags = [_generated_sanitizer_constants.NoSanitizeLinkRuntimeFlag],
+    #        expected_flags = [sanitizer_no_link_runtime_flag],
     #    )
     #    test_names += [bionic_test_name]
 
@@ -410,7 +412,7 @@ def _test_ubsan_no_link_runtime():
     #        name = musl_test_name,
     #        target_under_test = name,
     #        mnemonics = [link_action_mnemonic],
-    #        expected_flags = [_generated_sanitizer_constants.NoSanitizeLinkRuntimeFlag],
+    #        expected_flags = [sanitizer_no_link_runtime_flag],
     #    )
     #    test_names += [musl_test_name]
 
@@ -482,7 +484,7 @@ def _test_ubsan_link_runtime_when_not_bionic_or_musl():
         name = test_name,
         target_under_test = name,
         mnemonics = [link_action_mnemonic],
-        expected_absent_flags = [_generated_sanitizer_constants.NoSanitizeLinkRuntimeFlag],
+        expected_absent_flags = [sanitizer_no_link_runtime_flag],
     )
 
     return test_name
@@ -689,7 +691,7 @@ def _test_minimal_runtime_flags_added_to_compilation():
         name = test_name,
         target_under_test = name,
         mnemonics = [compile_action_mnemonic],
-        expected_flags = _generated_sanitizer_constants.MinimalRuntimeFlags,
+        expected_flags = minimal_runtime_flags,
     )
 
     return test_name
