@@ -118,7 +118,7 @@ def main():
         if new_index is not None:
             if old_index is not None:
                 if new_index < old_index:
-                    raise RuntimeError(f"{curr_symbol} must be before {symbol} in orderfile")
+                    raise RuntimeError(f"`{curr_symbol}` must be before `{symbol}` in orderfile")
             old_index = new_index
             curr_symbol = symbol
 
