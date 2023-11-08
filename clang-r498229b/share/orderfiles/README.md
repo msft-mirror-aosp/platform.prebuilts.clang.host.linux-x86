@@ -18,12 +18,24 @@ Some arguments in the script allows three formats (File, CSV, or Folder) based o
 All formats represent a list of values, which is symbols or files in our case.
 - File format: The file will have one value per line.
                Add @ before the filename to show it is a file.
+               If the values are files, the format is (file, weight).
                Example: @example.txt
-- CSV format: Use “” (Quotation) around the comma-separated symbols.
+- CSV format: Use “” (Quotation) around the comma-separated values.
               Example: “main,foo,bar”
 - Folder format: Add ^ before the path to the folder.
               We assume every file in the folder ends with ".orderfile".
               Example: ^path/to/folder
+
+Orderfile scripts
+----------------------------------
+Following scripts are provided:
+- [create_orderfile](create_orderfile.py)
+- [validate_orderfile](validate_orderfile.py)
+- [merge_orderfile](merge_orderfile.py)
+
+In order to run the scripts you may need to install the following python3 dependencies:
+- bitarray
+- graphviz
 
 Create Order file
 ----------------------------------
@@ -90,4 +102,26 @@ Flags:
     - Description: Minimum number of symbols to make an orderfile good for page layout purposes
     - Type: Int
 
+Merge Order File
+----------------------------------
+Any executable running on different devices might not create the same order file due to threads, OS, side effects, etc.
+As a result, our script will take all the order files and merge them into one order file while trying to maintain locality.
+As lower end device require better layout for performance boost, you can assign weights to order files and provide lower
+end device order files with higher weight. You can only assign weights if you use File format and an example can be found
+in test/merge-test/merge.txt.
 
+```
+python3 merge_orderfile [-h] --order-files ORDER_FILES [--output OUTPUT] [--graph-image GRAPH_IMAGE]
+```
+
+Flags:
+- Files (--order-files):
+    - Description: A collection of order files that need to be merged together
+    - Type: String (File/CSV/Folder)
+    - Required
+- Output (--output):
+    - Description: Provide the output file name for the order file. Default Name: default.orderfile
+    - Type: String
+- Graph Image (--graph-image):
+    - Description: Provide the output image name for the graph representation of the order files
+    - Type: String
