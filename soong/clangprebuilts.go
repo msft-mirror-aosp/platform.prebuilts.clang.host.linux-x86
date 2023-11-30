@@ -218,7 +218,10 @@ func llvmPrebuiltBuildTool(ctx android.LoadHookContext) {
 	clangDir := getClangPrebuiltDir(ctx)
 	name := strings.TrimPrefix(ctx.ModuleName(), "prebuilt_")
 	src := path.Join(clangDir, "bin", name)
-	deps := []string{path.Join(clangDir, "lib", "libc++.so")}
+	deps := []string{
+		path.Join(clangDir, "lib", "libc++.so"),
+		path.Join(clangDir, "lib", "x86_64-unknown-linux-gnu", "libc++.so"),
+	}
 
 	type props struct {
 		Enabled *bool
