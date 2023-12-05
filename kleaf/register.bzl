@@ -38,6 +38,10 @@ def register_clang_toolchains():
             ),
         )
 
+    # Label(): Resolve the label against this extension (register.bzl) so the
+    # workspace name is injected properly when //prebuilts is in a subworkspace.
+    # str(): register_toolchains() only accepts strings, not Labels.
+
     for version in VERSIONS:
         for target_os, target_cpu in SUPPORTED_ARCHITECTURES:
             native.register_toolchains(
