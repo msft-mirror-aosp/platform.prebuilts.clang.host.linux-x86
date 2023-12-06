@@ -38,13 +38,17 @@ def register_clang_toolchains():
             ),
         )
 
+    # Label(): Resolve the label against this extension (register.bzl) so the
+    # workspace name is injected properly when //prebuilts is in a subworkspace.
+    # str(): register_toolchains() only accepts strings, not Labels.
+
     for version in VERSIONS:
         for target_os, target_cpu in SUPPORTED_ARCHITECTURES:
             native.register_toolchains(
-                "//prebuilts/clang/host/linux-x86/kleaf:{}_{}_{}_clang_toolchain".format(version, target_os, target_cpu),
+                str(Label("//prebuilts/clang/host/linux-x86/kleaf:{}_{}_{}_clang_toolchain".format(version, target_os, target_cpu))),
             )
 
     for target_os, target_cpu in SUPPORTED_ARCHITECTURES:
         native.register_toolchains(
-            "//prebuilts/clang/host/linux-x86/kleaf:{}_{}_clang_toolchain".format(target_os, target_cpu),
+            str(Label("//prebuilts/clang/host/linux-x86/kleaf:{}_{}_clang_toolchain".format(target_os, target_cpu))),
         )
