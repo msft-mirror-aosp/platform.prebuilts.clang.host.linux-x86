@@ -20,7 +20,6 @@ load(
     "feature",
     "flag_group",
     "flag_set",
-    "variable_with_value",
 )
 load(
     "@rules_cc//cc:action_names.bzl",
@@ -79,7 +78,8 @@ def _action_configs(ctx):
         ],
     )
     objcopy = action_config(
-        action_name = ACTION_NAMES.objcopy_embed_data,
+        # TODO(b/310843869): Use objcopy_embed_data from ACTION_NAMES
+        action_name = "objcopy_embed_data",
         tools = [
             struct(
                 type_name = "tool",
