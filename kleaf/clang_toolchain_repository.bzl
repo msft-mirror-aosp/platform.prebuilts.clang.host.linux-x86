@@ -14,17 +14,17 @@
 
 """Defines a repository that provides a clang version at a user defined path."""
 
-def _user_clang_toolchain_repository_impl(repository_ctx):
+def _clang_toolchain_repository_impl(repository_ctx):
     repository_ctx.file("WORKSPACE.bazel", """\
 workspace(name = "{}")
 """.format(repository_ctx.attr.name))
 
     if "KLEAF_USER_CLANG_TOOLCHAIN_PATH" not in repository_ctx.os.environ:
-        _empty_user_clang_toolchain_repository_impl(repository_ctx)
+        _empty_clang_toolchain_repository_impl(repository_ctx)
     else:
-        _real_user_clang_toolchain_repository_impl(repository_ctx)
+        _real_clang_toolchain_repository_impl(repository_ctx)
 
-def _empty_user_clang_toolchain_repository_impl(repository_ctx):
+def _empty_clang_toolchain_repository_impl(repository_ctx):
     build_file_content = '''\
 """Fake user C toolchains.
 
@@ -50,7 +50,7 @@ toolchain_type(
     )
     repository_ctx.file("BUILD.bazel", build_file_content)
 
-def _real_user_clang_toolchain_repository_impl(repository_ctx):
+def _real_clang_toolchain_repository_impl(repository_ctx):
     user_clang_toolchain_path = repository_ctx.os.environ["KLEAF_USER_CLANG_TOOLCHAIN_PATH"]
     user_clang_toolchain_path = repository_ctx.path(user_clang_toolchain_path)
 
@@ -109,13 +109,13 @@ filegroup(
 
     repository_ctx.file("BUILD.bazel", build_file_content)
 
-user_clang_toolchain_repository = repository_rule(
+clang_toolchain_repository = repository_rule(
     doc = """Defines a repository that provides a clang version at a user defined path.
 
 The user clang toolchain is expected from the path defined in the
 `KLEAF_USER_CLANG_TOOLCHAIN_PATH` environment variable, if set.
 """,
-    implementation = _user_clang_toolchain_repository_impl,
+    implementation = _clang_toolchain_repository_impl,
     environ = [
         "KLEAF_USER_CLANG_TOOLCHAIN_PATH",
     ],
