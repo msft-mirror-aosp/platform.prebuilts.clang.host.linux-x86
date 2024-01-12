@@ -24,7 +24,7 @@ bzl_library(
 bzl_library(
     name = "clang_toolchain_repository",
     srcs = ["clang_toolchain_repository.bzl"],
-    visibility = ["//visibility:private"],
+    visibility = ["//build/kernel/kleaf/docs:__pkg__"],
 )
 
 bzl_library(
