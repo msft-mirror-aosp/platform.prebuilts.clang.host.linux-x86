@@ -13,12 +13,6 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load(
-    "@kernel_toolchain_info//:dict.bzl",
-    "VARS",
-)
-load(":architecture_constants.bzl", "SUPPORTED_ARCHITECTURES")
-load(":clang_toolchain.bzl", "clang_toolchain")
 load(":versions.bzl", "VERSIONS")
 
 bzl_library(
@@ -50,18 +44,6 @@ bzl_library(
     ],
 )
 
-# Default toolchains.
-
-[clang_toolchain(
-    name = "{}_{}_clang_toolchain".format(target_os, target_cpu),
-    clang_pkg = "//prebuilts/clang/host/linux-x86/clang-{}".format(VARS["CLANG_VERSION"]),
-    clang_version = VARS["CLANG_VERSION"],
-    target_cpu = target_cpu,
-    target_os = target_os,
-) for target_os, target_cpu in SUPPORTED_ARCHITECTURES]
-
-# Versioned toolchains: extra toolchains when a certain version is requested.
-
 constraint_setting(name = "clang_version")
 
 [constraint_value(
@@ -69,12 +51,3 @@ constraint_setting(name = "clang_version")
     constraint_setting = ":clang_version",
     visibility = ["//visibility:public"],
 ) for version in VERSIONS]
-
-[clang_toolchain(
-    name = "{}_{}_{}_clang_toolchain".format(version, target_os, target_cpu),
-    clang_pkg = "//prebuilts/clang/host/linux-x86/clang-{}".format(version),
-    clang_version = version,
-    extra_compatible_with = [version],
-    target_cpu = target_cpu,
-    target_os = target_os,
-) for version in VERSIONS for target_os, target_cpu in SUPPORTED_ARCHITECTURES]
