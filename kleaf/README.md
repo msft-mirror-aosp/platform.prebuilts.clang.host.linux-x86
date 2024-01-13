@@ -52,10 +52,10 @@ These toolchains have `cc_toolchain.compiler` set to the corresponding
 
 ### User toolchains
 
-[Source: `user_clang_toolchain_repository.bzl`](user_clang_toolchain_repository.bzl)
+[Source: `clang_toolchain_repository.bzl`](clang_toolchain_repository.bzl)
 
 User toolchains,
-`@kleaf_user_clang_toolchain//:user_{target_os}_{target_cpu}_clang_toolchain`,
+`@kleaf_clang_toolchain//:user_{target_os}_{target_cpu}_clang_toolchain`,
 are the toolchains provided by the user from the command line.
 
 These toolchains are marked "target_compatible_with":
@@ -67,7 +67,7 @@ These toolchains are marked "exec_compatible_with":
 *   `@platforms//cpu:x86_64`
 
 These toolchains have `cc_toolchain.compiler` set to
-`"kleaf_user_clang_toolchain_skip_version_check"` (an implementation detail).
+`"kleaf_clang_toolchain_skip_version_check"` (an implementation detail).
 
 ## Toolchain registration
 
@@ -225,7 +225,7 @@ The same goes for the target platform:
     (`android`, `{target_cpu}`, `{toolchain_version}`).
     `kernel_toolchains` accepts the user toolchain with a warning because
     the version of the user toolchain
-    `"kleaf_user_clang_toolchain_skip_version_check"` does not match the declared value, `kernel_build.toolchain_version`.
+    `"kleaf_clang_toolchain_skip_version_check"` does not match the declared value, `kernel_build.toolchain_version`.
 *   If `--user_clang_toolchain` is not set, the matching versioned toolchain,
     `{version}_android_{target_cpu}_clang_toolchain` is returned because
     its constraint values (`android`, `{target_cpu}` `{toolchain_version}`) are a subset of the target platform's constraint values
