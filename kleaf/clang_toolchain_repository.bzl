@@ -14,17 +14,31 @@
 
 """Defines a repository that provides a clang version at a user defined path."""
 
-def _user_clang_toolchain_repository_impl(repository_ctx):
+# General comment on toolchain registration orders:
+#
+# "When using target patterns to register toolchains, the order in which
+# the individual toolchains are registered is determined by the following rules:
+# [...]
+# Within a package, toolchains are registered in the lexicographical order of their names."
+#
+# Toolchains in this repository is prefixed with numbers to show their ordering.
+#
+# See
+# https://bazel.build/extending/toolchains#registering-building-toolchains
+
+def _clang_toolchain_repository_impl(repository_ctx):
     repository_ctx.file("WORKSPACE.bazel", """\
 workspace(name = "{}")
 """.format(repository_ctx.attr.name))
 
     if "KLEAF_USER_CLANG_TOOLCHAIN_PATH" not in repository_ctx.os.environ:
-        _empty_user_clang_toolchain_repository_impl(repository_ctx)
+        build_file_content = _empty_clang_toolchain_build_file()
     else:
-        _real_user_clang_toolchain_repository_impl(repository_ctx)
+        build_file_content = _real_clang_toolchain_build_file(repository_ctx)
 
-def _empty_user_clang_toolchain_repository_impl(repository_ctx):
+    repository_ctx.file("BUILD.bazel", build_file_content)
+
+def _empty_clang_toolchain_build_file():
     build_file_content = '''\
 """Fake user C toolchains.
 
@@ -40,7 +54,7 @@ toolchain_type(
 )
 
 [empty_toolchain(
-    name = "user_{{}}_{{}}_clang_toolchain".format(target_os, target_cpu),
+    name = "1_user_{{}}_{{}}_clang_toolchain".format(target_os, target_cpu),
     toolchain_type = ":empty_toolchain_type",
     visibility = ["//visibility:private"],
 ) for target_os, target_cpu in SUPPORTED_ARCHITECTURES]
@@ -48,9 +62,9 @@ toolchain_type(
         architecture_constants = Label(":architecture_constants.bzl"),
         empty_toolchain = Label(":empty_toolchain.bzl"),
     )
-    repository_ctx.file("BUILD.bazel", build_file_content)
+    return build_file_content
 
-def _real_user_clang_toolchain_repository_impl(repository_ctx):
+def _real_clang_toolchain_build_file(repository_ctx):
     user_clang_toolchain_path = repository_ctx.os.environ["KLEAF_USER_CLANG_TOOLCHAIN_PATH"]
     user_clang_toolchain_path = repository_ctx.path(user_clang_toolchain_path)
 
@@ -96,7 +110,7 @@ filegroup(
 )
 
 [clang_toolchain(
-    name = "user_{{}}_{{}}_clang_toolchain".format(target_os, target_cpu),
+    name = "1_user_{{}}_{{}}_clang_toolchain".format(target_os, target_cpu),
     target_cpu = target_cpu,
     target_os = target_os,
     clang_pkg = ":fake_anchor_target",
@@ -107,15 +121,15 @@ filegroup(
         clang_toolchain = Label(":clang_toolchain.bzl"),
     )
 
-    repository_ctx.file("BUILD.bazel", build_file_content)
+    return build_file_content
 
-user_clang_toolchain_repository = repository_rule(
+clang_toolchain_repository = repository_rule(
     doc = """Defines a repository that provides a clang version at a user defined path.
 
 The user clang toolchain is expected from the path defined in the
 `KLEAF_USER_CLANG_TOOLCHAIN_PATH` environment variable, if set.
 """,
-    implementation = _user_clang_toolchain_repository_impl,
+    implementation = _clang_toolchain_repository_impl,
     environ = [
         "KLEAF_USER_CLANG_TOOLCHAIN_PATH",
     ],
