@@ -32,7 +32,7 @@ def register_clang_toolchains():
 
     for target_os, target_cpu in SUPPORTED_ARCHITECTURES:
         native.register_toolchains(
-            "@kleaf_clang_toolchain//:user_{}_{}_clang_toolchain".format(
+            "@kleaf_clang_toolchain//:1_user_{}_{}_clang_toolchain".format(
                 target_os,
                 target_cpu,
             ),
