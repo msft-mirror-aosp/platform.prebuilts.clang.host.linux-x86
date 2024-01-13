@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Defines a repository that provides a clang version at a user defined path."""
+"""Defines a repository that provides all clang toolchains."""
 
 # General comment on toolchain registration orders:
 #
@@ -31,21 +31,32 @@ def _clang_toolchain_repository_impl(repository_ctx):
 workspace(name = "{}")
 """.format(repository_ctx.attr.name))
 
+    build_file_content = '''\
+"""
+All clang toolchains used by Kleaf.
+"""
+load("@@kernel_toolchain_info//:dict.bzl","VARS")
+load("{architecture_constants}", "SUPPORTED_ARCHITECTURES")
+load("{clang_toolchain}", "clang_toolchain")
+load("{versions}", "VERSIONS")
+'''.format(
+        architecture_constants = Label(":architecture_constants.bzl"),
+        clang_toolchain = Label(":clang_toolchain.bzl"),
+        versions = Label(":versions.bzl"),
+    )
+
     if "KLEAF_USER_CLANG_TOOLCHAIN_PATH" not in repository_ctx.os.environ:
-        build_file_content = _empty_clang_toolchain_build_file()
+        build_file_content += _empty_clang_toolchain_build_file()
     else:
-        build_file_content = _real_clang_toolchain_build_file(repository_ctx)
+        build_file_content += _real_clang_toolchain_build_file(repository_ctx)
+
+    build_file_content += _common_aliases_build_file()
 
     repository_ctx.file("BUILD.bazel", build_file_content)
 
 def _empty_clang_toolchain_build_file():
     build_file_content = '''\
-"""Fake user C toolchains.
 
-These toolchains are not registered with the C toolchain type.
-"""
-
-load("{architecture_constants}", "SUPPORTED_ARCHITECTURES")
 load("{empty_toolchain}", "empty_toolchain")
 
 toolchain_type(
@@ -59,7 +70,6 @@ toolchain_type(
     visibility = ["//visibility:private"],
 ) for target_os, target_cpu in SUPPORTED_ARCHITECTURES]
 '''.format(
-        architecture_constants = Label(":architecture_constants.bzl"),
         empty_toolchain = Label(":empty_toolchain.bzl"),
     )
     return build_file_content
@@ -87,10 +97,6 @@ def _real_clang_toolchain_build_file(repository_ctx):
         )
 
     build_file_content = '''\
-"""User C toolchains specified via command line flags."""
-
-load("{architecture_constants}", "SUPPORTED_ARCHITECTURES")
-load("{clang_toolchain}", "clang_toolchain")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -119,15 +125,59 @@ filegroup(
 '''.format(
         architecture_constants = Label(":architecture_constants.bzl"),
         clang_toolchain = Label(":clang_toolchain.bzl"),
+        versions = Label(":versions.bzl"),
+    )
+
+    return build_file_content
+
+def _common_aliases_build_file():
+    # Label(): Resolve the label against this extension (clang_toolchain_repository.bzl) so the
+    # workspace name is injected properly when //prebuilts is in a subworkspace.
+    # @<kleaf tooling workspace>//prebuilts/clang/host/linux-x86/kleaf
+    this_pkg = str(Label(":x")).removesuffix(":x")
+
+    # @<kleaf tooling workspace>//prebuilts/clang/host/linux-x86
+    linux_x86_pkg = this_pkg.removesuffix("/kleaf")
+
+    build_file_content = """
+
+# Default toolchains.
+
+[clang_toolchain(
+    name = "2_versioned_{{}}_{{}}_clang_toolchain".format(target_os, target_cpu),
+    clang_pkg = "{linux_x86_pkg}/clang-{{}}".format(VARS["CLANG_VERSION"]),
+    clang_version = VARS["CLANG_VERSION"],
+    target_cpu = target_cpu,
+    target_os = target_os,
+) for target_os, target_cpu in SUPPORTED_ARCHITECTURES]
+
+[clang_toolchain(
+    name = "3_default_{{}}_{{}}_{{}}_clang_toolchain".format(version, target_os, target_cpu),
+    clang_pkg = "{linux_x86_pkg}/clang-{{}}".format(version),
+    clang_version = version,
+    extra_compatible_with = ["{this_pkg}:{{}}".format(version)],
+    target_cpu = target_cpu,
+    target_os = target_os,
+) for version in VERSIONS for target_os, target_cpu in SUPPORTED_ARCHITECTURES]
+
+""".format(
+        this_pkg = this_pkg,
+        linux_x86_pkg = linux_x86_pkg,
     )
 
     return build_file_content
 
 clang_toolchain_repository = repository_rule(
-    doc = """Defines a repository that provides a clang version at a user defined path.
+    doc = """Defines a repository that provides all clang toolchains Kleaf uses.
 
-The user clang toolchain is expected from the path defined in the
-`KLEAF_USER_CLANG_TOOLCHAIN_PATH` environment variable, if set.
+    Register them as follows:
+
+    ```
+    register_toolchains("@kleaf_clang_toolchain//:all")
+    ```
+
+    The user clang toolchain is expected from the path defined in the
+    `KLEAF_USER_CLANG_TOOLCHAIN_PATH` environment variable, if set.
 """,
     implementation = _clang_toolchain_repository_impl,
     environ = [
