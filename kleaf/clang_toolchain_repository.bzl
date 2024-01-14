@@ -14,6 +14,18 @@
 
 """Defines a repository that provides a clang version at a user defined path."""
 
+# General comment on toolchain registration orders:
+#
+# "When using target patterns to register toolchains, the order in which
+# the individual toolchains are registered is determined by the following rules:
+# [...]
+# Within a package, toolchains are registered in the lexicographical order of their names."
+#
+# Toolchains in this repository is prefixed with numbers to show their ordering.
+#
+# See
+# https://bazel.build/extending/toolchains#registering-building-toolchains
+
 def _clang_toolchain_repository_impl(repository_ctx):
     repository_ctx.file("WORKSPACE.bazel", """\
 workspace(name = "{}")
@@ -42,7 +54,7 @@ toolchain_type(
 )
 
 [empty_toolchain(
-    name = "user_{{}}_{{}}_clang_toolchain".format(target_os, target_cpu),
+    name = "1_user_{{}}_{{}}_clang_toolchain".format(target_os, target_cpu),
     toolchain_type = ":empty_toolchain_type",
     visibility = ["//visibility:private"],
 ) for target_os, target_cpu in SUPPORTED_ARCHITECTURES]
@@ -98,7 +110,7 @@ filegroup(
 )
 
 [clang_toolchain(
-    name = "user_{{}}_{{}}_clang_toolchain".format(target_os, target_cpu),
+    name = "1_user_{{}}_{{}}_clang_toolchain".format(target_os, target_cpu),
     target_cpu = target_cpu,
     target_os = target_os,
     clang_pkg = ":fake_anchor_target",
