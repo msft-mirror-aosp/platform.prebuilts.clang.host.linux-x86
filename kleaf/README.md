@@ -71,13 +71,14 @@ These toolchains have `cc_toolchain.compiler` set to
 
 ## Toolchain registration
 
+[Source: `clang_toolchain_repository.bzl`](clang_toolchain_repository.bzl)
+
 Toolchains are registered in the following order:
 
 1.  If `--user_clang_toolchain` is set, the user toolchains are registered.
     Otherwise, fake user toolchains are registered.
-    ([source](register.bzl))
-2.  The versioned toolchains ([source](register.bzl))
-3.  The default toolchains ([source](register.bzl))
+2.  The versioned toolchains
+3.  The default toolchains
 
 ## Toolchain resolution
 
