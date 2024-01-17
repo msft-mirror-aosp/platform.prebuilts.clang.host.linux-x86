@@ -161,6 +161,7 @@ def _clang_toolchain_internal(
         ] + extra_compatible_with,
         toolchain = name + "_cc_toolchain",
         toolchain_type = CPP_TOOLCHAIN_TYPE,
+        visibility = ["@kleaf_clang_toolchain//:__subpackages__"],
     )
 
 def clang_toolchain(

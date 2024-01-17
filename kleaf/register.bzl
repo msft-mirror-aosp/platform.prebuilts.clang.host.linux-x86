@@ -14,9 +14,7 @@
 
 """Registers all clang toolchains defined in this package."""
 
-load(":architecture_constants.bzl", "SUPPORTED_ARCHITECTURES")
-load(":user_clang_toolchain_repository.bzl", "user_clang_toolchain_repository")
-load(":versions.bzl", "VERSIONS")
+load(":clang_toolchain_repository.bzl", "clang_toolchain_repository")
 
 # buildifier: disable=unnamed-macro
 def register_clang_toolchains():
@@ -26,29 +24,7 @@ def register_clang_toolchains():
     `KLEAF_USER_CLANG_TOOLCHAIN_PATH` environment variable, if set.
     """
 
-    user_clang_toolchain_repository(
-        name = "kleaf_user_clang_toolchain",
+    clang_toolchain_repository(
+        name = "kleaf_clang_toolchain",
     )
-
-    for target_os, target_cpu in SUPPORTED_ARCHITECTURES:
-        native.register_toolchains(
-            "@kleaf_user_clang_toolchain//:user_{}_{}_clang_toolchain".format(
-                target_os,
-                target_cpu,
-            ),
-        )
-
-    # Label(): Resolve the label against this extension (register.bzl) so the
-    # workspace name is injected properly when //prebuilts is in a subworkspace.
-    # str(): register_toolchains() only accepts strings, not Labels.
-
-    for version in VERSIONS:
-        for target_os, target_cpu in SUPPORTED_ARCHITECTURES:
-            native.register_toolchains(
-                str(Label("//prebuilts/clang/host/linux-x86/kleaf:{}_{}_{}_clang_toolchain".format(version, target_os, target_cpu))),
-            )
-
-    for target_os, target_cpu in SUPPORTED_ARCHITECTURES:
-        native.register_toolchains(
-            str(Label("//prebuilts/clang/host/linux-x86/kleaf:{}_{}_clang_toolchain".format(target_os, target_cpu))),
-        )
+    native.register_toolchains("@kleaf_clang_toolchain//:all")
