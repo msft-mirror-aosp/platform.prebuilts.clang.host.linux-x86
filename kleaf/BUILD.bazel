@@ -33,17 +33,6 @@ bzl_library(
     visibility = ["//visibility:public"],
 )
 
-bzl_library(
-    name = "register",
-    srcs = ["register.bzl"],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":architecture_constants",
-        ":clang_toolchain_repository",
-        ":versions",
-    ],
-)
-
 constraint_setting(name = "clang_version")
 
 [constraint_value(
