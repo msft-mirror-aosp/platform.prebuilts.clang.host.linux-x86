@@ -14,6 +14,7 @@
 
 """Defines a cc toolchain for kernel build, based on clang."""
 
+load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "CPP_TOOLCHAIN_TYPE")
 load(
     "@kernel_toolchain_info//:dict.bzl",
@@ -160,6 +161,7 @@ def _clang_toolchain_internal(
         ] + extra_compatible_with,
         toolchain = name + "_cc_toolchain",
         toolchain_type = CPP_TOOLCHAIN_TYPE,
+        visibility = ["@kleaf_clang_toolchain//:__subpackages__"],
     )
 
 def clang_toolchain(
@@ -211,28 +213,40 @@ ARCH_CONFIG = {
         # From _setup_env.sh
         # sysroot_flags+="--sysroot=${ROOT_DIR}/build/kernel/build-tools/sysroot "
         sysroot_label = Label("//build/kernel:sysroot"),
-        sysroot_path = "build/kernel/build-tools/sysroot",
+        sysroot_path = paths.join(
+            Label("//build/kernel:sysroot").workspace_root,
+            "build/kernel/build-tools/sysroot",
+        ),
     ),
     ("android", "arm64"): dict(
         ndk_triple = VARS.get("AARCH64_NDK_TRIPLE"),
         # From _setup_env.sh: when NDK triple is set,
         # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
         sysroot_label = "@prebuilt_ndk//:sysroot" if "AARCH64_NDK_TRIPLE" in VARS else None,
-        sysroot_path = "external/prebuilt_ndk/toolchains/llvm/prebuilt/linux-x86_64/sysroot" if "AARCH64_NDK_TRIPLE" in VARS else None,
+        sysroot_path = paths.join(
+            Label("@prebuilt_ndk//:sysroot").workspace_root,
+            "toolchains/llvm/prebuilt/linux-x86_64/sysroot",
+        ) if "AARCH64_NDK_TRIPLE" in VARS else None,
     ),
     ("android", "arm"): dict(
         ndk_triple = VARS.get("ARM_NDK_TRIPLE"),
         # From _setup_env.sh: when NDK triple is set,
         # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
         sysroot_label = "@prebuilt_ndk//:sysroot" if "ARM_NDK_TRIPLE" in VARS else None,
-        sysroot_path = "external/prebuilt_ndk/toolchains/llvm/prebuilt/linux-x86_64/sysroot" if "AARCH64_NDK_TRIPLE" in VARS else None,
+        sysroot_path = paths.join(
+            Label("@prebuilt_ndk//:sysroot").workspace_root,
+            "toolchains/llvm/prebuilt/linux-x86_64/sysroot",
+        ) if "AARCH64_NDK_TRIPLE" in VARS else None,
     ),
     ("android", "x86_64"): dict(
         ndk_triple = VARS.get("X86_64_NDK_TRIPLE"),
         # From _setup_env.sh: when NDK triple is set,
         # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
         sysroot_label = "@prebuilt_ndk//:sysroot" if "X86_64_NDK_TRIPLE" in VARS else None,
-        sysroot_path = "external/prebuilt_ndk/toolchains/llvm/prebuilt/linux-x86_64/sysroot" if "X86_64_NDK_TRIPLE" in VARS else None,
+        sysroot_path = paths.join(
+            Label("@prebuilt_ndk//:sysroot").workspace_root,
+            "toolchains/llvm/prebuilt/linux-x86_64/sysroot",
+        ) if "X86_64_NDK_TRIPLE" in VARS else None,
     ),
     ("android", "i386"): dict(
         # i386 uses the same NDK_TRIPLE as x86_64
@@ -240,7 +254,10 @@ ARCH_CONFIG = {
         # From _setup_env.sh: when NDK triple is set,
         # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
         sysroot_label = "@prebuilt_ndk//:sysroot" if "X86_64_NDK_TRIPLE" in VARS else None,
-        sysroot_path = "external/prebuilt_ndk/toolchains/llvm/prebuilt/linux-x86_64/sysroot" if "X86_64_NDK_TRIPLE" in VARS else None,
+        sysroot_path = paths.join(
+            Label("@prebuilt_ndk//:sysroot").workspace_root,
+            "toolchains/llvm/prebuilt/linux-x86_64/sysroot",
+        ) if "X86_64_NDK_TRIPLE" in VARS else None,
     ),
     ("android", "riscv64"): dict(
         # TODO(b/271919464): We need NDK_TRIPLE for riscv
