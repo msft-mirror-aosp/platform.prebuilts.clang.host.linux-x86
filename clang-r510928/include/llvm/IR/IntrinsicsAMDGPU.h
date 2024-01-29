@@ -613,7 +613,6 @@ enum AMDGCNIntrinsics : unsigned {
     amdgcn_is_shared,                          // llvm.amdgcn.is.shared
     amdgcn_kernarg_segment_ptr,                // llvm.amdgcn.kernarg.segment.ptr
     amdgcn_kill,                               // llvm.amdgcn.kill
-    amdgcn_ldexp,                              // llvm.amdgcn.ldexp
     amdgcn_lds_direct_load,                    // llvm.amdgcn.lds.direct.load
     amdgcn_lds_kernel_id,                      // llvm.amdgcn.lds.kernel.id
     amdgcn_lds_param_load,                     // llvm.amdgcn.lds.param.load

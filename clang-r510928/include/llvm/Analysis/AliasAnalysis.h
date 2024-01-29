@@ -64,7 +64,6 @@ class LoopInfo;
 class PreservedAnalyses;
 class TargetLibraryInfo;
 class Value;
-template <typename> class SmallPtrSetImpl;
 
 /// The possible results of an alias query.
 ///
@@ -184,12 +183,8 @@ class EarliestEscapeInfo final : public CaptureInfo {
   /// This is used for cache invalidation purposes.
   DenseMap<Instruction *, TinyPtrVector<const Value *>> Inst2Obj;
 
-  const SmallPtrSetImpl<const Value *> &EphValues;
-
 public:
-  EarliestEscapeInfo(DominatorTree &DT, const LoopInfo &LI,
-                     const SmallPtrSetImpl<const Value *> &EphValues)
-      : DT(DT), LI(LI), EphValues(EphValues) {}
+  EarliestEscapeInfo(DominatorTree &DT, const LoopInfo &LI) : DT(DT), LI(LI) {}
 
   bool isNotCapturedBeforeOrAt(const Value *Object,
                                const Instruction *I) override;
