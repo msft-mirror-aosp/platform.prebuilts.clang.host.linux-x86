@@ -296,8 +296,6 @@ OPTION(prefix_1, "-c-isystem", c_isystem, Separate, INVALID, INVALID, nullptr, 0
        "Add directory to the C SYSTEM include search path", "<directory>", nullptr)
 OPTION(prefix_1, "-canonical-prefixes", canonical_prefixes, Flag, INVALID, INVALID, nullptr, HelpHidden, DefaultVis | CLOption | DXCOption, 0,
        "Use absolute paths for invoking subcommands (default)", nullptr, nullptr)
-OPTION(prefix_1, "-canonical-system-headers", canonical_system_headers, Flag, INVALID, INVALID, nullptr, 0, CC1Option, 0,
-       "Canonicalize system headers in dependency output", nullptr, nullptr)
 OPTION(prefix_1, "-cc1as", cc1as, Flag, INVALID, INVALID, nullptr, 0, CC1Option, 0, nullptr, nullptr, nullptr)
 OPTION(prefix_1, "-cc1", cc1, Flag, INVALID, INVALID, nullptr, 0, CC1Option, 0, nullptr, nullptr, nullptr)
 OPTION(prefix_1, "-ccc-arcmt-check", ccc_arcmt_check, Flag, internal_driver_Group, INVALID, nullptr, NoXarchOption | HelpHidden, DefaultVis, 0,
@@ -860,7 +858,7 @@ OPTION(prefix_1, "-fctor-dtor-return-this", fctor_dtor_return_this, Flag, INVALI
        "Change the C++ ABI to returning `this` pointer from constructors and non-deleting destructors. (No effect on Microsoft ABI)", nullptr, nullptr)
 OPTION(prefix_1, "-fcuda-allow-variadic-functions", fcuda_allow_variadic_functions, Flag, INVALID, INVALID, nullptr, 0, CC1Option, 0,
        "Allow variadic functions in CUDA device code.", nullptr, nullptr)
-OPTION(prefix_1, "-fcuda-approx-transcendentals", anonymous_1891, Flag, INVALID, fgpu_approx_transcendentals, nullptr, 0, DefaultVis, 0, nullptr, nullptr, nullptr)
+OPTION(prefix_1, "-fcuda-approx-transcendentals", anonymous_1890, Flag, INVALID, fgpu_approx_transcendentals, nullptr, 0, DefaultVis, 0, nullptr, nullptr, nullptr)
 OPTION(prefix_1, "-fcuda-flush-denormals-to-zero", fcuda_flush_denormals_to_zero, Flag, cuda_Group, fgpu_flush_denormals_to_zero, nullptr, 0, DefaultVis, 0, nullptr, nullptr, nullptr)
 OPTION(prefix_1, "-fcuda-include-gpubinary", fcuda_include_gpubinary, Separate, INVALID, INVALID, nullptr, 0, CC1Option, 0,
        "Incorporate CUDA device-side binary into host object file.", nullptr, nullptr)
@@ -1631,7 +1629,7 @@ OPTION(prefix_1, "-fno-coverage-mapping", fno_coverage_mapping, Flag, f_Group, I
 OPTION(prefix_1, "-fno-crash-diagnostics", fno_crash_diagnostics, Flag, f_clang_Group, gen_reproducer_eq, "off\0", NoArgumentUnused, DefaultVis | CLOption | DXCOption, 0,
        "Disable auto-generation of preprocessed source files and a script for reproduction during a clang crash", nullptr, nullptr)
 OPTION(prefix_1, "-fno-cray-pointer", fno_cray_pointer, Flag, gfortran_Group, INVALID, nullptr, 0, DefaultVis, 0, nullptr, nullptr, nullptr)
-OPTION(prefix_1, "-fno-cuda-approx-transcendentals", anonymous_1892, Flag, INVALID, fno_gpu_approx_transcendentals, nullptr, 0, DefaultVis, 0, nullptr, nullptr, nullptr)
+OPTION(prefix_1, "-fno-cuda-approx-transcendentals", anonymous_1891, Flag, INVALID, fno_gpu_approx_transcendentals, nullptr, 0, DefaultVis, 0, nullptr, nullptr, nullptr)
 OPTION(prefix_1, "-fno-cuda-flush-denormals-to-zero", fno_cuda_flush_denormals_to_zero, Flag, cuda_Group, fno_gpu_flush_denormals_to_zero, nullptr, 0, DefaultVis, 0, nullptr, nullptr, nullptr)
 OPTION(prefix_1, "-fno-cuda-host-device-constexpr", fno_cuda_host_device_constexpr, Flag, INVALID, INVALID, nullptr, 0, CC1Option, 0,
        "Don't treat unattributed constexpr functions as __host__ __device__.", nullptr, nullptr)
@@ -2287,7 +2285,7 @@ OPTION(prefix_1, "-fopenmp-extensions", fopenmp_extensions, Flag, f_Group, INVAL
        "Enable all Clang extensions for OpenMP directives and clauses", nullptr, nullptr)
 OPTION(prefix_1, "-fopenmp-host-ir-file-path", fopenmp_host_ir_file_path, Separate, INVALID, INVALID, nullptr, 0, CC1Option | FC1Option, 0,
        "Path to the IR file produced by the frontend for the host.", nullptr, nullptr)
-OPTION(prefix_1, "-fopenmp-is-device", anonymous_1879, Flag, INVALID, fopenmp_is_target_device, nullptr, 0, CC1Option | FC1Option, 0, nullptr, nullptr, nullptr)
+OPTION(prefix_1, "-fopenmp-is-device", anonymous_1878, Flag, INVALID, fopenmp_is_target_device, nullptr, 0, CC1Option | FC1Option, 0, nullptr, nullptr, nullptr)
 OPTION(prefix_1, "-fopenmp-is-target-device", fopenmp_is_target_device, Flag, INVALID, INVALID, nullptr, 0, CC1Option | FC1Option, 0,
        "Generate code only for an OpenMP target device.", nullptr, nullptr)
 OPTION(prefix_1, "-fopenmp-new-driver", fopenmp_new_driver, Flag, INVALID, INVALID, nullptr, HelpHidden, DefaultVis, 0,
@@ -3053,7 +3051,7 @@ OPTION(prefix_1, "-gstrict-dwarf", gstrict_dwarf, Flag, g_flags_Group, INVALID, 
        "Restrict DWARF features to those defined in the specified version, avoiding features from later versions.", nullptr, nullptr)
 OPTION(prefix_2, "/GS", _SLASH_GS, Flag, cl_Group, INVALID, nullptr, NoXarchOption, CLOption, 0,
        "Enable buffer security check (default)", nullptr, nullptr)
-OPTION(prefix_2, "/Gs", anonymous_1903, Flag, cl_Group, mstack_probe_size, "4096\0", NoXarchOption, CLOption, 0,
+OPTION(prefix_2, "/Gs", anonymous_1902, Flag, cl_Group, mstack_probe_size, "4096\0", NoXarchOption, CLOption, 0,
        "Use stack probes (default)", nullptr, nullptr)
 OPTION(prefix_2, "/Gs", _SLASH_Gs, Joined, cl_Group, mstack_probe_size, nullptr, NoXarchOption, CLOption, 0,
        "Set stack probe size (default 4096)", nullptr, nullptr)
@@ -4270,16 +4268,16 @@ OPTION(prefix_3, "--nvptx-arch-tool=", nvptx_arch_tool_EQ, Joined, offload_Group
 OPTION(prefix_1, "-n", n, Flag, INVALID, INVALID, nullptr, 0, CC1AsOption, 0,
        "Don't automatically start assembly file with a text section", nullptr, nullptr)
 OPTION(prefix_1, "-O0", O0, Flag, O_Group, INVALID, nullptr, HelpHidden, DefaultVis | CC1Option | FC1Option | FlangOption, 0, nullptr, nullptr, nullptr)
-OPTION(prefix_2, "/O1", anonymous_1904, Flag, cl_Group, _SLASH_O, "1\0", NoXarchOption, CLOption, 0,
+OPTION(prefix_2, "/O1", anonymous_1903, Flag, cl_Group, _SLASH_O, "1\0", NoXarchOption, CLOption, 0,
        "Optimize for size  (like /Og     /Os /Oy /Ob2 /GF /Gy)", nullptr, nullptr)
-OPTION(prefix_2, "/O2", anonymous_1905, Flag, cl_Group, _SLASH_O, "2\0", NoXarchOption, CLOption, 0,
+OPTION(prefix_2, "/O2", anonymous_1904, Flag, cl_Group, _SLASH_O, "2\0", NoXarchOption, CLOption, 0,
        "Optimize for speed (like /Og /Oi /Ot /Oy /Ob2 /GF /Gy)", nullptr, nullptr)
 OPTION(prefix_1, "-O4", O4, Flag, O_Group, INVALID, nullptr, HelpHidden, DefaultVis | CC1Option | FC1Option | FlangOption, 0, nullptr, nullptr, nullptr)
-OPTION(prefix_2, "/Ob0", anonymous_1906, Flag, cl_Group, _SLASH_O, "b0\0", NoXarchOption, CLOption, 0,
+OPTION(prefix_2, "/Ob0", anonymous_1905, Flag, cl_Group, _SLASH_O, "b0\0", NoXarchOption, CLOption, 0,
        "Disable function inlining", nullptr, nullptr)
-OPTION(prefix_2, "/Ob1", anonymous_1907, Flag, cl_Group, _SLASH_O, "b1\0", NoXarchOption, CLOption, 0,
+OPTION(prefix_2, "/Ob1", anonymous_1906, Flag, cl_Group, _SLASH_O, "b1\0", NoXarchOption, CLOption, 0,
        "Only inline functions explicitly or implicitly marked inline", nullptr, nullptr)
-OPTION(prefix_2, "/Ob2", anonymous_1908, Flag, cl_Group, _SLASH_O, "b2\0", NoXarchOption, CLOption, 0,
+OPTION(prefix_2, "/Ob2", anonymous_1907, Flag, cl_Group, _SLASH_O, "b2\0", NoXarchOption, CLOption, 0,
        "Inline functions as deemed beneficial by the compiler", nullptr, nullptr)
 OPTION(prefix_1, "-ObjC++", ObjCXX, Flag, INVALID, INVALID, nullptr, NoXarchOption, DefaultVis, 0,
        "Treat source input files as Objective-C++ inputs", nullptr, nullptr)
@@ -4328,7 +4326,7 @@ OPTION(prefix_1, "-object-file-name=", object_file_name_EQ, Joined, INVALID, INV
        "Set the output <file> for debug infos", "<file>", nullptr)
 OPTION(prefix_1, "-object-file-name", object_file_name, Separate, INVALID, object_file_name_EQ, nullptr, 0, DefaultVis | CC1Option | CC1AsOption | CLOption | DXCOption, 0, nullptr, nullptr, nullptr)
 OPTION(prefix_1, "-object", object, Flag, INVALID, INVALID, nullptr, 0, DefaultVis, 0, nullptr, nullptr, nullptr)
-OPTION(prefix_2, "/Od", anonymous_1909, Flag, cl_Group, _SLASH_O, "d\0", NoXarchOption, CLOption | DXCOption, 0,
+OPTION(prefix_2, "/Od", anonymous_1908, Flag, cl_Group, _SLASH_O, "d\0", NoXarchOption, CLOption | DXCOption, 0,
        "Disable optimization", nullptr, nullptr)
 OPTION(prefix_1, "-Ofast", Ofast, Joined, O_Group, INVALID, nullptr, 0, DefaultVis | CC1Option | FlangOption, 0, nullptr, nullptr, nullptr)
 OPTION(prefix_3, "--offload-add-rpath", offload_add_rpath, Flag, INVALID, frtlib_add_rpath, nullptr, NoArgumentUnused, DefaultVis, 0, nullptr, nullptr, nullptr)
@@ -4346,11 +4344,11 @@ OPTION(prefix_3, "--offload-new-driver", offload_new_driver, Flag, offload_Group
        "Use the new driver for offloading compilation.", nullptr, nullptr)
 OPTION(prefix_3, "--offload=", offload_EQ, CommaJoined, INVALID, INVALID, nullptr, NoXarchOption, DefaultVis, 0,
        "Specify comma-separated list of offloading target triples (CUDA and HIP only)", nullptr, nullptr)
-OPTION(prefix_2, "/Og", anonymous_1910, Flag, cl_Group, _SLASH_O, "g\0", NoXarchOption, CLOption, 0,
+OPTION(prefix_2, "/Og", anonymous_1909, Flag, cl_Group, _SLASH_O, "g\0", NoXarchOption, CLOption, 0,
        "No effect", nullptr, nullptr)
-OPTION(prefix_2, "/Oi-", anonymous_1912, Flag, cl_Group, _SLASH_O, "i-\0", NoXarchOption, CLOption, 0,
+OPTION(prefix_2, "/Oi-", anonymous_1911, Flag, cl_Group, _SLASH_O, "i-\0", NoXarchOption, CLOption, 0,
        "Disable use of builtin functions", nullptr, nullptr)
-OPTION(prefix_2, "/Oi", anonymous_1911, Flag, cl_Group, _SLASH_O, "i\0", NoXarchOption, CLOption, 0,
+OPTION(prefix_2, "/Oi", anonymous_1910, Flag, cl_Group, _SLASH_O, "i\0", NoXarchOption, CLOption, 0,
        "Enable use of builtin functions", nullptr, nullptr)
 OPTION(prefix_2, "/openmp-", _SLASH_openmp_, Flag, cl_Group, fno_openmp, nullptr, NoXarchOption, CLOption, 0,
        "Disable OpenMP support", nullptr, nullptr)
@@ -4366,9 +4364,9 @@ OPTION(prefix_1, "-opt-record-passes", opt_record_passes, Separate, INVALID, INV
        "Only record remark information for passes whose names match the given regular expression", nullptr, nullptr)
 OPTION(prefix_3, "--optimize=", _optimize_EQ, Joined, INVALID, O, nullptr, 0, DefaultVis, 0, nullptr, nullptr, nullptr)
 OPTION(prefix_3, "--optimize", _optimize, Flag, INVALID, O, nullptr, 0, DefaultVis, 0, nullptr, nullptr, nullptr)
-OPTION(prefix_2, "/Os", anonymous_1913, Flag, cl_Group, _SLASH_O, "s\0", NoXarchOption, CLOption, 0,
+OPTION(prefix_2, "/Os", anonymous_1912, Flag, cl_Group, _SLASH_O, "s\0", NoXarchOption, CLOption, 0,
        "Optimize for size", nullptr, nullptr)
-OPTION(prefix_2, "/Ot", anonymous_1914, Flag, cl_Group, _SLASH_O, "t\0", NoXarchOption, CLOption, 0,
+OPTION(prefix_2, "/Ot", anonymous_1913, Flag, cl_Group, _SLASH_O, "t\0", NoXarchOption, CLOption, 0,
        "Optimize for speed", nullptr, nullptr)
 OPTION(prefix_1, "-output-asm-variant", output_asm_variant, Separate, INVALID, INVALID, nullptr, 0, CC1AsOption, 0,
        "Select the asm variant index to use for output", nullptr, nullptr)
@@ -4376,11 +4374,11 @@ OPTION(prefix_3, "--output-class-directory=", _output_class_directory_EQ, Joined
 OPTION(prefix_3, "--output-class-directory", _output_class_directory, Separate, INVALID, foutput_class_dir_EQ, nullptr, 0, DefaultVis, 0, nullptr, nullptr, nullptr)
 OPTION(prefix_3, "--output=", _output_EQ, Joined, INVALID, o, nullptr, 0, DefaultVis, 0, nullptr, nullptr, nullptr)
 OPTION(prefix_3, "--output", _output, Separate, INVALID, o, nullptr, 0, DefaultVis, 0, nullptr, nullptr, nullptr)
-OPTION(prefix_2, "/Ox", anonymous_1915, Flag, cl_Group, _SLASH_O, "x\0", NoXarchOption, CLOption, 0,
+OPTION(prefix_2, "/Ox", anonymous_1914, Flag, cl_Group, _SLASH_O, "x\0", NoXarchOption, CLOption, 0,
        "Deprecated (like /Og /Oi /Ot /Oy /Ob2); use /O2", nullptr, nullptr)
-OPTION(prefix_2, "/Oy-", anonymous_1917, Flag, cl_Group, _SLASH_O, "y-\0", NoXarchOption, CLOption, 0,
+OPTION(prefix_2, "/Oy-", anonymous_1916, Flag, cl_Group, _SLASH_O, "y-\0", NoXarchOption, CLOption, 0,
        "Disable frame pointer omission (x86 only, default)", nullptr, nullptr)
-OPTION(prefix_2, "/Oy", anonymous_1916, Flag, cl_Group, _SLASH_O, "y\0", NoXarchOption, CLOption, 0,
+OPTION(prefix_2, "/Oy", anonymous_1915, Flag, cl_Group, _SLASH_O, "y\0", NoXarchOption, CLOption, 0,
        "Enable frame pointer omission (x86 only)", nullptr, nullptr)
 OPTION(prefix_1, "-O", O_flag, Flag, INVALID, O, "1\0", 0, DefaultVis | CC1Option | FC1Option, 0, nullptr, nullptr, nullptr)
 OPTION(prefix_1, "-O", O, Joined, O_Group, INVALID, nullptr, 0, DefaultVis | CC1Option | FC1Option | FlangOption, 0, nullptr, nullptr, nullptr)
@@ -4486,10 +4484,10 @@ OPTION(prefix_2, "/P", _SLASH_P, Flag, cl_Group, INVALID, nullptr, NoXarchOption
        "Preprocess to file", nullptr, nullptr)
 OPTION(prefix_1, "-p", p, Flag, INVALID, INVALID, nullptr, 0, DefaultVis, 0,
        "Enable mcount instrumentation with prof", nullptr, nullptr)
-OPTION(prefix_2, "/Qembed_debug", anonymous_1926, Flag, dxc_Group, INVALID, nullptr, Ignored | NoXarchOption, DXCOption | DXCOption, 0,
+OPTION(prefix_2, "/Qembed_debug", anonymous_1925, Flag, dxc_Group, INVALID, nullptr, Ignored | NoXarchOption, DXCOption | DXCOption, 0,
        "Embed PDB in shader container (ignored)", nullptr, nullptr)
 OPTION(prefix_2, "/Qfast_transcendentals", _SLASH_Qfast_transcendentals, Flag, cl_Group, INVALID, nullptr, NoXarchOption, CLOption, 0, nullptr, nullptr, nullptr)
-OPTION(prefix_2, "/Qgather-", anonymous_1918, Flag, cl_Group, mno_gather, nullptr, NoXarchOption, CLOption, 0,
+OPTION(prefix_2, "/Qgather-", anonymous_1917, Flag, cl_Group, mno_gather, nullptr, NoXarchOption, CLOption, 0,
        "Disable generation of gather instructions in auto-vectorization(x86 only)", nullptr, nullptr)
 OPTION(prefix_2, "/QIfist", _SLASH_QIfist, Flag, cl_Group, INVALID, nullptr, NoXarchOption, CLOption, 0, nullptr, nullptr, nullptr)
 OPTION(prefix_2, "/Qimprecise_fwaits", _SLASH_Qimprecise_fwaits, Flag, cl_Group, INVALID, nullptr, NoXarchOption, CLOption, 0, nullptr, nullptr, nullptr)
@@ -4500,7 +4498,7 @@ OPTION(prefix_1, "-Qn", Qn, Flag, INVALID, INVALID, nullptr, 0, DefaultVis | CC1
 OPTION(prefix_2, "/Qpar-report", _SLASH_Qpar_report, Joined, cl_Group, INVALID, nullptr, NoXarchOption, CLOption, 0, nullptr, nullptr, nullptr)
 OPTION(prefix_2, "/Qpar", _SLASH_Qpar, Flag, cl_Group, INVALID, nullptr, NoXarchOption, CLOption, 0, nullptr, nullptr, nullptr)
 OPTION(prefix_2, "/Qsafe_fp_loads", _SLASH_Qsafe_fp_loads, Flag, cl_Group, INVALID, nullptr, NoXarchOption, CLOption, 0, nullptr, nullptr, nullptr)
-OPTION(prefix_2, "/Qscatter-", anonymous_1919, Flag, cl_Group, mno_scatter, nullptr, NoXarchOption, CLOption, 0,
+OPTION(prefix_2, "/Qscatter-", anonymous_1918, Flag, cl_Group, mno_scatter, nullptr, NoXarchOption, CLOption, 0,
        "Disable generation of scatter instructions in auto-vectorization(x86 only)", nullptr, nullptr)
 OPTION(prefix_2, "/Qspectre-load-cf", _SLASH_Qspectre_load_cf, Flag, cl_Group, INVALID, nullptr, NoXarchOption, CLOption, 0, nullptr, nullptr, nullptr)
 OPTION(prefix_2, "/Qspectre-load", _SLASH_Qspectre_load, Flag, cl_Group, INVALID, nullptr, NoXarchOption, CLOption, 0, nullptr, nullptr, nullptr)
@@ -4929,10 +4927,10 @@ OPTION(prefix_1, "-Xflang", Xflang, Separate, CompileOnly_Group, INVALID, nullpt
        "Pass <arg> to the flang compiler", "<arg>", nullptr)
 OPTION(prefix_1, "-Xlinker", Xlinker, Separate, Link_Group, INVALID, nullptr, LinkerInput | RenderAsInput, DefaultVis, 0,
        "Pass <arg> to the linker", "<arg>", nullptr)
-OPTION(prefix_1, "-Xmicrosoft-visualc-tools-root", anonymous_1920, Separate, INVALID, _SLASH_vctoolsdir, nullptr, 0, DefaultVis, 0, nullptr, nullptr, nullptr)
-OPTION(prefix_1, "-Xmicrosoft-visualc-tools-version", anonymous_1921, Separate, INVALID, _SLASH_vctoolsversion, nullptr, 0, DefaultVis, 0, nullptr, nullptr, nullptr)
-OPTION(prefix_1, "-Xmicrosoft-windows-sdk-root", anonymous_1922, Separate, INVALID, _SLASH_winsdkdir, nullptr, 0, DefaultVis, 0, nullptr, nullptr, nullptr)
-OPTION(prefix_1, "-Xmicrosoft-windows-sdk-version", anonymous_1923, Separate, INVALID, _SLASH_winsdkversion, nullptr, 0, DefaultVis, 0, nullptr, nullptr, nullptr)
+OPTION(prefix_1, "-Xmicrosoft-visualc-tools-root", anonymous_1919, Separate, INVALID, _SLASH_vctoolsdir, nullptr, 0, DefaultVis, 0, nullptr, nullptr, nullptr)
+OPTION(prefix_1, "-Xmicrosoft-visualc-tools-version", anonymous_1920, Separate, INVALID, _SLASH_vctoolsversion, nullptr, 0, DefaultVis, 0, nullptr, nullptr, nullptr)
+OPTION(prefix_1, "-Xmicrosoft-windows-sdk-root", anonymous_1921, Separate, INVALID, _SLASH_winsdkdir, nullptr, 0, DefaultVis, 0, nullptr, nullptr, nullptr)
+OPTION(prefix_1, "-Xmicrosoft-windows-sdk-version", anonymous_1922, Separate, INVALID, _SLASH_winsdkversion, nullptr, 0, DefaultVis, 0, nullptr, nullptr, nullptr)
 OPTION(prefix_1, "-Xoffload-linker", Xoffload_linker, JoinedAndSeparate, Link_Group, INVALID, nullptr, 0, DefaultVis, 0,
        "Pass <arg> to the offload linkers or the ones idenfied by -<triple>", "<triple> <arg>", nullptr)
 OPTION(prefix_1, "-Xopenmp-target=", Xopenmp_target_EQ, JoinedAndSeparate, CompileOnly_Group, INVALID, nullptr, 0, DefaultVis, 0,
@@ -7825,10 +7823,6 @@ CODEGEN_OPTION_WITH_MARSHALLING(prefix_1, "-fexperimental-assignment-tracking=",
 #ifdef DEPENDENCY_OUTPUT_OPTION_WITH_MARSHALLING
 DEPENDENCY_OUTPUT_OPTION_WITH_MARSHALLING(prefix_1, "-sys-header-deps", sys_header_deps, Flag, INVALID, INVALID, nullptr, 0, CC1Option, 0,
        "Include system headers in dependency output", nullptr, nullptr, true, 0, DependencyOutputOpts.IncludeSystemHeaders, false, false, false, normalizeSimpleFlag, denormalizeSimpleFlag, mergeForwardValue, extractForwardValue, -1)
-#endif // DEPENDENCY_OUTPUT_OPTION_WITH_MARSHALLING
-#ifdef DEPENDENCY_OUTPUT_OPTION_WITH_MARSHALLING
-DEPENDENCY_OUTPUT_OPTION_WITH_MARSHALLING(prefix_1, "-canonical-system-headers", canonical_system_headers, Flag, INVALID, INVALID, nullptr, 0, CC1Option, 0,
-       "Canonicalize system headers in dependency output", nullptr, nullptr, true, 0, DependencyOutputOpts.CanonicalSystemHeaders, false, false, false, normalizeSimpleFlag, denormalizeSimpleFlag, mergeForwardValue, extractForwardValue, -1)
 #endif // DEPENDENCY_OUTPUT_OPTION_WITH_MARSHALLING
 #ifdef DEPENDENCY_OUTPUT_OPTION_WITH_MARSHALLING
 DEPENDENCY_OUTPUT_OPTION_WITH_MARSHALLING(prefix_1, "-module-file-deps", module_file_deps, Flag, INVALID, INVALID, nullptr, 0, CC1Option, 0,
