@@ -35,7 +35,7 @@ workspace(name = "{}")
 """
 All clang toolchains used by Kleaf.
 """
-load("@@kernel_toolchain_info//:dict.bzl","VARS")
+load("@kernel_toolchain_info//:dict.bzl","VARS")
 load("{architecture_constants}", "SUPPORTED_ARCHITECTURES")
 load("{clang_toolchain}", "clang_toolchain")
 load("{versions}", "VERSIONS")
