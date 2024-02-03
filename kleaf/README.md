@@ -52,10 +52,10 @@ These toolchains have `cc_toolchain.compiler` set to the corresponding
 
 ### User toolchains
 
-[Source: `user_clang_toolchain_repository.bzl`](user_clang_toolchain_repository.bzl)
+[Source: `clang_toolchain_repository.bzl`](clang_toolchain_repository.bzl)
 
 User toolchains,
-`@kleaf_user_clang_toolchain//:user_{target_os}_{target_cpu}_clang_toolchain`,
+`@kleaf_clang_toolchain//:1_user_{target_os}_{target_cpu}_clang_toolchain`,
 are the toolchains provided by the user from the command line.
 
 These toolchains are marked "target_compatible_with":
@@ -67,17 +67,18 @@ These toolchains are marked "exec_compatible_with":
 *   `@platforms//cpu:x86_64`
 
 These toolchains have `cc_toolchain.compiler` set to
-`"kleaf_user_clang_toolchain_skip_version_check"` (an implementation detail).
+`"kleaf_clang_toolchain_skip_version_check"` (an implementation detail).
 
 ## Toolchain registration
+
+[Source: `clang_toolchain_repository.bzl`](clang_toolchain_repository.bzl)
 
 Toolchains are registered in the following order:
 
 1.  If `--user_clang_toolchain` is set, the user toolchains are registered.
     Otherwise, fake user toolchains are registered.
-    ([source](register.bzl))
-2.  The versioned toolchains ([source](register.bzl))
-3.  The default toolchains ([source](register.bzl))
+2.  The versioned toolchains
+3.  The default toolchains
 
 ## Toolchain resolution
 
@@ -126,7 +127,7 @@ For a build without any flags or transitions, the platform of the build target
 has two constrants: (`linux`, `x86_64`). The toolchains are looked up in
 the following order:
 
-1.  If `--user_clang_toolchain` is set, `user_linux_x86_64_clang_toolchain`
+1.  If `--user_clang_toolchain` is set, `1_user_linux_x86_64_clang_toolchain`
     is returned because its constraint values (`linux`, `x86_64`) are a subset
     of the platform's constraint values (`linux`, `x86_64`). Otherwise, if
     `--user_clang_toolchain` is not set, Bazel continues checking the following
@@ -142,7 +143,7 @@ If a `cc_*` target is built with `--config=android_arm64`, the platform of the
 build target has two constrants: (`android`, `arm64`). The toolchains are looked
 up in the following order:
 
-1.  If `--user_clang_toolchain` is set, `user_android_arm64_clang_toolchain`
+1.  If `--user_clang_toolchain` is set, `1_user_android_arm64_clang_toolchain`
     is returned because its constraint values (`android`, `arm64`) are a subset
     of the platform's constraint values (`android`, `arm64`). Otherwise, if
     `--user_clang_toolchain` is not set, Bazel continues checking the following
@@ -199,7 +200,7 @@ If a `kernel_build` does specify `toolchain_version`:
 When `kernel_toolchains` looks up the toolchains for the execution platform:
 
 *   If `--user_clang_toolchain` is set, the user toolchain
-    `user_linux_x86_64_clang_toolchain` is returned because its constraint
+    `1_user_linux_x86_64_clang_toolchain` is returned because its constraint
     values (`linux`, `x86_64`) are a subset of the execution platform's
     constraint values (`linux`, `x86_64`, `{toolchain_version}`). However,
     `kernel_toolchains` rejects the user toolchain because the version
@@ -219,13 +220,13 @@ When `kernel_toolchains` looks up the toolchains for the execution platform:
 The same goes for the target platform:
 
 *   If `--user_clang_toolchain` is set, the user toolchain
-    `user_android_{target_cpu}_clang_toolchain` is returned because its
+    `1_user_android_{target_cpu}_clang_toolchain` is returned because its
     constraint values (`android`, `{target_cpu}`) are a subset of the target
     platform's constraint values
     (`android`, `{target_cpu}`, `{toolchain_version}`).
     `kernel_toolchains` accepts the user toolchain with a warning because
     the version of the user toolchain
-    `"kleaf_user_clang_toolchain_skip_version_check"` does not match the declared value, `kernel_build.toolchain_version`.
+    `"kleaf_clang_toolchain_skip_version_check"` does not match the declared value, `kernel_build.toolchain_version`.
 *   If `--user_clang_toolchain` is not set, the matching versioned toolchain,
     `{version}_android_{target_cpu}_clang_toolchain` is returned because
     its constraint values (`android`, `{target_cpu}` `{toolchain_version}`) are a subset of the target platform's constraint values
