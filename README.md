@@ -72,14 +72,14 @@ LLVM Users
 
 * **Android Rust**
   * Toolchain
-    * Currently clang-r498229b
+    * Currently clang-r510928
     * Look for "CLANG_REVISION" in [paths.py](https://android.googlesource.com/toolchain/android_rust/+/refs/heads/master/paths.py)
   * Bindgen
-    * Currently clang-r498229b
+    * Currently clang-r510928
     * Look for "bindgenClangVersion" in [bindgen.go](https://android.googlesource.com/platform/build/soong/+/refs/heads/master/rust/bindgen.go)
 
 * **Stage 1 compiler**
-  * Currently clang-r498229b
+  * Currently clang-r510928
   * Look for "clang-r" in [toolchain/llvm_android/constants.py](https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/master/constants.py)
   * Note the chicken & egg paradox of a self hosting bootstrapping compiler; this can only be updated AFTER a new prebuilt is checked in.
 
@@ -144,6 +144,7 @@ Prebuilt Versions
 * [clang-r487747c](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-r487747c) - May 2023
 * [clang-r498229](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-r498229) - July 2023
 * [clang-r498229b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-r498229b) - August 2023
+* [clang-510928](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-510928) - Jan 2024
 
 
 More Information
