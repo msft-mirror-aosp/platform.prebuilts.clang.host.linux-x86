@@ -227,6 +227,7 @@ ARCH_CONFIG = {
         linker_files = [
             Label("//prebuilts/kernel-build-tools:linux-x86-libs"),
         ],
+        target = "x86_64-unknown-linux-gnu",
         # From _setup_env.sh
         # sysroot_flags+="--sysroot=${ROOT_DIR}/build/kernel/build-tools/sysroot "
         sysroot_label = Label("//build/kernel:sysroot"),
