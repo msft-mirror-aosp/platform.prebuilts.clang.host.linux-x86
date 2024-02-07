@@ -61,6 +61,7 @@ def _clfags(target):
         enabled = True,
         flag_sets = [
             flag_set(
+                # Applies to C, C++ and assembly code.
                 actions = ALL_CC_COMPILE_ACTION_NAMES,
                 flag_groups = [
                     flag_group(
