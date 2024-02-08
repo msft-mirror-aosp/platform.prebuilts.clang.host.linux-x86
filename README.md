@@ -24,7 +24,7 @@ LLVM Users
   * These are *symlinks* to llvm tools and can be updated by running [update-binutils.py](https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/master/update-binutils.py).
 
 * [**Android Platform clang-stable**](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-stable/)
-  * Currently clang-r498229b
+  * Currently clang-r510928
   * These are *copies* of some clang tools and can be updated by running [update-clang-stable.py](https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/master/update-clang-stable.py).
 
 * [**RenderScript**](https://developer.android.com/guide/topics/renderscript/index.html)
