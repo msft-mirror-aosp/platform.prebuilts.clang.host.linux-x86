@@ -61,6 +61,8 @@ clang_config = rule(
             "linux",
         ]),
         "sysroot": attr.string(mandatory = True),
+        "bin_dirs": attr.label_list(),
+        "lib_dirs": attr.label_list(),
         "target": attr.string(),
         "toolchain_identifier": attr.string(),
         "clang_version": attr.string(),

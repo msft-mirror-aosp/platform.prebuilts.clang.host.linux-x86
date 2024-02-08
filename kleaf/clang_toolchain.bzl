@@ -32,6 +32,10 @@ def _clang_toolchain_internal(
         linker_files = None,
         sysroot_label = None,
         sysroot_path = None,
+        bin_files = None,
+        bin_dirs = None,
+        lib_files = None,
+        lib_dirs = None,
         target = None,
         extra_compatible_with = None):
     """Defines a cc toolchain for kernel build, based on clang.
@@ -48,6 +52,10 @@ def _clang_toolchain_internal(
         linker_files: Additional dependencies to the linker
         sysroot_label: Label to a list of files from sysroot
         sysroot_path: Path to sysroot
+        bin_files: Files for `-B`
+        bin_dirs: Directory to be set in `-B`
+        lib_files: Files for `-L`
+        lib_dirs: Directory to be set in `-L`
         target: The `--target` option provided to clang. This is usually `NDK_TRIPLE`.
         extra_compatible_with: Extra `exec_compatible_with` / `target_compatible_with`.
     """
@@ -61,6 +69,12 @@ def _clang_toolchain_internal(
 
     if linker_files == None:
         linker_files = []
+
+    if bin_files == None:
+        bin_files = []
+
+    if lib_files == None:
+        lib_files = []
 
     if extra_compatible_with == None:
         extra_compatible_with = []
@@ -102,12 +116,12 @@ def _clang_toolchain_internal(
         srcs = [
             clang_all_binaries,
             clang_includes,
-        ] + sysroot_labels,
+        ] + sysroot_labels + bin_files,
     )
 
     native.filegroup(
         name = name + "_linker_files",
-        srcs = [clang_all_binaries] + sysroot_labels + linker_files,
+        srcs = [clang_all_binaries] + sysroot_labels + linker_files + bin_files + lib_files,
     )
 
     native.filegroup(
@@ -123,6 +137,8 @@ def _clang_toolchain_internal(
         name = name + "_clang_config",
         clang_version = clang_version,
         sysroot = sysroot_path,
+        bin_dirs = bin_dirs,
+        lib_dirs = lib_dirs,
         target_cpu = target_cpu,
         target_os = target_os,
         target = target,
@@ -202,12 +218,13 @@ def clang_toolchain(
         **extra_kwargs
     )
 
+_GCC_PKG = Label("//prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8")
+
 # Keys: (target_os, target_cpu)
 # Values: arguments to clang_toolchain()
 ARCH_CONFIG = {
     ("linux", "x86_64"): dict(
         linker_files = [
-            # From _setup_env.sh, HOSTLDFLAGS
             Label("//prebuilts/kernel-build-tools:linux-x86-libs"),
         ],
         # From _setup_env.sh
@@ -217,6 +234,10 @@ ARCH_CONFIG = {
             Label("//build/kernel:sysroot").workspace_root,
             "build/kernel/build-tools/sysroot",
         ),
+        bin_files = [_GCC_PKG.relative(":bin_files")],
+        bin_dirs = [_GCC_PKG.relative(":bin_dirs")],
+        lib_files = [_GCC_PKG.relative(":lib_files")],
+        lib_dirs = [_GCC_PKG.relative(":lib_dirs")],
     ),
     ("android", "arm64"): dict(
         target = VARS.get("AARCH64_NDK_TRIPLE"),
