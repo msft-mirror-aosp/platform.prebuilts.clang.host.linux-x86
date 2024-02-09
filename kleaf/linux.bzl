@@ -37,7 +37,7 @@ def _linux_ldflags(_ctx):
         name = "kleaf-host-ldflags",
         enabled = True,
         implies = [
-            "kleaf-lld-compiler-rt",
+            "kleaf-lld",
         ],
     )
 
