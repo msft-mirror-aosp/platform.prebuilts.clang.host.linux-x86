@@ -110,6 +110,7 @@ libclang_rt_prebuilt_library_static {
     visibility: [
         "//bionic:__subpackages__",
         "//frameworks/libs/native_bridge_support/libc:__subpackages__",
+        "//frameworks/libs/native_bridge_support/android_api/libc:__subpackages__",
     ],
 }
 
@@ -324,6 +325,7 @@ llvm_prebuilt_library_static {
     visibility: [
         "//bionic:__subpackages__",
         "//frameworks/libs/native_bridge_support/libc:__subpackages__",
+        "//frameworks/libs/native_bridge_support/android_api/libc:__subpackages__",
     ],
 }
 
