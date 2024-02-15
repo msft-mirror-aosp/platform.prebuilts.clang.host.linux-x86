@@ -61,7 +61,7 @@ clang_config = rule(
             "linux",
         ]),
         "sysroot": attr.string(mandatory = True),
-        "ndk_triple": attr.string(),
+        "target": attr.string(),
         "toolchain_identifier": attr.string(),
         "clang_version": attr.string(),
     } | common.tool_attrs(),
