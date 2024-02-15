@@ -38,6 +38,7 @@ license {
 
 llvm_prebuilt_library_static {
     name: "libFuzzer",
+    vendor_available: true,
     sdk_version: "minimum",
     sanitize: {
         never: true,
@@ -78,9 +79,6 @@ libclang_rt_prebuilt_library_static {
         never: true,
     },
     stl: "none",
-    bazel_module: {
-        label: "//prebuilts/clang/host/linux-x86:libclang_rt",
-    },
 }
 
 libclang_rt_prebuilt_library_static {
@@ -112,6 +110,7 @@ libclang_rt_prebuilt_library_static {
     visibility: [
         "//bionic:__subpackages__",
         "//frameworks/libs/native_bridge_support/libc:__subpackages__",
+        "//frameworks/libs/native_bridge_support/android_api/libc:__subpackages__",
     ],
 }
 
@@ -326,6 +325,25 @@ llvm_prebuilt_library_static {
     visibility: [
         "//bionic:__subpackages__",
         "//frameworks/libs/native_bridge_support/libc:__subpackages__",
+        "//frameworks/libs/native_bridge_support/android_api/libc:__subpackages__",
+    ],
+}
+
+llvm_prebuilt_library_static {
+    name: "libsimpleperf_readelf",
+    host_supported: true,
+    sdk_version: "minimum",
+    sanitize: {
+        never: true,
+    },
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
+    visibility: [
+        "//cts/tests/tests/simpleperf",
+        "//system/extras/simpleperf",
     ],
 }
 
@@ -392,6 +410,14 @@ llvm_tools_filegroup {
     visibility: ["//development/scripts:__subpackages__"],
     // The tools and libs in the filegroup are in
     // ./soong/clangprebuilts.go:llvmToolsFiles
+}
+
+llvm_prebuilt_build_tool {
+    name: "llvm-dwarfdump",
+}
+
+llvm_prebuilt_build_tool {
+    name: "llvm-objdump",
 }
 
 subdirs = [
