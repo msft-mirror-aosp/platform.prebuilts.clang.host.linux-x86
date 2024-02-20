@@ -91,7 +91,7 @@ def _clang_toolchain_internal(
     # so just use clang directly
     clang = clang_pkg.relative(":bin/clang")
     clang_plus_plus = clang_pkg.relative(":bin/clang++")
-    ld = clang
+    ld = clang_plus_plus
     strip = clang_pkg.relative(":bin/llvm-strip")
     ar = clang_pkg.relative(":bin/llvm-ar")
     objcopy = clang_pkg.relative(":bin/llvm-objcopy")
