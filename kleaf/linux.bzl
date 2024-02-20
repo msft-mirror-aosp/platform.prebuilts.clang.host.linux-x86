@@ -41,8 +41,17 @@ def _linux_ldflags(_ctx):
         ],
     )
 
-def _linux_cc_rules_flags(_ctx):
+def _linux_cc_rules_flags(ctx):
     """Flags applying to cc_* rules but not Kbuild"""
+
+    extra_compile_flags = []
+    for bin_dir in ctx.files.bin_dirs:
+        extra_compile_flags.append("-B" + bin_dir.path)
+
+    extra_link_flags = list(extra_compile_flags)
+    for lib_dir in ctx.files.lib_dirs:
+        extra_link_flags.append("-L" + lib_dir.path)
+
     return feature(
         name = "kleaf-host-cc-rules-flags",
         enabled = True,
@@ -60,7 +69,7 @@ def _linux_cc_rules_flags(_ctx):
                             # Can't use static_link_cpp_runtimes because
                             # https://github.com/bazelbuild/bazel/issues/14342
                             "-static-libstdc++",
-                        ],
+                        ] + extra_link_flags,
                     ),
                 ],
             ),
@@ -71,7 +80,7 @@ def _linux_cc_rules_flags(_ctx):
                     flag_group(
                         flags = [
                             "-stdlib=libc++",
-                        ],
+                        ] + extra_compile_flags,
                     ),
                 ],
             ),
