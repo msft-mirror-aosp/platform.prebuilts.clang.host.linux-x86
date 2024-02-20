@@ -61,6 +61,7 @@ def _linux_cc_rules_flags(ctx):
                 flag_groups = [
                     flag_group(
                         flags = [
+                            "--target={}".format(ctx.attr.target),
                             "-stdlib=libc++",
                             # Using -static-libstdc++ removes the complication of adding
                             # libc++ to runfiles for cc_binary, adjusting rpath, and
@@ -79,6 +80,7 @@ def _linux_cc_rules_flags(ctx):
                 flag_groups = [
                     flag_group(
                         flags = [
+                            "--target={}".format(ctx.attr.target),
                             "-stdlib=libc++",
                         ] + extra_compile_flags,
                     ),
