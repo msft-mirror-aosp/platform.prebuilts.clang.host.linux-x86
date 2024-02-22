@@ -32,7 +32,11 @@ def _clang_toolchain_internal(
         linker_files = None,
         sysroot_label = None,
         sysroot_path = None,
-        ndk_triple = None,
+        bin_files = None,
+        bin_dirs = None,
+        lib_files = None,
+        lib_dirs = None,
+        target = None,
         extra_compatible_with = None):
     """Defines a cc toolchain for kernel build, based on clang.
 
@@ -48,7 +52,11 @@ def _clang_toolchain_internal(
         linker_files: Additional dependencies to the linker
         sysroot_label: Label to a list of files from sysroot
         sysroot_path: Path to sysroot
-        ndk_triple: `NDK_TRIPLE`.
+        bin_files: Files for `-B`
+        bin_dirs: Directory to be set in `-B`
+        lib_files: Files for `-L`
+        lib_dirs: Directory to be set in `-L`
+        target: The `--target` option provided to clang. This is usually `NDK_TRIPLE`.
         extra_compatible_with: Extra `exec_compatible_with` / `target_compatible_with`.
     """
 
@@ -61,6 +69,12 @@ def _clang_toolchain_internal(
 
     if linker_files == None:
         linker_files = []
+
+    if bin_files == None:
+        bin_files = []
+
+    if lib_files == None:
+        lib_files = []
 
     if extra_compatible_with == None:
         extra_compatible_with = []
@@ -91,7 +105,7 @@ def _clang_toolchain_internal(
     # so just use clang directly
     clang = clang_pkg.relative(":bin/clang")
     clang_plus_plus = clang_pkg.relative(":bin/clang++")
-    ld = clang
+    ld = clang_plus_plus
     strip = clang_pkg.relative(":bin/llvm-strip")
     ar = clang_pkg.relative(":bin/llvm-ar")
     objcopy = clang_pkg.relative(":bin/llvm-objcopy")
@@ -102,12 +116,12 @@ def _clang_toolchain_internal(
         srcs = [
             clang_all_binaries,
             clang_includes,
-        ] + sysroot_labels,
+        ] + sysroot_labels + bin_files,
     )
 
     native.filegroup(
         name = name + "_linker_files",
-        srcs = [clang_all_binaries] + sysroot_labels + linker_files,
+        srcs = [clang_all_binaries] + sysroot_labels + linker_files + bin_files + lib_files,
     )
 
     native.filegroup(
@@ -123,9 +137,11 @@ def _clang_toolchain_internal(
         name = name + "_clang_config",
         clang_version = clang_version,
         sysroot = sysroot_path,
+        bin_dirs = bin_dirs,
+        lib_dirs = lib_dirs,
         target_cpu = target_cpu,
         target_os = target_os,
-        ndk_triple = ndk_triple,
+        target = target,
         toolchain_identifier = name + "_clang_id",
         clang = clang,
         ld = ld,
@@ -202,14 +218,16 @@ def clang_toolchain(
         **extra_kwargs
     )
 
+_GCC_PKG = Label("//prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8")
+
 # Keys: (target_os, target_cpu)
 # Values: arguments to clang_toolchain()
 ARCH_CONFIG = {
     ("linux", "x86_64"): dict(
         linker_files = [
-            # From _setup_env.sh, HOSTLDFLAGS
             Label("//prebuilts/kernel-build-tools:linux-x86-libs"),
         ],
+        target = "x86_64-unknown-linux-gnu",
         # From _setup_env.sh
         # sysroot_flags+="--sysroot=${ROOT_DIR}/build/kernel/build-tools/sysroot "
         sysroot_label = Label("//build/kernel:sysroot"),
@@ -217,9 +235,13 @@ ARCH_CONFIG = {
             Label("//build/kernel:sysroot").workspace_root,
             "build/kernel/build-tools/sysroot",
         ),
+        bin_files = [_GCC_PKG.relative(":bin_files")],
+        bin_dirs = [_GCC_PKG.relative(":bin_dirs")],
+        lib_files = [_GCC_PKG.relative(":lib_files")],
+        lib_dirs = [_GCC_PKG.relative(":lib_dirs")],
     ),
     ("android", "arm64"): dict(
-        ndk_triple = VARS.get("AARCH64_NDK_TRIPLE"),
+        target = VARS.get("AARCH64_NDK_TRIPLE"),
         # From _setup_env.sh: when NDK triple is set,
         # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
         sysroot_label = "@prebuilt_ndk//:sysroot" if "AARCH64_NDK_TRIPLE" in VARS else None,
@@ -229,7 +251,7 @@ ARCH_CONFIG = {
         ) if "AARCH64_NDK_TRIPLE" in VARS else None,
     ),
     ("android", "arm"): dict(
-        ndk_triple = VARS.get("ARM_NDK_TRIPLE"),
+        target = VARS.get("ARM_NDK_TRIPLE"),
         # From _setup_env.sh: when NDK triple is set,
         # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
         sysroot_label = "@prebuilt_ndk//:sysroot" if "ARM_NDK_TRIPLE" in VARS else None,
@@ -239,7 +261,7 @@ ARCH_CONFIG = {
         ) if "AARCH64_NDK_TRIPLE" in VARS else None,
     ),
     ("android", "x86_64"): dict(
-        ndk_triple = VARS.get("X86_64_NDK_TRIPLE"),
+        target = VARS.get("X86_64_NDK_TRIPLE"),
         # From _setup_env.sh: when NDK triple is set,
         # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
         sysroot_label = "@prebuilt_ndk//:sysroot" if "X86_64_NDK_TRIPLE" in VARS else None,
@@ -250,7 +272,7 @@ ARCH_CONFIG = {
     ),
     ("android", "i386"): dict(
         # i386 uses the same NDK_TRIPLE as x86_64
-        ndk_triple = VARS.get("X86_64_NDK_TRIPLE"),
+        target = VARS.get("X86_64_NDK_TRIPLE"),
         # From _setup_env.sh: when NDK triple is set,
         # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
         sysroot_label = "@prebuilt_ndk//:sysroot" if "X86_64_NDK_TRIPLE" in VARS else None,
