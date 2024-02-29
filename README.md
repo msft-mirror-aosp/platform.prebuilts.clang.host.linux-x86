@@ -66,8 +66,10 @@ LLVM Users
   * Look for "clang-" in [build-openjdk-darwin.sh](https://android.googlesource.com/toolchain/jdk/build/+/refs/heads/master/build-openjdk-darwin.sh)
 
 * [**Clang Tools**](https://android.googlesource.com/platform/prebuilts/clang-tools/)
-  * Currently clang-r498229b
-  * Look for "clang-r" in [envsetup.sh](https://android.googlesource.com/platform/development/+/refs/heads/master/vndk/tools/header-checker/android/envsetup.sh)
+  * Currently
+    * LLVM_PREBUILTS_VERSION=clang-r510928
+    * LLVM_RELEASE_VERSION=18
+  * Update [development/vndk/tools/header-checker/envsetup.sh](https://android.googlesource.com/platform/development/+/refs/heads/master/vndk/tools/header-checker/android/envsetup.sh)
   * Check out branch clang-tools and run test: OUT_DIR=out prebuilts/clang-tools/build-prebuilts.sh
 
 * **Android Rust**
@@ -86,7 +88,6 @@ LLVM Users
 * **Android Studio / Android Game Development Extension**
   * Currently clang-r498229b
   * Look in [lldb-utils/config/clang.version](https://googleplex-android.git.corp.google.com/platform/external/lldb-utils/+/refs/heads/lldb-master-dev/config/clang.version)
-
 
 
 Prebuilt Versions
@@ -144,7 +145,7 @@ Prebuilt Versions
 * [clang-r487747c](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-r487747c) - May 2023
 * [clang-r498229](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-r498229) - July 2023
 * [clang-r498229b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-r498229b) - August 2023
-* [clang-510928](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-510928) - Jan 2024
+* [clang-r510928](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-r510928) - Jan 2024
 
 
 More Information

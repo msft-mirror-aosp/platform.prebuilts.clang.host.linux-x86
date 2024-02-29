@@ -26,7 +26,7 @@ load(
     "ALL_CC_LINK_ACTION_NAMES",
 )
 
-def _ldflags(ndk_triple):
+def _ldflags(target):
     # From _setup_env.sh
     # USERLDFLAGS
     return feature(
@@ -38,7 +38,7 @@ def _ldflags(ndk_triple):
                 flag_groups = [
                     flag_group(
                         flags = [
-                            "--target={}".format(ndk_triple),
+                            "--target={}".format(target),
                         ],
                     ),
                 ],
@@ -53,7 +53,7 @@ def _ldflags(ndk_triple):
         ],
     )
 
-def _clfags(ndk_triple):
+def _clfags(target):
     # From _setup_env.sh
     # USERCFLAGS
     return feature(
@@ -61,11 +61,12 @@ def _clfags(ndk_triple):
         enabled = True,
         flag_sets = [
             flag_set(
+                # Applies to C, C++ and assembly code.
                 actions = ALL_CC_COMPILE_ACTION_NAMES,
                 flag_groups = [
                     flag_group(
                         flags = [
-                            "--target={}".format(ndk_triple),
+                            "--target={}".format(target),
                             # Some kernel headers trigger -Wunused-function for unused static
                             # functions with clang; GCC does not warn about unused static inline
                             # functions. The kernel sets __attribute__((maybe_unused)) on such
@@ -85,10 +86,10 @@ def _clfags(ndk_triple):
     )
 
 def _features(ctx):
-    if ctx.attr.ndk_triple:
+    if ctx.attr.target:
         return [
-            _ldflags(ctx.attr.ndk_triple),
-            _clfags(ctx.attr.ndk_triple),
+            _ldflags(ctx.attr.target),
+            _clfags(ctx.attr.target),
         ]
     return []
 
