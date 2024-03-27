@@ -25,7 +25,7 @@ bootstrap_go_package {
         "blueprint",
         "soong-android",
         "soong-cc",
-        "soong-cc-config"
+        "soong-cc-config",
     ],
     srcs: [
         "clangprebuilts.go",
