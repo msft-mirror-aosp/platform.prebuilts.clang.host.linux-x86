@@ -122,7 +122,7 @@ libclang_rt_prebuilt_library_shared {
     recovery_available: true,
     native_bridge_supported: true,
     sdk_version: "24",
-    check_elf_files: false,  // Bypass circular dependency between libc++
+    check_elf_files: false, // Bypass circular dependency between libc++
     is_llndk: true,
 }
 
@@ -157,7 +157,7 @@ libclang_rt_prebuilt_library_shared {
     double_loadable: true,
     stl: "c++_shared",
     sdk_version: "24",
-    check_elf_files: false,  // Bypass circular dependency between libc++
+    check_elf_files: false, // Bypass circular dependency between libc++
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -171,9 +171,8 @@ libclang_rt_prebuilt_library_static {
     double_loadable: true,
     host_supported: true,
     stl: "c++_static",
-    check_elf_files: false,  // Bypass circular dependency between libc++
+    check_elf_files: false, // Bypass circular dependency between libc++
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 libclang_rt_prebuilt_library_static {
@@ -219,7 +218,7 @@ libclang_rt_prebuilt_library_shared {
             enabled: true,
         },
     },
-    check_elf_files: false,  // Bypass circular dependency between libc++
+    check_elf_files: false, // Bypass circular dependency between libc++
     is_llndk: true,
     defaults: [
         "libclang_rt-prebuilt-default",
@@ -235,7 +234,7 @@ libclang_rt_prebuilt_library_static {
     recovery_available: true,
     vendor_available: true,
     product_available: true,
-    check_elf_files: false,  // Bypass circular dependency between libc++
+    check_elf_files: false, // Bypass circular dependency between libc++
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -266,7 +265,6 @@ libclang_rt_prebuilt_library_static {
     ramdisk_available: false,
     vendor_ramdisk_available: false,
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 libclang_rt_prebuilt_object {
