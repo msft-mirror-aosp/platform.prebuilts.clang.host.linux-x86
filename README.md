@@ -44,8 +44,8 @@ LLVM Users
   * Look for "clang-" in [ndk/toolchains.py](https://android.googlesource.com/platform/ndk/+/refs/heads/master/ndk/toolchains.py)
 
 * [**Trusty**](https://source.android.com/security/trusty/)
-  * LINUX_CLANG_BINDIR: clang-r475365b
-  * CLANG_BINDIR: clang-r475365b
+  * LINUX_CLANG_BINDIR: clang-r498229b
+  * CLANG_BINDIR: clang-r498229b
   * Look for "clang-" in [vendor/google/aosp/scripts/envsetup.sh](https://android.googlesource.com/trusty/vendor/google/aosp/+/master/scripts/envsetup.sh).
 
 * [**Android Emulator**](https://developer.android.com/studio/run/emulator.html)
