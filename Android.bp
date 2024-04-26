@@ -343,29 +343,23 @@ llvm_prebuilt_library_static {
 }
 
 // -----------------------------------------------------------------------------
-// Export libc++ and libclang-cpp.so.
+// Export shared libraries for host tools (libLLVM, libclang, libc++).  These
+// are exported only when the LLVM_BUILD_HOST_TOOLS environment variable is set.
 // -----------------------------------------------------------------------------
 
+// Export LLVM_BUILD_HOST_TOOLS
 llvm_host_defaults {
     name: "llvm-build-host-tools-defaults",
-    target: {
-        // We don't have a musl build of libclang-cpp.so, so disable the host
-        // tools for musl.
-        musl: {
-            enabled: false,
-        },
-    },
 }
 
 // Export libclang-cpp shared library
-llvm_prebuilt_library_shared {
+llvm_host_prebuilt_library_shared {
     name: "libclang-cpp_host",
-    host_supported: true,
-    device_supported: false,
     sanitize: {
         never: true,
     },
-    shared_libs: ["libc++"],
+    compile_multilib: "64",
+    shared_libs: ["libc++_host"],
     target: {
         darwin: {
             strip: {
@@ -375,113 +369,27 @@ llvm_prebuilt_library_shared {
     },
 }
 
-cc_defaults {
-    name: "libc++-device-base-default",
-    device_supported: true,
-    ramdisk_available: true,
-    vendor_ramdisk_available: true,
-    recovery_available: true,
-    native_bridge_supported: true,
-    sdk_version: "minimum",
-}
-
-cc_defaults {
-    name: "libc++-device-default",
-    defaults: ["libc++-device-base-default"],
-    vendor_available: true,
-    product_available: true,
-    apex_available: [
-        "//apex_available:platform",
-        "//apex_available:anyapex",
-    ],
-}
-
-// The "noexcept" variants of libc++_static and libc++demangle are intended for
-// use in the dynamic linker. The linker doesn't implement ELF TLS for itself,
-// so it needs to avoid using the per-thread EH globals pointer.
-cc_defaults {
-    name: "libc++-noexcept-default",
-    defaults: ["libc++-device-base-default"],
-    host_supported: false,
-    apex_available: [
-        "com.android.runtime",
-    ],
-    visibility: [
-        "//bionic:__subpackages__",
-        "//frameworks/libs/native_bridge_support:__subpackages__",
-    ],
-}
-
-llvm_prebuilt_library_shared {
-    name: "libc++",
-    host_supported: true,
-    defaults: ["libc++-device-default"],
-    double_loadable: true,
-    // TODO(b/298326651): Soong doesn't output a shared library module for
-    // libc.native_bridge, so when check_elf_file.py checks
-    // libc++.native_bridge, it's missing a --shared-lib argument for libc.so.
-    check_elf_files: false,
-}
-
-llvm_prebuilt_library_shared {
-    name: "libc++abi_shared",
-    host_supported: true,
-    device_supported: false,
-}
-
-llvm_prebuilt_library_static {
-    name: "libc++_static",
-    host_supported: true,
-    defaults: ["libc++-device-default"],
+// Export libc++.so for the host LLVM tools
+llvm_host_prebuilt_library_shared {
+    name: "libc++_host",
+    sanitize: {
+        never: true,
+    },
+    compile_multilib: "64",
     target: {
-        windows: {
-            enabled: true,
+        darwin: {
+            shared_libs: ["libc++abi_host"],
         },
     },
-    stl: "none",
 }
 
-llvm_prebuilt_library_static {
-    name: "libc++abi_static",
-    host_supported: true,
-    device_supported: false,
-    target: {
-        windows: {
-            enabled: true,
-        },
+// Export libc++abi.so for the host LLVM tools
+llvm_host_prebuilt_library_shared {
+    name: "libc++abi_host",
+    sanitize: {
+        never: true,
     },
-    stl: "none",
-}
-
-llvm_prebuilt_library_static {
-    name: "libc++demangle",
-    host_supported: false,
-    defaults: ["libc++-device-default"],
-    stl: "none",
-}
-
-llvm_prebuilt_library_static {
-    name: "libc++_static_noexcept",
-    defaults: ["libc++-noexcept-default"],
-    stl: "none",
-}
-
-llvm_prebuilt_library_static {
-    name: "libc++demangle_noexcept",
-    defaults: ["libc++-noexcept-default"],
-    stl: "none",
-}
-
-// Stub out this library. It's not needed anymore because libc++.so and
-// libc++_static.a now contain the stable std::filesystem APIs.
-// TODO: Remove dependencies on this library, then remove this library.
-cc_library_static {
-    name: "libc++fs",
-    srcs: [],
-    host_supported: true,
-    defaults: ["libc++-device-default"],
-    min_sdk_version: "apex_inherit",
-    stl: "none",
+    compile_multilib: "64",
 }
 
 clang_builtin_headers {
