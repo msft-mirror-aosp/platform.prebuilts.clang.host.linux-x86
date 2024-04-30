@@ -478,13 +478,17 @@ func llvmDarwinFileGroupFactory() android.Module {
 
 func llvmHostDefaults(ctx android.LoadHookContext) {
 	type props struct {
-		Enabled *bool
+		Enabled     *bool
+		Shared_libs []string
+		Stl         *string
 	}
 
 	p := &props{}
 	if !ctx.Config().IsEnvTrue("LLVM_BUILD_HOST_TOOLS") {
 		p.Enabled = proptools.BoolPtr(false)
 	}
+	p.Shared_libs = []string{"libc++_host"}
+	p.Stl = proptools.StringPtr("none")
 	ctx.AppendProperties(p)
 }
 
