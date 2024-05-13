@@ -105,6 +105,7 @@ filegroup(
     srcs = glob([
         "bin/*",
         "lib/*",
+        "lib/x86_64-unknown-linux-gnu/*",
     ]),
 )
 
@@ -112,6 +113,8 @@ filegroup(
     name = "includes",
     srcs = glob([
         "lib/clang/*/include/**",
+        "include/c++/**",
+        "include/x86_64-unknown-linux-gnu/c++/**",
     ]),
 )
 
