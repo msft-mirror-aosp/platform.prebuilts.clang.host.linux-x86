@@ -20,7 +20,6 @@ load(
     "feature",
     "flag_group",
     "flag_set",
-    "variable_with_value",
 )
 load(
     "@rules_cc//cc:action_names.bzl",
@@ -79,7 +78,8 @@ def _action_configs(ctx):
         ],
     )
     objcopy = action_config(
-        action_name = ACTION_NAMES.objcopy_embed_data,
+        # TODO(b/310843869): Use objcopy_embed_data from ACTION_NAMES
+        action_name = "objcopy_embed_data",
         tools = [
             struct(
                 type_name = "tool",
@@ -127,8 +127,25 @@ def _common_cflags():
         ],
     )
 
+def _lld():
+    return feature(
+        name = "kleaf-lld",
+        enabled = False,  # Not enabled unless implied by individual os
+        flag_sets = [
+            flag_set(
+                actions = ALL_CC_LINK_ACTION_NAMES,
+                flag_groups = [
+                    flag_group(
+                        flags = [
+                            "-fuse-ld=lld",
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    )
+
 def _lld_compiler_rt():
-    # From _setup_env.sh
     return feature(
         name = "kleaf-lld-compiler-rt",
         enabled = False,  # Not enabled unless implied by individual os
@@ -138,12 +155,14 @@ def _lld_compiler_rt():
                 flag_groups = [
                     flag_group(
                         flags = [
-                            "-fuse-ld=lld",
                             "--rtlib=compiler-rt",
                         ],
                     ),
                 ],
             ),
+        ],
+        implies = [
+            "kleaf-lld",
         ],
     )
 
@@ -151,6 +170,7 @@ def _common_features(_ctx):
     """Features that applies to both android and linux toolchain."""
     return [
         _common_cflags(),
+        _lld(),
         _lld_compiler_rt(),
     ]
 
