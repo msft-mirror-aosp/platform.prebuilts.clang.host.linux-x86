@@ -415,6 +415,10 @@ llvm_prebuilt_build_tool {
     name: "llvm-objdump",
 }
 
+llvm_prebuilt_build_tool {
+  name: "llvm-strings"
+}
+
 subdirs = [
     "soong",
 ]
