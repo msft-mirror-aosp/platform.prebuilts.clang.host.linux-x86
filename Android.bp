@@ -422,3 +422,20 @@ llvm_prebuilt_build_tool {
 subdirs = [
     "soong",
 ]
+
+filegroup {
+    name: "py-clang-srcs",
+    srcs: [
+        "clang-stable/lib/python3/site-packages/clang/*.py",
+    ],
+    path: "clang-stable/lib/python3/site-packages/clang",
+}
+
+python_library {
+    name: "py-clang",
+    pkg_path: "clang",
+    host_supported: true,
+    srcs: [
+        ":py-clang-srcs",
+    ],
+}
