@@ -32,7 +32,7 @@ def _impl(ctx):
         ctx = ctx,
         toolchain_identifier = ctx.attr.toolchain_identifier,
         target_cpu = ctx.attr.target_cpu,
-        tool_paths = common.tool_paths(ctx),
+        action_configs = common.action_configs(ctx),
         features = features,
         builtin_sysroot = ctx.attr.sysroot,
 
@@ -41,7 +41,7 @@ def _impl(ctx):
         host_system_name = "__toolchain_host_system_name__",
         target_system_name = "__toolchain_target_system_name__",
         target_libc = "__toolchain_target_libc__",
-        compiler = "__toolchain_compiler__",
+        compiler = ctx.attr.clang_version,
         abi_version = "__toolchain_abi_version__",
         abi_libc_version = "__toolchain_abi_libc_version__",
     )
@@ -50,7 +50,9 @@ clang_config = rule(
     implementation = _impl,
     attrs = {
         "target_cpu": attr.string(mandatory = True, values = [
+            "arm",
             "arm64",
+            "i386",
             "riscv64",
             "x86_64",
         ]),
@@ -59,9 +61,11 @@ clang_config = rule(
             "linux",
         ]),
         "sysroot": attr.string(mandatory = True),
-        "ndk_triple": attr.string(),
+        "bin_dirs": attr.label_list(),
+        "lib_dirs": attr.label_list(),
+        "target": attr.string(),
         "toolchain_identifier": attr.string(),
         "clang_version": attr.string(),
-    },
+    } | common.tool_attrs(),
     provides = [CcToolchainConfigInfo],
 )
