@@ -1,1 +1,1 @@
-All contents in clang-stable are copies of clang-r510928.
+All contents in clang-stable are copies of clang-r522817.
