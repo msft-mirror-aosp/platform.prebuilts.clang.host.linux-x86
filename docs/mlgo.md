@@ -25,7 +25,7 @@ export WORKING_DIR=`pwd`
 
 ```sh
 cd $WORKING_DIR
-git clone https://github.com/google/ml-compiler-opt
+git clone https://github.com/google/ml-compiler-opt --depth=1
 ```
 
 #### aosp-master-plus-llvm
@@ -53,7 +53,7 @@ Now, set up a Virtualenv and install Tensorflow and other dependencies:
 cd $WORKING_DIR
 python3 -m venv venv
 source venv/bin/activate
-pip install tensorflow-cpu gin-config cloudpickle psutil tf_agents
+pip3 install tensorflow-cpu gin-config cloudpickle psutil tf_agents mlgo-utils
 ```
 
 ### Set up TFLite
@@ -69,7 +69,7 @@ You do not need the full toolchain for ML training.
 
 ```sh
 mkdir $WORKING_DIR/llvm-build; cd $WORKING_DIR/llvm-build
-export CLANG_VER=`grep ClangDefaultVersion.*clang-r $WORKING_DIR/aosp-master-plus-llvm/build/soong/cc/config/global.go | tr -s ' ' | cut -d' ' -f3 | tr -d '"'`
+export CLANG_VER=`grep -oP "ClangDefaultVersion.*\"\Kclang-r\S+[^\"]" $WORKING_DIR/aosp-master-plus-llvm/build/soong/cc/config/global.go`
 CC=$WORKING_DIR/aosp-master-plus-llvm/prebuilts/clang/host/linux-x86/$CLANG_VER/bin/clang \
 CXX=$WORKING_DIR/aosp-master-plus-llvm/prebuilts/clang/host/linux-x86/$CLANG_VER/bin/clang++ \
 $WORKING_DIR/aosp-master-plus-llvm/prebuilts/cmake/linux-x86/bin/cmake -G Ninja \
@@ -88,7 +88,7 @@ $WORKING_DIR/aosp-master-plus-llvm/prebuilts/build-tools/linux-x86/bin/ninja
 ```sh
 cd $WORKING_DIR/aosp-master-plus-llvm
 source build/envsetup.sh
-lunch aosp_arm64-trunk_staging-userdebug
+lunch aosp_cf_arm64_only_phone-trunk_staging-userdebug
 USE_RBE=false \
   SOONG_GEN_COMPDB=true \
   THINLTO_EMIT_INDEXES_AND_IMPORTS=true \
@@ -99,7 +99,7 @@ USE_RBE=false \
 
 ```sh
 cd $WORKING_DIR/ml_compiler_opt
-PYTHONPATH=$PYTHONPATH:. python3 compiler_opt/tools/extract_ir.py \
+extract_ir \
   --cmd_filter="^-O2|-O3" \
   --llvm_objcopy_path=$WORKING_DIR/llvm-build/bin/llvm-objcopy \
   --output_dir=$WORKING_DIR/corpus \
@@ -122,13 +122,6 @@ Edit `corpus_description.json` and add the following to the
   "-import-instr-limit=40",
   "-nostdlib++",
   "-c"
-```
-
-Search for lines with `android_arm_armv8-a` and remove them. We only train for
-ARM64 targets.
-
-```sh
-sed -i "/android_arm_armv8-a/d" corpus/corpus_description.json
 ```
 
 Now you should have a properly prepared AOSP ThinLTO corpus.
