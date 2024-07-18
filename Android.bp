@@ -533,3 +533,10 @@ python_library {
         ":py-clang-srcs",
     ],
 }
+
+filegroup {
+    name: "libclang",
+    srcs: [
+        "clang-stable/lib/libclang.so",
+    ],
+}
