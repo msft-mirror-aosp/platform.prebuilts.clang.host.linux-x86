@@ -8,7 +8,8 @@ LLVM Users
 ----------
 
 * [**Android Platform**](https://android.googlesource.com/platform/)
-  * Currently clang-r510928
+  * Currently clang-r530567
+  * clang-r522817 for Android V release
   * clang-r487747c for Android U release
   * clang-r450784d for Android T release
   * clang-r416183b1 for Android S release
@@ -20,11 +21,11 @@ LLVM Users
     * [AOSP Code Search link](https://cs.android.com/android/platform/superproject/+/master:build/soong/cc/config/global.go?q=ClangDefaultVersion)
 
 * [**Android Platform LLVM binutils**](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/llvm-binutils-stable/)
-  * Currently clang-r510928
+  * Currently clang-r530567
   * These are *symlinks* to llvm tools and can be updated by running [update-binutils.py](https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/master/update-binutils.py).
 
 * [**Android Platform clang-stable**](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-stable/)
-  * Currently clang-r510928
+  * Currently clang-r530567
   * These are *copies* of some clang tools and can be updated by running [update-clang-stable.py](https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/master/update-clang-stable.py).
 
 * [**RenderScript**](https://developer.android.com/guide/topics/renderscript/index.html)
@@ -33,19 +34,19 @@ LLVM Users
     * [AOSP Code Search link](https://cs.android.com/android/platform/superproject/+/master:build/soong/cc/config/global.go?q=RSClangVersion)
 
 * [**Android Linux Kernel**](http://go/android-systems)
-  * Currently clang-r498229b
+  * Currently clang-r522817
     * Look for "clang-" in [mainline build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android-mainline/build.config.constants).
     * Look for "clang-" in [android15-6.1 build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android15-6.1/build.config.constants)
   * When adding or removing a clang prebuilt, the list in `kleaf/versions.bzl` needs to be updated.
   * Internal LLVM developers should look in the partner gerrit for more kernel configurations.
 
 * [**NDK**](https://developer.android.com/ndk)
-  * Currently clang-r487747c
+  * Currently clang-r530567
   * Look for "clang-" in [ndk/toolchains.py](https://android.googlesource.com/platform/ndk/+/refs/heads/master/ndk/toolchains.py)
 
 * [**Trusty**](https://source.android.com/security/trusty/)
-  * LINUX_CLANG_BINDIR: clang-r475365b
-  * CLANG_BINDIR: clang-r475365b
+  * LINUX_CLANG_BINDIR: clang-r498229b
+  * CLANG_BINDIR: clang-r498229b
   * Look for "clang-" in [vendor/google/aosp/scripts/envsetup.sh](https://android.googlesource.com/trusty/vendor/google/aosp/+/master/scripts/envsetup.sh).
 
 * [**Android Emulator**](https://developer.android.com/studio/run/emulator.html)
@@ -61,33 +62,38 @@ LLVM Users
     * [Internal Code Search link](https://source.corp.google.com/android/system/chre/build/clang.mk?q=clang-)
 
 * [**OpenJDK (jdk/build)**](https://android.googlesource.com/toolchain/jdk/build/)
-  * Currently clang-r416183b
+  * Currently clang-r530567
   * Look for "clang-" in [build-jetbrainsruntime-linux.sh](https://android.googlesource.com/toolchain/jdk/build/+/refs/heads/master/build-jetbrainsruntime-linux.sh)
   * Look for "clang-" in [build-openjdk-darwin.sh](https://android.googlesource.com/toolchain/jdk/build/+/refs/heads/master/build-openjdk-darwin.sh)
 
 * [**Clang Tools**](https://android.googlesource.com/platform/prebuilts/clang-tools/)
   * Currently
-    * LLVM_PREBUILTS_VERSION=clang-r510928
-    * LLVM_RELEASE_VERSION=18
+    * LLVM_PREBUILTS_VERSION=clang-r530567
+    * LLVM_RELEASE_VERSION=19
   * Update [development/vndk/tools/header-checker/envsetup.sh](https://android.googlesource.com/platform/development/+/refs/heads/master/vndk/tools/header-checker/android/envsetup.sh)
   * Check out branch clang-tools and run test: OUT_DIR=out prebuilts/clang-tools/build-prebuilts.sh
 
 * **Android Rust**
   * Toolchain
-    * Currently clang-r510928
-    * Look for "CLANG_REVISION" in [paths.py](https://android.googlesource.com/toolchain/android_rust/+/refs/heads/master/paths.py)
+    * Currently clang-r522817
+    * Look for "CLANG_REVISION" in [paths.py](https://android.googlesource.com/toolchain/android_rust/+/refs/heads/main/src/android_rust/paths.py)
   * Bindgen
-    * Currently clang-r510928
+    * Currently clang-r522817
     * Look for "bindgenClangVersion" in [bindgen.go](https://android.googlesource.com/platform/build/soong/+/refs/heads/master/rust/bindgen.go)
 
 * **Stage 1 compiler**
-  * Currently clang-r510928
+  * Currently clang-r530567
   * Look for "clang-r" in [toolchain/llvm_android/constants.py](https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/master/constants.py)
   * Note the chicken & egg paradox of a self hosting bootstrapping compiler; this can only be updated AFTER a new prebuilt is checked in.
 
 * **Android Studio / Android Game Development Extension**
-  * Currently clang-r498229b
+  * Currently clang-r530567
   * Look in [lldb-utils/config/clang.version](https://googleplex-android.git.corp.google.com/platform/external/lldb-utils/+/refs/heads/lldb-master-dev/config/clang.version)
+
+* **libbootloader**
+  * Currently clang-r530567
+  * Look for "CLANG_VERSION" in [bootable/libbootloader/gbl/build.config.constants](https://android.googlesource.com/platform/bootable/libbootloader/+/refs/heads/master/gbl/build.config.constants)
+    * [Android Code Search link](https://cs.android.com/android/platform/superproject/main/+/main:bootable/libbootloader/gbl/build.config.constants)
 
 
 Prebuilt Versions
@@ -146,6 +152,8 @@ Prebuilt Versions
 * [clang-r498229](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-r498229) - July 2023
 * [clang-r498229b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-r498229b) - August 2023
 * [clang-r510928](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-r510928) - Jan 2024
+* [clang-r522817](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-r522817) - June 2024
+* [clang-r530567](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-r530567) - July 2024
 
 
 More Information

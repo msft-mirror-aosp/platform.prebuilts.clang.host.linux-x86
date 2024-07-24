@@ -35,9 +35,7 @@ in the future.
 
 VERSIONS = [
     # keep sorted
-    "r450784e",
-    "r475365b",
-    "r487747c",
     "r498229b",
-    "r510928",
+    "r522817",
+    "r530567",
 ]
