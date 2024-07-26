@@ -78,9 +78,11 @@ func getClangResourceDir(ctx android.LoadHookContext) string {
 	return path.Join(clangDir, "lib", "clang", releaseVersion, "lib", "linux")
 }
 
-func getSymbolFilePath(ctx android.LoadHookContext) string {
+func getSymbolFilePath(ctx android.LoadHookContext, arch string) string {
 	libDir := getClangResourceDir(ctx)
-	return path.Join(libDir, strings.TrimSuffix(ctx.ModuleName(), ".llndk")+".map.txt")
+	// Strip the prebuilt_ prefix
+	baseModuleName := android.RemoveOptionalPrebuiltPrefix(ctx.ModuleName())
+	return path.Join(libDir, strings.TrimSuffix(baseModuleName, ".llndk")+arch+".map.txt")
 }
 
 func trimVersionNumbers(ver string, retain int) string {
@@ -132,6 +134,12 @@ type archInnerProps struct {
 		Hwaddress struct {
 			Srcs []string
 		}
+	}
+	Stubs struct {
+		Symbol_file *string
+	}
+	Llndk struct {
+		Symbol_file *string
 	}
 }
 
@@ -454,8 +462,22 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, libProps *preb
 
 	if proptools.Bool(sharedProps.Is_llndk) {
 		p.Stubs.Versions = []string{"29", "10000"}
-		p.Stubs.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx))
-		p.Llndk.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx))
+		// Set the symbol_file of the "base" variant to a fake file. This will be overridden later.
+		// This is necessary today since `image` mutator which creates the llndk variants runs before `arch` mutator.
+		// Without this hack, the llndk variants will not be created.
+		p.Llndk.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-does-not-exist"))
+		p.Stubs.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-does-not-exist"))
+		// Arch specific overrides
+		p.Target.Android_arm.Stubs.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-arm-android"))
+		p.Target.Android_arm.Llndk.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-arm-android"))
+		p.Target.Android_arm64.Stubs.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-aarch64-android"))
+		p.Target.Android_arm64.Llndk.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-aarch64-android"))
+		p.Target.Android_riscv64.Stubs.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-riscv64-android"))
+		p.Target.Android_riscv64.Llndk.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-riscv64-android"))
+		p.Target.Android_x86.Stubs.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-i686-android"))
+		p.Target.Android_x86.Llndk.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-i686-android"))
+		p.Target.Android_x86_64.Stubs.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-x86_64-android"))
+		p.Target.Android_x86_64.Llndk.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-x86_64-android"))
 	}
 
 	ctx.AppendProperties(p)
