@@ -1,3 +1,0 @@
-17.0.2
-based on r487747c
-for additional information on LLVM revision and cherry-picks, see clang_source_info.md
