@@ -240,21 +240,21 @@ ARCH_CONFIG = {
         target = VARS.get("AARCH64_NDK_TRIPLE"),
         # From _setup_env.sh: when NDK triple is set,
         # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
-        sysroot_label = "@prebuilt_ndk//:sysroot" if "AARCH64_NDK_TRIPLE" in VARS else None,
+        sysroot_label = "@prebuilt_ndk//:sysroot_{}_files".format(VARS.get("AARCH64_NDK_TRIPLE")) if "AARCH64_NDK_TRIPLE" in VARS else None,
         sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "AARCH64_NDK_TRIPLE" in VARS else None,
     ),
     ("android", "arm"): dict(
         target = VARS.get("ARM_NDK_TRIPLE"),
         # From _setup_env.sh: when NDK triple is set,
         # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
-        sysroot_label = "@prebuilt_ndk//:sysroot" if "ARM_NDK_TRIPLE" in VARS else None,
+        sysroot_label = "@prebuilt_ndk//:sysroot_{}_files".format(VARS.get("ARM_NDK_TRIPLE")) if "ARM_NDK_TRIPLE" in VARS else None,
         sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "ARM_NDK_TRIPLE" in VARS else None,
     ),
     ("android", "x86_64"): dict(
         target = VARS.get("X86_64_NDK_TRIPLE"),
         # From _setup_env.sh: when NDK triple is set,
         # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
-        sysroot_label = "@prebuilt_ndk//:sysroot" if "X86_64_NDK_TRIPLE" in VARS else None,
+        sysroot_label = "@prebuilt_ndk//:sysroot_{}_files".format(VARS.get("X86_64_NDK_TRIPLE")) if "X86_64_NDK_TRIPLE" in VARS else None,
         sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "X86_64_NDK_TRIPLE" in VARS else None,
     ),
     ("android", "i386"): dict(
@@ -262,7 +262,7 @@ ARCH_CONFIG = {
         target = VARS.get("X86_64_NDK_TRIPLE"),
         # From _setup_env.sh: when NDK triple is set,
         # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
-        sysroot_label = "@prebuilt_ndk//:sysroot" if "X86_64_NDK_TRIPLE" in VARS else None,
+        sysroot_label = "@prebuilt_ndk//:sysroot_{}_files".format(VARS.get("X86_64_NDK_TRIPLE")) if "X86_64_NDK_TRIPLE" in VARS else None,
         sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "X86_64_NDK_TRIPLE" in VARS else None,
     ),
     ("android", "riscv64"): dict(
