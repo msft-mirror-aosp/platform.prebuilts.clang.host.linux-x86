@@ -14,7 +14,6 @@
 
 """Defines a cc toolchain for kernel build, based on clang."""
 
-load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "CPP_TOOLCHAIN_TYPE")
 load(
     "@kernel_toolchain_info//:dict.bzl",
@@ -31,7 +30,7 @@ def _clang_toolchain_internal(
         clang_pkg,
         linker_files = None,
         sysroot_label = None,
-        sysroot_path = None,
+        sysroot_dir = None,
         bin_files = None,
         bin_dirs = None,
         lib_files = None,
@@ -51,7 +50,7 @@ def _clang_toolchain_internal(
             Name of the label is ignored.
         linker_files: Additional dependencies to the linker
         sysroot_label: Label to a list of files from sysroot
-        sysroot_path: Path to sysroot
+        sysroot_dir: Label containing a single directory to sysroot.
         bin_files: Files for `-B`
         bin_dirs: Directory to be set in `-B`
         lib_files: Files for `-L`
@@ -59,9 +58,6 @@ def _clang_toolchain_internal(
         target: The `--target` option provided to clang. This is usually `NDK_TRIPLE`.
         extra_compatible_with: Extra `exec_compatible_with` / `target_compatible_with`.
     """
-
-    if sysroot_path == None:
-        sysroot_path = "/dev/null"
 
     sysroot_labels = []
     if sysroot_label != None:
@@ -139,7 +135,7 @@ def _clang_toolchain_internal(
     clang_config(
         name = name + "_clang_config",
         clang_version = clang_version,
-        sysroot = sysroot_path,
+        sysroot_dir = sysroot_dir,
         bin_dirs = bin_dirs,
         lib_dirs = lib_dirs,
         target_cpu = target_cpu,
@@ -234,10 +230,7 @@ ARCH_CONFIG = {
         # From _setup_env.sh
         # sysroot_flags+="--sysroot=${ROOT_DIR}/build/kernel/build-tools/sysroot "
         sysroot_label = Label("//build/kernel:sysroot"),
-        sysroot_path = paths.join(
-            Label("//build/kernel:sysroot").workspace_root,
-            "build/kernel/build-tools/sysroot",
-        ),
+        sysroot_dir = Label("//build/kernel:sysroot_dir"),
         bin_files = [_GCC_PKG.relative(":bin_files")],
         bin_dirs = [_GCC_PKG.relative(":bin_dirs")],
         lib_files = [_GCC_PKG.relative(":lib_files")],
@@ -248,30 +241,21 @@ ARCH_CONFIG = {
         # From _setup_env.sh: when NDK triple is set,
         # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
         sysroot_label = "@prebuilt_ndk//:sysroot" if "AARCH64_NDK_TRIPLE" in VARS else None,
-        sysroot_path = paths.join(
-            Label("@prebuilt_ndk//:sysroot").workspace_root,
-            "toolchains/llvm/prebuilt/linux-x86_64/sysroot",
-        ) if "AARCH64_NDK_TRIPLE" in VARS else None,
+        sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "AARCH64_NDK_TRIPLE" in VARS else None,
     ),
     ("android", "arm"): dict(
         target = VARS.get("ARM_NDK_TRIPLE"),
         # From _setup_env.sh: when NDK triple is set,
         # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
         sysroot_label = "@prebuilt_ndk//:sysroot" if "ARM_NDK_TRIPLE" in VARS else None,
-        sysroot_path = paths.join(
-            Label("@prebuilt_ndk//:sysroot").workspace_root,
-            "toolchains/llvm/prebuilt/linux-x86_64/sysroot",
-        ) if "AARCH64_NDK_TRIPLE" in VARS else None,
+        sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "ARM_NDK_TRIPLE" in VARS else None,
     ),
     ("android", "x86_64"): dict(
         target = VARS.get("X86_64_NDK_TRIPLE"),
         # From _setup_env.sh: when NDK triple is set,
         # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
         sysroot_label = "@prebuilt_ndk//:sysroot" if "X86_64_NDK_TRIPLE" in VARS else None,
-        sysroot_path = paths.join(
-            Label("@prebuilt_ndk//:sysroot").workspace_root,
-            "toolchains/llvm/prebuilt/linux-x86_64/sysroot",
-        ) if "X86_64_NDK_TRIPLE" in VARS else None,
+        sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "X86_64_NDK_TRIPLE" in VARS else None,
     ),
     ("android", "i386"): dict(
         # i386 uses the same NDK_TRIPLE as x86_64
@@ -279,10 +263,7 @@ ARCH_CONFIG = {
         # From _setup_env.sh: when NDK triple is set,
         # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
         sysroot_label = "@prebuilt_ndk//:sysroot" if "X86_64_NDK_TRIPLE" in VARS else None,
-        sysroot_path = paths.join(
-            Label("@prebuilt_ndk//:sysroot").workspace_root,
-            "toolchains/llvm/prebuilt/linux-x86_64/sysroot",
-        ) if "X86_64_NDK_TRIPLE" in VARS else None,
+        sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "X86_64_NDK_TRIPLE" in VARS else None,
     ),
     ("android", "riscv64"): dict(
         # TODO(b/271919464): We need NDK_TRIPLE for riscv
