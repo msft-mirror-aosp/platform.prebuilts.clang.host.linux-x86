@@ -28,13 +28,17 @@ def _impl(ctx):
 
     features += common.features(ctx)
 
+    sysroot_path = "/dev/null"
+    if ctx.file.sysroot_dir:
+        sysroot_path = ctx.file.sysroot_dir.path
+
     return cc_common.create_cc_toolchain_config_info(
         ctx = ctx,
         toolchain_identifier = ctx.attr.toolchain_identifier,
         target_cpu = ctx.attr.target_cpu,
         action_configs = common.action_configs(ctx),
         features = features,
-        builtin_sysroot = ctx.attr.sysroot,
+        builtin_sysroot = sysroot_path,
 
         # The attributes below are required by the constructor, but don't
         # affect actions at all.
@@ -60,7 +64,7 @@ clang_config = rule(
             "android",
             "linux",
         ]),
-        "sysroot": attr.string(mandatory = True),
+        "sysroot_dir": attr.label(allow_single_file = True),
         "bin_dirs": attr.label_list(),
         "lib_dirs": attr.label_list(),
         "target": attr.string(),
