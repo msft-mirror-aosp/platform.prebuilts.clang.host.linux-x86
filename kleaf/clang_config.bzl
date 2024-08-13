@@ -14,6 +14,10 @@
 
 """Configure CC toolchain for Android kernel."""
 
+load(
+    "@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl",
+    "feature",
+)
 load(":android.bzl", "android")
 load(":common.bzl", "common")
 load(":linux.bzl", "linux")
@@ -27,6 +31,36 @@ def _impl(ctx):
         fail("target_os == {} is not supported yet".format(ctx.attr.target_os))
 
     features += common.features(ctx)
+    if ctx.attr.extra_features:
+        features.append(feature(
+            name = "kleaf-extra-features",
+            enabled = True,
+            implies = ctx.attr.extra_features,
+        ))
+    if ctx.attr.static_link_cpp_runtimes:
+        # Add custom static_link_cpp_runtimes and always set it to true. This
+        # allows static_runtime_lib/dynamic_runtime_lib to be used.
+        features.append(feature(
+            name = "static_link_cpp_runtimes",
+            enabled = True,
+        ))
+
+        # If the binary has linkstatic=True (the default), always -static to make
+        # it fully static.
+        features.append(feature(
+            name = "static_linking_mode",
+            enabled = False,
+            implies = [
+                "fully_static_link",
+            ],
+        ))
+
+        # Overrides the builtin static_libgcc feature so it does not add -static-libgcc
+        # when static_link_cpp_runtimes is enabled
+        features.append(feature(
+            name = "static_libgcc",
+            enabled = False,
+        ))
 
     sysroot_path = "/dev/null"
     if ctx.file.sysroot_dir:
@@ -70,6 +104,8 @@ clang_config = rule(
         "target": attr.string(),
         "toolchain_identifier": attr.string(),
         "clang_version": attr.string(),
+        "extra_features": attr.string_list(),
+        "static_link_cpp_runtimes": attr.bool(),
     } | common.tool_attrs(),
     provides = [CcToolchainConfigInfo],
 )
