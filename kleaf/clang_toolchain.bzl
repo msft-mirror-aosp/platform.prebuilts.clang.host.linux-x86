@@ -19,14 +19,12 @@ load(
     "@kernel_toolchain_info//:dict.bzl",
     "VARS",
 )
-load(":architecture_constants.bzl", "SUPPORTED_ARCHITECTURES")
 load(":clang_config.bzl", "clang_config")
 
 def _clang_toolchain_internal(
         name,
         clang_version,
-        target_cpu,
-        target_os,
+        arch,
         clang_pkg,
         linker_files = None,
         sysroot_label = None,
@@ -42,8 +40,7 @@ def _clang_toolchain_internal(
     Args:
         name: name of the toolchain
         clang_version: value of `CLANG_VERSION`, e.g. `r475365b`.
-        target_cpu: CPU that the toolchain cross-compiles to
-        target_os: OS that the toolchain cross-compiles to
+        arch: an ArchInfo object to look up extra kwargs.
         clang_pkg: Label to any target in the clang toolchain package.
 
             This is used as an anchor to locate other targets in the package.
@@ -104,7 +101,7 @@ def _clang_toolchain_internal(
 
     # TODO: Support building C++ device binaries.
     #   This requires adding "-static-libstdc++" to avoid dynamic linkage.
-    ld = clang_plus_plus if target_os == "linux" else clang
+    ld = clang_plus_plus if arch.target_os == "linux" else clang
     strip = clang_pkg.relative(":bin/llvm-strip")
     ar = clang_pkg.relative(":bin/llvm-ar")
     objcopy = clang_pkg.relative(":bin/llvm-objcopy")
@@ -138,8 +135,8 @@ def _clang_toolchain_internal(
         sysroot_dir = sysroot_dir,
         bin_dirs = bin_dirs,
         lib_dirs = lib_dirs,
-        target_cpu = target_cpu,
-        target_os = target_os,
+        target_cpu = arch.target_cpu,
+        target_os = arch.target_os,
         target = target,
         toolchain_identifier = name + "_clang_id",
         clang = clang,
@@ -171,8 +168,8 @@ def _clang_toolchain_internal(
             "@platforms//cpu:x86_64",
         ] + extra_compatible_with,
         target_compatible_with = [
-            "@platforms//os:{}".format(target_os),
-            "@platforms//cpu:{}".format(target_cpu),
+            "@platforms//os:{}".format(arch.target_os),
+            "@platforms//cpu:{}".format(arch.target_cpu),
         ] + extra_compatible_with,
         toolchain = name + "_cc_toolchain",
         toolchain_type = CPP_TOOLCHAIN_TYPE,
@@ -183,8 +180,7 @@ def clang_toolchain(
         name,
         clang_version,
         clang_pkg,
-        target_cpu,
-        target_os,
+        arch,
         extra_compatible_with = None):
     """Declare a clang toolchain for the given OS-architecture.
 
@@ -197,21 +193,16 @@ def clang_toolchain(
 
             This is used as an anchor to locate other targets in the package.
             Name of the label is ignored.
-        target_cpu: nonconfigurable. CPU of the toolchain
-        target_os: nonconfigurable. OS of the toolchain
+        arch: key to look up extra kwargs.
         extra_compatible_with: nonconfigurable. extra `exec_compatible_with` and `target_compatible_with`
     """
 
-    if sorted(ARCH_CONFIG.keys()) != sorted(SUPPORTED_ARCHITECTURES):
-        fail("FATAL: ARCH_CONFIG is not up-to-date with SUPPORTED_ARCHITECTURES!")
-
-    extra_kwargs = ARCH_CONFIG[(target_os, target_cpu)]
+    extra_kwargs = _get_extra_kwargs(arch)
 
     _clang_toolchain_internal(
         name = name,
         clang_version = clang_version,
-        target_os = target_os,
-        target_cpu = target_cpu,
+        arch = arch,
         clang_pkg = clang_pkg,
         extra_compatible_with = extra_compatible_with,
         **extra_kwargs
@@ -219,53 +210,56 @@ def clang_toolchain(
 
 _GCC_PKG = Label("//prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8")
 
-# Keys: (target_os, target_cpu)
-# Values: arguments to clang_toolchain()
-ARCH_CONFIG = {
-    ("linux", "x86_64"): dict(
-        linker_files = [
-            Label("//prebuilts/kernel-build-tools:linux-x86-libs"),
-        ],
-        target = "x86_64-unknown-linux-gnu",
-        # From _setup_env.sh
-        # sysroot_flags+="--sysroot=${ROOT_DIR}/build/kernel/build-tools/sysroot "
-        sysroot_label = Label("//build/kernel:sysroot"),
-        sysroot_dir = Label("//build/kernel:sysroot_dir"),
-        bin_files = [_GCC_PKG.relative(":bin_files")],
-        bin_dirs = [_GCC_PKG.relative(":bin_dirs")],
-        lib_files = [_GCC_PKG.relative(":lib_files")],
-        lib_dirs = [_GCC_PKG.relative(":lib_dirs")],
-    ),
-    ("android", "arm64"): dict(
-        target = VARS.get("AARCH64_NDK_TRIPLE"),
-        # From _setup_env.sh: when NDK triple is set,
-        # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
-        sysroot_label = "@prebuilt_ndk//:sysroot_{}_files".format(VARS.get("AARCH64_NDK_TRIPLE")) if "AARCH64_NDK_TRIPLE" in VARS else None,
-        sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "AARCH64_NDK_TRIPLE" in VARS else None,
-    ),
-    ("android", "arm"): dict(
-        target = VARS.get("ARM_NDK_TRIPLE"),
-        # From _setup_env.sh: when NDK triple is set,
-        # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
-        sysroot_label = "@prebuilt_ndk//:sysroot_{}_files".format(VARS.get("ARM_NDK_TRIPLE")) if "ARM_NDK_TRIPLE" in VARS else None,
-        sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "ARM_NDK_TRIPLE" in VARS else None,
-    ),
-    ("android", "x86_64"): dict(
-        target = VARS.get("X86_64_NDK_TRIPLE"),
-        # From _setup_env.sh: when NDK triple is set,
-        # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
-        sysroot_label = "@prebuilt_ndk//:sysroot_{}_files".format(VARS.get("X86_64_NDK_TRIPLE")) if "X86_64_NDK_TRIPLE" in VARS else None,
-        sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "X86_64_NDK_TRIPLE" in VARS else None,
-    ),
-    ("android", "i386"): dict(
-        # i386 uses the same NDK_TRIPLE as x86_64
-        target = VARS.get("X86_64_NDK_TRIPLE"),
-        # From _setup_env.sh: when NDK triple is set,
-        # --sysroot=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
-        sysroot_label = "@prebuilt_ndk//:sysroot_{}_files".format(VARS.get("X86_64_NDK_TRIPLE")) if "X86_64_NDK_TRIPLE" in VARS else None,
-        sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "X86_64_NDK_TRIPLE" in VARS else None,
-    ),
-    ("android", "riscv64"): dict(
-        # TODO(b/271919464): We need NDK_TRIPLE for riscv
-    ),
-}
+def _get_extra_kwargs(arch):
+    if arch.target_os == "linux":
+        return dict(
+            linker_files = [
+                Label("//prebuilts/kernel-build-tools:linux-x86-libs"),
+            ],
+            target = "x86_64-unknown-linux-gnu",
+            sysroot_label = Label("//build/kernel:sysroot"),
+            sysroot_dir = Label("//build/kernel:sysroot_dir"),
+            bin_files = [_GCC_PKG.relative(":bin_files")],
+            bin_dirs = [_GCC_PKG.relative(":bin_dirs")],
+            lib_files = [_GCC_PKG.relative(":lib_files")],
+            lib_dirs = [_GCC_PKG.relative(":lib_dirs")],
+        )
+
+    if arch.target_os != "android":
+        fail("Unsupported {}".format(arch))
+
+    if arch.target_cpu == "arm64":
+        return dict(
+            target = VARS.get("AARCH64_NDK_TRIPLE"),
+            sysroot_label = "@prebuilt_ndk//:sysroot_{}_files".format(VARS.get("AARCH64_NDK_TRIPLE")) if "AARCH64_NDK_TRIPLE" in VARS else None,
+            sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "AARCH64_NDK_TRIPLE" in VARS else None,
+        )
+
+    if arch.target_cpu == "arm":
+        return dict(
+            target = VARS.get("ARM_NDK_TRIPLE"),
+            sysroot_label = "@prebuilt_ndk//:sysroot_{}_files".format(VARS.get("ARM_NDK_TRIPLE")) if "ARM_NDK_TRIPLE" in VARS else None,
+            sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "ARM_NDK_TRIPLE" in VARS else None,
+        )
+
+    if arch.target_cpu == "x86_64":
+        return dict(
+            target = VARS.get("X86_64_NDK_TRIPLE"),
+            sysroot_label = "@prebuilt_ndk//:sysroot_{}_files".format(VARS.get("X86_64_NDK_TRIPLE")) if "X86_64_NDK_TRIPLE" in VARS else None,
+            sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "X86_64_NDK_TRIPLE" in VARS else None,
+        )
+
+    if arch.target_cpu == "i386":
+        return dict(
+            # i386 uses the same NDK_TRIPLE as x86_64
+            target = VARS.get("X86_64_NDK_TRIPLE"),
+            sysroot_label = "@prebuilt_ndk//:sysroot_{}_files".format(VARS.get("X86_64_NDK_TRIPLE")) if "X86_64_NDK_TRIPLE" in VARS else None,
+            sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "X86_64_NDK_TRIPLE" in VARS else None,
+        )
+
+    if arch.target_cpu == "riscv64":
+        return dict(
+            # TODO(b/271919464): We need NDK_TRIPLE for riscv
+        )
+
+    fail("Unsupported {}".format(arch))
