@@ -17,6 +17,7 @@
 load(
     "@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl",
     "feature",
+    "feature_set",
     "flag_group",
     "flag_set",
 )
@@ -26,23 +27,22 @@ load(
     "ALL_CPP_COMPILE_ACTION_NAMES",
 )
 
-# From _setup_env.sh, HOSTCFLAGS / HOSTLDFLAGS
 # Note: openssl (via boringssl) and elfutils should be added explicitly
-# via //prebuilts/kernel-build-tools:linux_x86_imported_libs
+# via //prebuilts/kernel-build-tools:imported_libs
 # Hence not listed here.
 # See example in //build/kernel/kleaf/tests/cc_testing:openssl_client
 
-def _linux_ldflags(_ctx):
-    return feature(
-        name = "kleaf-host-ldflags",
-        enabled = True,
-        implies = [
-            "kleaf-lld",
-        ],
-    )
+def _linux_features(ctx):
+    # Global feature flags.
+    features = []
 
-def _linux_cc_rules_flags(ctx):
-    """Flags applying to cc_* rules but not Kbuild"""
+    # The cc toolchain supports building C++ code for cc_* rules.
+    features.append(feature(
+        name = "kleaf-host-cc",
+        enabled = True,
+    ))
+
+    # Flags applied to C++ code
 
     extra_compile_flags = []
     for bin_dir in ctx.files.bin_dirs:
@@ -52,9 +52,13 @@ def _linux_cc_rules_flags(ctx):
     for lib_dir in ctx.files.lib_dirs:
         extra_link_flags.append("-L" + lib_dir.path)
 
-    return feature(
+    features.append(feature(
         name = "kleaf-host-cc-rules-flags",
+        # If all requirements are satisified, enable this by default.
         enabled = True,
+        requires = [feature_set(features = [
+            "kleaf-host-cc",
+        ])],
         flag_sets = [
             flag_set(
                 actions = ALL_CC_LINK_ACTION_NAMES,
@@ -87,13 +91,9 @@ def _linux_cc_rules_flags(ctx):
                 ],
             ),
         ],
-    )
+    ))
 
-def _linux_features(ctx):
-    return [
-        _linux_ldflags(ctx),
-        _linux_cc_rules_flags(ctx),
-    ]
+    return features
 
 linux = struct(
     features = _linux_features,
