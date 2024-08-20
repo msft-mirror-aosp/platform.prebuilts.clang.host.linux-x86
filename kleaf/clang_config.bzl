@@ -17,6 +17,12 @@
 load(
     "@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl",
     "feature",
+    "flag_group",
+    "flag_set",
+)
+load(
+    "@rules_cc//cc:action_names.bzl",
+    "ACTION_NAMES",
 )
 load(":android.bzl", "android")
 load(":common.bzl", "common")
@@ -60,6 +66,26 @@ def _impl(ctx):
         features.append(feature(
             name = "static_libgcc",
             enabled = False,
+        ))
+
+        # Hack to get rid of EXEC_ORIGIN. This fixes running cc_test.
+        # https://github.com/bazelbuild/bazel/issues/3592
+        features.append(feature(
+            name = "runtime_library_search_directories",
+            flag_sets = [flag_set(
+                actions = [
+                    ACTION_NAMES.cpp_link_executable,
+                    ACTION_NAMES.cpp_link_dynamic_library,
+                    ACTION_NAMES.cpp_link_nodeps_dynamic_library,
+                ],
+                flag_groups = [flag_group(
+                    expand_if_available = "runtime_library_search_directories",
+                    iterate_over = "runtime_library_search_directories",
+                    flag_groups = [flag_group(
+                        flags = ["-Wl,-rpath,$ORIGIN/%{runtime_library_search_directories}"],
+                    )],
+                )],
+            )],
         ))
 
     sysroot_path = "/dev/null"
