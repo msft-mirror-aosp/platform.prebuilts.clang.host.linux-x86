@@ -498,6 +498,7 @@ cc_defaults {
 ndk_prebuilt_shared_stl {
     name: "ndk_libc++_shared",
     defaults: ["libc++-ndk-default"],
+    stem: "libc++_shared",
 }
 
 ndk_prebuilt_static_stl {
