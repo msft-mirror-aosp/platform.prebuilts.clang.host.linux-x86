@@ -30,7 +30,13 @@ ArchInfo = provider(
 
 SUPPORTED_ARCHITECTURES = [
     ArchInfo(
-        name = "linux_x86_64",
+        name = "1_linux_musl_x86_64",
+        target_os = "linux",
+        target_cpu = "x86_64",
+        target_libc = "musl",
+    ),
+    ArchInfo(
+        name = "2_linux_x86_64",
         target_os = "linux",
         target_cpu = "x86_64",
         target_libc = None,
