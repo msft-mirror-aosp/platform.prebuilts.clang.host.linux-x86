@@ -42,6 +42,13 @@ def _linux_features(ctx):
         enabled = True,
     ))
 
+    # By default, musl stuff are disabled
+    # unless enabled by clang_config.extra_features in the musl toolchain.
+    features.append(feature(
+        name = "kleaf-host-musl",
+        enabled = False,
+    ))
+
     # Flags applied to C++ code
 
     extra_compile_flags = []
@@ -93,6 +100,29 @@ def _linux_features(ctx):
         ],
     ))
 
+    # Flags applied to C++ code when it is built against musl libc.
+    features.append(feature(
+        name = "kleaf-host-cc-rules-musl",
+        # If all requirements are satisified, enable this by default.
+        enabled = True,
+        requires = [feature_set(features = [
+            "kleaf-host-cc",
+            "kleaf-host-musl",
+        ])],
+        flag_sets = [
+            flag_set(
+                # Applies to C++ code only.
+                actions = ALL_CPP_COMPILE_ACTION_NAMES,
+                flag_groups = [
+                    flag_group(
+                        flags = [
+                            "-D_LIBCPP_HAS_MUSL_LIBC=ON",
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    ))
     return features
 
 linux = struct(

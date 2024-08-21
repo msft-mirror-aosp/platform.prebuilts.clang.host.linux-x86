@@ -34,7 +34,11 @@ def _clang_toolchain_internal(
         lib_files = None,
         lib_dirs = None,
         target = None,
-        extra_compatible_with = None):
+        extra_compatible_with = None,
+        extra_features = None,
+        dynamic_runtime_lib = None,
+        static_runtime_lib = None,
+        static_link_cpp_runtimes = None):
     """Defines a cc toolchain for kernel build, based on clang.
 
     Args:
@@ -54,6 +58,11 @@ def _clang_toolchain_internal(
         lib_dirs: Directory to be set in `-L`
         target: The `--target` option provided to clang. This is usually `NDK_TRIPLE`.
         extra_compatible_with: Extra `exec_compatible_with` / `target_compatible_with`.
+        extra_features: Extra features enabled on this toolchain
+        dynamic_runtime_lib: pass to cc_toolchain
+        static_runtime_lib: pass to cc_toolchain
+        static_link_cpp_runtimes: If true, enable "static_link_cpp_runtimes" feature but
+            disable "static-libgcc".
     """
 
     sysroot_labels = []
@@ -145,6 +154,8 @@ def _clang_toolchain_internal(
         strip = strip,
         ar = ar,
         objcopy = objcopy,
+        extra_features = extra_features,
+        static_link_cpp_runtimes = static_link_cpp_runtimes,
     )
 
     native.cc_toolchain(
@@ -156,10 +167,19 @@ def _clang_toolchain_internal(
         linker_files = name + "_linker_files",
         objcopy_files = clang_all_binaries,
         strip_files = clang_all_binaries,
+        dynamic_runtime_lib = dynamic_runtime_lib,
+        static_runtime_lib = static_runtime_lib,
         supports_param_files = False,
         toolchain_config = name + "_clang_config",
         toolchain_identifier = name + "_clang_id",
     )
+
+    target_compatible_with = [
+        "@platforms//os:{}".format(arch.target_os),
+        "@platforms//cpu:{}".format(arch.target_cpu),
+    ] + extra_compatible_with
+    if arch.target_libc != None:
+        target_compatible_with.append(Label("//build/kernel/kleaf/platforms/libc:{}".format(arch.target_libc)))
 
     native.toolchain(
         name = name,
@@ -167,10 +187,7 @@ def _clang_toolchain_internal(
             "@platforms//os:linux",
             "@platforms//cpu:x86_64",
         ] + extra_compatible_with,
-        target_compatible_with = [
-            "@platforms//os:{}".format(arch.target_os),
-            "@platforms//cpu:{}".format(arch.target_cpu),
-        ] + extra_compatible_with,
+        target_compatible_with = target_compatible_with,
         toolchain = name + "_cc_toolchain",
         toolchain_type = CPP_TOOLCHAIN_TYPE,
         visibility = ["@kleaf_clang_toolchain//:__subpackages__"],
@@ -211,6 +228,23 @@ def clang_toolchain(
 _GCC_PKG = Label("//prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8")
 
 def _get_extra_kwargs(arch):
+    if arch.target_os == "linux" and arch.target_libc == "musl":
+        return dict(
+            target = "x86_64-unknown-linux-musl",
+            sysroot_label = Label("//prebuilts/kernel-build-tools:musl_sysroot_files"),
+            sysroot_dir = Label("//prebuilts/kernel-build-tools:musl_sysroot_dir"),
+            linker_files = [
+                Label("//prebuilts/kernel-build-tools:libs"),
+            ],
+            extra_features = [
+                "kleaf-lld-compiler-rt",
+                "kleaf-host-musl",
+            ],
+            static_runtime_lib = Label(":empty_filegroup"),
+            dynamic_runtime_lib = Label("//prebuilts/kernel-build-tools:libc_musl_file"),
+            static_link_cpp_runtimes = True,
+        )
+
     if arch.target_os == "linux":
         return dict(
             linker_files = [
@@ -223,6 +257,9 @@ def _get_extra_kwargs(arch):
             bin_dirs = [_GCC_PKG.relative(":bin_dirs")],
             lib_files = [_GCC_PKG.relative(":lib_files")],
             lib_dirs = [_GCC_PKG.relative(":lib_dirs")],
+            extra_features = [
+                "kleaf-lld",
+            ],
         )
 
     if arch.target_os != "android":
