@@ -65,10 +65,10 @@ toolchain_type(
 )
 
 [empty_toolchain(
-    name = "1_user_{{}}_{{}}_clang_toolchain".format(target_os, target_cpu),
+    name = "1_user_{{}}_clang_toolchain".format(arch.name),
     toolchain_type = ":empty_toolchain_type",
     visibility = ["//visibility:private"],
-) for target_os, target_cpu in SUPPORTED_ARCHITECTURES]
+) for arch in SUPPORTED_ARCHITECTURES]
 '''.format(
         empty_toolchain = Label(":empty_toolchain.bzl"),
     )
@@ -119,12 +119,11 @@ filegroup(
 )
 
 [clang_toolchain(
-    name = "1_user_{{}}_{{}}_clang_toolchain".format(target_os, target_cpu),
-    target_cpu = target_cpu,
-    target_os = target_os,
+    name = "1_user_{{}}_clang_toolchain".format(arch.name),
+    arch = arch,
     clang_pkg = ":fake_anchor_target",
     clang_version = "kleaf_user_clang_toolchain_skip_version_check",
-) for target_os, target_cpu in SUPPORTED_ARCHITECTURES]
+) for arch in SUPPORTED_ARCHITECTURES]
 '''.format(
         architecture_constants = Label(":architecture_constants.bzl"),
         clang_toolchain = Label(":clang_toolchain.bzl"),
@@ -147,21 +146,19 @@ def _common_aliases_build_file():
 # Default toolchains.
 
 [clang_toolchain(
-    name = "2_versioned_{{}}_{{}}_{{}}_clang_toolchain".format(version, target_os, target_cpu),
+    name = "2_versioned_{{}}_{{}}_clang_toolchain".format(version, arch.name),
     clang_pkg = "{linux_x86_pkg}/clang-{{}}".format(version),
     clang_version = version,
     extra_compatible_with = ["{this_pkg}:{{}}".format(version)],
-    target_cpu = target_cpu,
-    target_os = target_os,
-) for version in VERSIONS for target_os, target_cpu in SUPPORTED_ARCHITECTURES]
+    arch = arch,
+) for version in VERSIONS for arch in SUPPORTED_ARCHITECTURES]
 
 [clang_toolchain(
-    name = "3_default_{{}}_{{}}_clang_toolchain".format(target_os, target_cpu),
+    name = "3_default_{{}}_clang_toolchain".format(arch.name),
     clang_pkg = "{linux_x86_pkg}/clang-{{}}".format(VARS["CLANG_VERSION"]),
     clang_version = VARS["CLANG_VERSION"],
-    target_cpu = target_cpu,
-    target_os = target_os,
-) for target_os, target_cpu in SUPPORTED_ARCHITECTURES]
+    arch = arch,
+) for arch in SUPPORTED_ARCHITECTURES]
 
 """.format(
         this_pkg = this_pkg,

@@ -40,3 +40,9 @@ constraint_setting(name = "clang_version")
     constraint_setting = ":clang_version",
     visibility = ["//visibility:public"],
 ) for version in VERSIONS]
+
+filegroup(
+    name = "empty_filegroup",
+    srcs = [],
+    visibility = ["@kleaf_clang_toolchain//:__subpackages__"],
+)
