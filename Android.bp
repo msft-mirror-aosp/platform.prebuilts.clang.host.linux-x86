@@ -523,7 +523,10 @@ clang_builtin_headers {
 // tests.
 llvm_tools_filegroup {
     name: "llvm-tools",
-    visibility: ["//development/scripts:__subpackages__"],
+    visibility: [
+        "//development/scripts:__subpackages__",
+        "//packages/modules/Bluetooth/system:__subpackages__",
+    ],
     // The tools and libs in the filegroup are in
     // ./soong/clangprebuilts.go:llvmToolsFiles
 }
@@ -537,7 +540,7 @@ llvm_prebuilt_build_tool {
 }
 
 llvm_prebuilt_build_tool {
-  name: "llvm-strings"
+    name: "llvm-strings",
 }
 
 subdirs = [
