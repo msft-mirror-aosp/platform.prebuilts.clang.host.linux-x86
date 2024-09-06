@@ -31,9 +31,12 @@ import (
 var (
 	// Files included in the llvm-tools filegroup in ../Android.bp
 	llvmToolsFiles = []string{
-		"bin/llvm-symbolizer",
+		"bin/llvm-cov",
 		"bin/llvm-cxxfilt",
+		"bin/llvm-profdata",
+		"bin/llvm-symbolizer",
 		"lib/libc++.so",
+		"lib/x86_64-unknown-linux-gnu/libc++.so",
 	}
 )
 
@@ -593,7 +596,7 @@ func llvmDarwinFileGroup(ctx android.LoadHookContext) {
 	}
 	lib := path.Join(clangDir, "lib", libName)
 
-	if (hasDarwinClangPrebuilt(ctx)) {
+	if hasDarwinClangPrebuilt(ctx) {
 		type props struct {
 			Srcs []string
 		}
