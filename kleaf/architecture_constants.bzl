@@ -14,11 +14,61 @@
 
 """List of supported architectures by Kleaf."""
 
+ArchInfo = provider(
+    "An architecture for a clang toolchain.",
+    fields = {
+        "name": "a substring of the name of the toolchain. Toolchains are registered in lexicographic order.",
+        "target_os": "OS of the target platform",
+        "target_cpu": "CPU of the target platform",
+        "target_libc": """libc of the target platform
+
+            None means unspecified. For Android, it is always bionic. For Linux, the default value
+            is set in `//build/kernel/kleaf/platforms/libc`.
+        """,
+    },
+)
+
 SUPPORTED_ARCHITECTURES = [
-    ("linux", "x86_64"),
-    ("android", "arm64"),
-    ("android", "arm"),
-    ("android", "x86_64"),
-    ("android", "i386"),
-    ("android", "riscv64"),
+    ArchInfo(
+        name = "1_linux_musl_x86_64",
+        target_os = "linux",
+        target_cpu = "x86_64",
+        target_libc = "musl",
+    ),
+    ArchInfo(
+        name = "2_linux_x86_64",
+        target_os = "linux",
+        target_cpu = "x86_64",
+        target_libc = None,
+    ),
+    ArchInfo(
+        name = "android_arm64",
+        target_os = "android",
+        target_cpu = "arm64",
+        target_libc = None,
+    ),
+    ArchInfo(
+        name = "android_arm",
+        target_os = "android",
+        target_cpu = "arm",
+        target_libc = None,
+    ),
+    ArchInfo(
+        name = "android_x86_64",
+        target_os = "android",
+        target_cpu = "x86_64",
+        target_libc = None,
+    ),
+    ArchInfo(
+        name = "android_i386",
+        target_os = "android",
+        target_cpu = "i386",
+        target_libc = None,
+    ),
+    ArchInfo(
+        name = "android_riscv64",
+        target_os = "android",
+        target_cpu = "riscv64",
+        target_libc = None,
+    ),
 ]
