@@ -31,9 +31,12 @@ import (
 var (
 	// Files included in the llvm-tools filegroup in ../Android.bp
 	llvmToolsFiles = []string{
-		"bin/llvm-symbolizer",
+		"bin/llvm-cov",
 		"bin/llvm-cxxfilt",
+		"bin/llvm-profdata",
+		"bin/llvm-symbolizer",
 		"lib/libc++.so",
+		"lib/x86_64-unknown-linux-gnu/libc++.so",
 	}
 )
 
@@ -50,6 +53,10 @@ func init() {
 		llvmPrebuiltLibraryStaticFactory)
 	android.RegisterModuleType("llvm_prebuilt_build_tool",
 		llvmPrebuiltBuildToolFactory)
+	android.RegisterModuleType("ndk_prebuilt_shared_stl",
+		ndkPrebuiltSharedStlFactory)
+	android.RegisterModuleType("ndk_prebuilt_static_stl",
+		ndkPrebuiltStaticStlFactory)
 	android.RegisterModuleType("libclang_rt_prebuilt_library_shared",
 		libClangRtPrebuiltLibrarySharedFactory)
 	android.RegisterModuleType("libclang_rt_prebuilt_library_static",
@@ -78,9 +85,11 @@ func getClangResourceDir(ctx android.LoadHookContext) string {
 	return path.Join(clangDir, "lib", "clang", releaseVersion, "lib", "linux")
 }
 
-func getSymbolFilePath(ctx android.LoadHookContext) string {
+func getSymbolFilePath(ctx android.LoadHookContext, arch string) string {
 	libDir := getClangResourceDir(ctx)
-	return path.Join(libDir, strings.TrimSuffix(ctx.ModuleName(), ".llndk")+".map.txt")
+	// Strip the prebuilt_ prefix
+	baseModuleName := android.RemoveOptionalPrebuiltPrefix(ctx.ModuleName())
+	return path.Join(libDir, strings.TrimSuffix(baseModuleName, ".llndk")+arch+".map.txt")
 }
 
 func trimVersionNumbers(ver string, retain int) string {
@@ -89,12 +98,12 @@ func trimVersionNumbers(ver string, retain int) string {
 	return strings.Join(versions[0:retain], sep)
 }
 
-func androidLibcxxHeaderDirs(ctx android.LoadHookContext, arch string) []string {
+func androidLibcxxHeaderDirs(ctx android.LoadHookContext, kind string, arch string) []string {
 	clangDir := getClangPrebuiltDir(ctx)
 	// Ensure that the target-specific __config_site header comes first so it
 	// overrides the default __config_site header.
 	return []string{
-		path.Join(clangDir, "android_libc++", "platform", arch, "include", "c++", "v1"),
+		path.Join(clangDir, "android_libc++", kind, arch, "include", "c++", "v1"),
 		path.Join(clangDir, "include", "c++", "v1"),
 	}
 }
@@ -132,6 +141,12 @@ type archInnerProps struct {
 		Hwaddress struct {
 			Srcs []string
 		}
+	}
+	Stubs struct {
+		Symbol_file *string
+	}
+	Llndk struct {
+		Symbol_file *string
 	}
 }
 
@@ -196,7 +211,7 @@ func llvmPrebuiltLibraryShared(ctx android.LoadHookContext) {
 	if moduleName == "libc++" {
 		invokeOnAndroidTargets(&p.Target, func(ap *archInnerProps, arch string) {
 			setAndroidLibcxxSrcProps(ctx, ap, "platform", arch, "libc++.so")
-			ap.Export_include_dirs = androidLibcxxHeaderDirs(ctx, arch)
+			ap.Export_include_dirs = androidLibcxxHeaderDirs(ctx, "platform", arch)
 		})
 		setHostProps := func(ap *archInnerProps, triple string) {
 			ap.Srcs = []string{path.Join(clangDir, "lib", triple, "libc++.so")}
@@ -215,6 +230,11 @@ func llvmPrebuiltLibraryShared(ctx android.LoadHookContext) {
 			// Darwin header somehow.
 			p.Target.Darwin.Export_include_dirs = []string{path.Join(clangDir, "include", "c++", "v1")}
 		}
+	} else if moduleName == "ndk_libc++_shared" {
+		invokeOnAndroidTargets(&p.Target, func(ap *archInnerProps, arch string) {
+			setAndroidLibcxxSrcProps(ctx, ap, "ndk", arch, "libc++_shared.so")
+			ap.Export_include_dirs = androidLibcxxHeaderDirs(ctx, "ndk", arch)
+		})
 	} else if moduleName == "libc++abi_shared" {
 		// TODO: It's not clear that libc++abi_shared is needed, because the libc++
 		// shared library has libc++abi linked into it. The Darwin libc++.1.dylib
@@ -259,7 +279,7 @@ func llvmPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 	if moduleName == "libc++_static" {
 		invokeOnAndroidTargets(&p.Target, func(ap *archInnerProps, arch string) {
 			setAndroidLibcxxSrcProps(ctx, ap, "platform", arch, "libc++_static.a")
-			ap.Export_include_dirs = androidLibcxxHeaderDirs(ctx, arch)
+			ap.Export_include_dirs = androidLibcxxHeaderDirs(ctx, "platform", arch)
 		})
 		setHostProps := func(ap *archInnerProps, triple string) {
 			ap.Srcs = []string{path.Join(clangDir, "lib", triple, "libc++.a")}
@@ -283,7 +303,12 @@ func llvmPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 	} else if moduleName == "libc++_static_noexcept" {
 		invokeOnAndroidTargets(&p.Target, func(ap *archInnerProps, arch string) {
 			setAndroidLibcxxSrcProps(ctx, ap, "platform_noexcept", arch, "libc++_static_noexcept.a")
-			ap.Export_include_dirs = androidLibcxxHeaderDirs(ctx, arch)
+			ap.Export_include_dirs = androidLibcxxHeaderDirs(ctx, "platform", arch)
+		})
+	} else if moduleName == "ndk_libc++_static" {
+		invokeOnAndroidTargets(&p.Target, func(ap *archInnerProps, arch string) {
+			setAndroidLibcxxSrcProps(ctx, ap, "ndk", arch, "libc++_static.a")
+			ap.Export_include_dirs = androidLibcxxHeaderDirs(ctx, "ndk", arch)
 		})
 	} else if moduleName == "libc++demangle" {
 		invokeOnAndroidTargets(&p.Target, func(ap *archInnerProps, arch string) {
@@ -304,6 +329,10 @@ func llvmPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 		if hasDarwinClangPrebuilt(ctx) {
 			p.Target.Darwin.Srcs = []string{":libc++abi_static_darwin"}
 		}
+	} else if moduleName == "ndk_libc++abi" {
+		invokeOnAndroidTargets(&p.Target, func(ap *archInnerProps, arch string) {
+			setAndroidLibcxxSrcProps(ctx, ap, "ndk", arch, "libc++abi.a")
+		})
 	} else if moduleName == "libsimpleperf_readelf" {
 		name := "libsimpleperf_readelf.a"
 		headerDir := path.Join(clangDir, "include")
@@ -454,8 +483,22 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, libProps *preb
 
 	if proptools.Bool(sharedProps.Is_llndk) {
 		p.Stubs.Versions = []string{"29", "10000"}
-		p.Stubs.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx))
-		p.Llndk.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx))
+		// Set the symbol_file of the "base" variant to a fake file. This will be overridden later.
+		// This is necessary today since `image` mutator which creates the llndk variants runs before `arch` mutator.
+		// Without this hack, the llndk variants will not be created.
+		p.Llndk.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-does-not-exist"))
+		p.Stubs.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-does-not-exist"))
+		// Arch specific overrides
+		p.Target.Android_arm.Stubs.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-arm-android"))
+		p.Target.Android_arm.Llndk.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-arm-android"))
+		p.Target.Android_arm64.Stubs.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-aarch64-android"))
+		p.Target.Android_arm64.Llndk.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-aarch64-android"))
+		p.Target.Android_riscv64.Stubs.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-riscv64-android"))
+		p.Target.Android_riscv64.Llndk.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-riscv64-android"))
+		p.Target.Android_x86.Stubs.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-i686-android"))
+		p.Target.Android_x86.Llndk.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-i686-android"))
+		p.Target.Android_x86_64.Stubs.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-x86_64-android"))
+		p.Target.Android_x86_64.Llndk.Symbol_file = proptools.StringPtr(getSymbolFilePath(ctx, "-x86_64-android"))
 	}
 
 	ctx.AppendProperties(p)
@@ -553,7 +596,7 @@ func llvmDarwinFileGroup(ctx android.LoadHookContext) {
 	}
 	lib := path.Join(clangDir, "lib", libName)
 
-	if (hasDarwinClangPrebuilt(ctx)) {
+	if hasDarwinClangPrebuilt(ctx) {
 		type props struct {
 			Srcs []string
 		}
@@ -577,6 +620,24 @@ func llvmPrebuiltBuildToolFactory() android.Module {
 
 func llvmPrebuiltLibrarySharedFactory() android.Module {
 	module, _ := cc.NewPrebuiltSharedLibrary(android.HostAndDeviceSupported)
+	android.AddLoadHook(module, llvmPrebuiltLibraryShared)
+	return module.Init()
+}
+
+func ndkPrebuiltStaticStlFactory() android.Module {
+	module, _ := cc.NewPrebuiltStaticLibrary(android.DeviceSupported)
+	module.Properties.AlwaysSdk = true
+	module.Properties.HideFromMake = true
+	module.SetPreventInstall()
+	android.AddLoadHook(module, llvmPrebuiltLibraryStatic)
+	return module.Init()
+}
+
+func ndkPrebuiltSharedStlFactory() android.Module {
+	module, _ := cc.NewPrebuiltSharedLibrary(android.DeviceSupported)
+	module.Properties.AlwaysSdk = true
+	module.Properties.HideFromMake = true
+	module.SetPreventInstall()
 	android.AddLoadHook(module, llvmPrebuiltLibraryShared)
 	return module.Init()
 }
