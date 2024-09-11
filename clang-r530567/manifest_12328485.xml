@@ -5,17 +5,17 @@
 
   <remote name="aosp" fetch="https://android.googlesource.com/" review="https://android.googlesource.com/" />
 
-  <default revision="main" remote="aosp" sync-j="4" />
+  <default revision="llvm-r530567" remote="aosp" sync-j="4" />
 
-  <superproject name="platform/superproject" remote="aosp" revision="llvm-toolchain" />
+  <superproject name="platform/superproject" remote="aosp" />
 
-  <project path="bionic" name="platform/bionic" revision="5530c8e302e12a2e2428e69c60c31b75bd1e41d2" />
+  <project path="bionic" name="platform/bionic" revision="b86008a9cd14a7748867d2232e6de439e4809c10" />
 
   <project path="toolchain/binutils" name="toolchain/binutils" revision="c19795e958ed532462948fd14b1bdfd4f6e96e03" />
 
   <project path="toolchain/llvm-project" name="toolchain/llvm-project" revision="97a699bf4812a18fb657c2779f5296a4ab2694d2" />
 
-  <project path="toolchain/llvm_android" name="toolchain/llvm_android" revision="b252122cd2eb860912531f4352ff31552c238add" />
+  <project path="toolchain/llvm_android" name="toolchain/llvm_android" revision="ab3ade05b26c45b59ac47b3779b7a6c999e6d634" />
 
   <project path="toolchain/common" name="toolchain/common" revision="0bce8b062126242872e9f3fc66760d3f76773c49" />
 
@@ -55,11 +55,11 @@
 
   <project path="prebuilts/python/windows-x86" name="platform/prebuilts/python/windows-x86" clone-depth="1" revision="6cf03be338b41e403770c097746e777c5c9ed9cb" />
 
-  <project path="prebuilts/clang/host/darwin-x86" name="platform/prebuilts/clang/host/darwin-x86" clone-depth="1" revision="35d6c2ae2bcb2ce0b6c119846a06050fce21047f" />
+  <project path="prebuilts/clang/host/darwin-x86" name="platform/prebuilts/clang/host/darwin-x86" clone-depth="1" revision="aa855bf1b1d5f5976511a65fdad5fd420d13ba12" />
 
-  <project path="prebuilts/clang/host/linux-x86" name="platform/prebuilts/clang/host/linux-x86" clone-depth="1" revision="cd125ea4cb12bee61fe4c72df738229e93315562" />
+  <project path="prebuilts/clang/host/linux-x86" name="platform/prebuilts/clang/host/linux-x86" clone-depth="1" revision="5232748e9476fa1b9038046161d27b303c4fc170" />
 
-  <project path="prebuilts/clang/host/windows-x86" name="platform/prebuilts/clang/host/windows-x86" clone-depth="1" revision="abe5198b74f2caab7a2ed688eaca145734ab657f" />
+  <project path="prebuilts/clang/host/windows-x86" name="platform/prebuilts/clang/host/windows-x86" clone-depth="1" revision="24251f0f7faabefb024c4e2ceca6facd861de4cf" />
 
   <project path="toolchain/prebuilts/ndk/releases" name="toolchain/prebuilts/ndk/releases" clone-depth="1" revision="e98ef7e0275b506b8843f2d0d52f3256e46df4b5" />
 
