@@ -18,28 +18,15 @@ package {
     default_applicable_licenses: ["prebuilts_clang_host_linux-x86_license"],
 }
 
-// Added automatically by a large-scale-change that took the approach of
-// 'apply every license found to every target'. While this makes sure we respect
-// every license restriction, it may not be entirely correct.
-//
-// e.g. GPL in an MIT project might only apply to the contrib/ directory.
-//
-// Please consider splitting the single license below into multiple licenses,
-// taking care not to lose any license_kind information, and overriding the
-// default license using the 'licenses: [...]' property on targets as needed.
-//
-// For unused files, consider creating a 'fileGroup' with "//visibility:private"
-// to attach the license to, and including a comment whether the files may be
-// used in the current project.
 // See: http://go/android-license-faq
+// SPDX-license-identifier-GPL and SPDX-license-identifier-LGPL removed
+// those files are dual-licensed 'OR PSF'
 license {
     name: "prebuilts_clang_host_linux-x86_license",
     visibility: [":__subpackages__"],
     license_kinds: [
         "SPDX-license-identifier-Apache-2.0",
         "SPDX-license-identifier-BSD",
-        "SPDX-license-identifier-GPL",
-        "SPDX-license-identifier-LGPL",
         "SPDX-license-identifier-MIT",
         "SPDX-license-identifier-NCSA",
         "SPDX-license-identifier-PSF-2.0",
@@ -51,6 +38,7 @@ license {
 
 llvm_prebuilt_library_static {
     name: "libFuzzer",
+    vendor_available: true,
     sdk_version: "minimum",
     sanitize: {
         never: true,
@@ -78,15 +66,15 @@ cc_defaults {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-cc_defaults {
-    name: "libclang_rt.builtins-android-default",
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.builtins",
     defaults: ["libclang_rt-prebuilt-default"],
     sdk_version: "minimum",
-    enabled: false,
     recovery_available: true,
     vendor_available: true,
     product_available: true,
     native_bridge_supported: true,
+    host_supported: true,
     sanitize: {
         never: true,
     },
@@ -94,462 +82,122 @@ cc_defaults {
 }
 
 libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.builtins-arm-android",
-    defaults: ["libclang_rt.builtins-android-default"],
-    arch: {
-        arm: {
+    name: "libclang_rt.builtins-exported",
+    lib_name: "libclang_rt.builtins",
+    suffix: "-exported",
+    defaults: ["libclang_rt-prebuilt-default"],
+    sdk_version: "minimum",
+    recovery_available: true,
+    vendor_available: true,
+    product_available: true,
+    native_bridge_supported: true,
+    sanitize: {
+        never: true,
+    },
+    enabled: false,
+    target: {
+        android_arm: {
+            enabled: true,
+        },
+        android_x86: {
             enabled: true,
         },
     },
-    bazel_module: {
-        label: "//prebuilts/clang/host/linux-x86:libclang_rt",
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.builtins-arm-android-exported",
-    defaults: ["libclang_rt.builtins-android-default"],
-    arch: {
-        arm: {
-            enabled: true,
-        },
-    },
-
+    stl: "none",
     // This exported variant of the builtins library is only intended for use in
     // libc.so and libm.so, which exports some builtins symbols for backwards
     // compatibility.
     visibility: [
         "//bionic:__subpackages__",
         "//frameworks/libs/native_bridge_support/libc:__subpackages__",
+        "//frameworks/libs/native_bridge_support/android_api/libc:__subpackages__",
     ],
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.builtins-aarch64-android",
-    defaults: ["libclang_rt.builtins-android-default"],
-    host_supported: true,
-    arch: {
-        arm64: {
-            enabled: true,
-        },
-    },
-    bazel_module: {
-        label: "//prebuilts/clang/host/linux-x86:libclang_rt",
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.builtins-i686-android",
-    defaults: ["libclang_rt.builtins-android-default"],
-    arch: {
-        x86: {
-            enabled: true,
-        },
-    },
-    bazel_module: {
-        label: "//prebuilts/clang/host/linux-x86:libclang_rt",
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.builtins-i686-android-exported",
-    defaults: ["libclang_rt.builtins-android-default"],
-    arch: {
-        x86: {
-            enabled: true,
-        },
-    },
-
-    // This exported variant of the builtins library is only intended for use in
-    // libc.so, which exports some builtins symbols for backwards compatibility.
-    visibility: [
-        "//bionic:__subpackages__",
-        "//frameworks/libs/native_bridge_support/libc:__subpackages__",
-    ],
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.builtins-x86_64-android",
-    defaults: [
-        "linux_bionic_supported",
-        "libclang_rt.builtins-android-default",
-    ],
-    arch: {
-        x86_64: {
-            enabled: true,
-        },
-    },
-    bazel_module: {
-        label: "//prebuilts/clang/host/linux-x86:libclang_rt",
-    },
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-cc_defaults {
-    name: "libclang_rt.builtins-default",
-    enabled: false,
-    host_supported: true,
-    sanitize: {
-        never: true,
-    },
-    stl: "none",
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.builtins-x86_64",
-    defaults: ["libclang_rt.builtins-default"],
-    target: {
-        linux_glibc_x86_64: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.builtins-i386",
-    defaults: ["libclang_rt.builtins-default"],
-    target: {
-        linux_glibc_x86: {
-            enabled: true,
-        },
-    },
-}
-
-///////////////////////////////////////////////////////////////////////////////
-cc_defaults {
-    name: "libclang_rt.asan-android-default",
+libclang_rt_prebuilt_library_shared {
+    name: "libclang_rt.asan",
     defaults: ["libclang_rt-prebuilt-default"],
-    sdk_version: "minimum",
-    enabled: false,
+    host_supported: true,
     recovery_available: true,
     native_bridge_supported: true,
-}
-
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.asan-arm-android",
-    defaults: ["libclang_rt.asan-android-default"],
     sdk_version: "24",
-    check_elf_files: false,  // Bypass circular dependency between libc++
+    check_elf_files: false, // Bypass circular dependency between libc++
     is_llndk: true,
-    arch: {
-        arm: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.asan-aarch64-android",
-    defaults: ["libclang_rt.asan-android-default"],
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    is_llndk: true,
-    host_supported: true,
-    arch: {
-        arm64: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.asan-i686-android",
-    defaults: ["libclang_rt.asan-android-default"],
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    is_llndk: true,
-    arch: {
-        x86: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.asan-x86_64-android",
-    defaults: [
-        "linux_bionic_supported",
-        "libclang_rt.asan-android-default",
-    ],
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    is_llndk: true,
-    arch: {
-        x86_64: {
-            enabled: true,
-        },
-    },
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-cc_defaults {
-    name: "libclang_rt.ubsan_standalone-android-default",
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.asan.static",
     defaults: ["libclang_rt-prebuilt-default"],
-    sdk_version: "minimum",
-    enabled: false,
+    host_supported: true,
+    recovery_available: true,
+    native_bridge_supported: true,
+    sdk_version: "24",
+}
+
+///////////////////////////////////////////////////////////////////////////////
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.asan_cxx.static",
+    defaults: ["libclang_rt-prebuilt-default"],
+    host_supported: true,
+    recovery_available: true,
+    native_bridge_supported: true,
+    sdk_version: "24",
+}
+
+///////////////////////////////////////////////////////////////////////////////
+libclang_rt_prebuilt_library_shared {
+    name: "libclang_rt.ubsan_standalone",
+    defaults: ["libclang_rt-prebuilt-default"],
+    host_supported: true,
     vendor_available: true,
     product_available: true,
     recovery_available: true,
     double_loadable: true,
     stl: "c++_shared",
-    vndk: {
-        enabled: true,
-    },
-}
-
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.ubsan_standalone-arm-android",
-    defaults: ["libclang_rt.ubsan_standalone-android-default"],
     sdk_version: "24",
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    arch: {
-        arm: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.ubsan_standalone-aarch64-android",
-    defaults: ["libclang_rt.ubsan_standalone-android-default"],
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    host_supported: true,
-    arch: {
-        arm64: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.ubsan_standalone-i686-android",
-    defaults: [
-        "linux_bionic_supported",
-        "libclang_rt.ubsan_standalone-android-default",
-    ],
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    arch: {
-        x86: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.ubsan_standalone-x86_64-android",
-    defaults: [
-        "linux_bionic_supported",
-        "libclang_rt.ubsan_standalone-android-default",
-    ],
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    arch: {
-        x86_64: {
-            enabled: true,
-        },
-    },
+    check_elf_files: false, // Bypass circular dependency between libc++
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.ubsan_standalone-i386",
-    enabled: false,
-    host_supported: true,
-    target: {
-        linux_glibc_x86: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.ubsan_standalone-x86_64",
-    enabled: false,
-    host_supported: true,
-    target: {
-        linux_glibc_x86_64: {
-            enabled: true,
-        },
-    },
-}
-
-///////////////////////////////////////////////////////////////////////////////
-cc_defaults {
-    name: "libclang_rt.ubsan_standalone-android.static-default",
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.ubsan_standalone.static",
     defaults: ["libclang_rt-prebuilt-default"],
-    sdk_version: "minimum",
-    enabled: false,
+    sdk_version: "24",
     vendor_available: true,
     product_available: true,
     recovery_available: true,
     double_loadable: true,
+    host_supported: true,
     stl: "c++_static",
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.ubsan_standalone-arm-android.static",
-    defaults: ["libclang_rt.ubsan_standalone-android.static-default"],
-    sdk_version: "24",
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    arch: {
-        arm: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.ubsan_standalone-aarch64-android.static",
-    defaults: ["libclang_rt.ubsan_standalone-android.static-default"],
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    host_supported: true,
-    arch: {
-        arm64: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.ubsan_standalone-i686-android.static",
-    defaults: [
-        "linux_bionic_supported",
-        "libclang_rt.ubsan_standalone-android.static-default",
-    ],
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    arch: {
-        x86: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.ubsan_standalone-x86_64-android.static",
-    defaults: [
-        "linux_bionic_supported",
-        "libclang_rt.ubsan_standalone-android.static-default",
-    ],
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    arch: {
-        x86_64: {
-            enabled: true,
-        },
-    },
+    check_elf_files: false, // Bypass circular dependency between libc++
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.ubsan_standalone-i386.static",
-    enabled: false,
-    host_supported: true,
-    target: {
-        linux_glibc_x86: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.ubsan_standalone-x86_64.static",
-    enabled: false,
-    host_supported: true,
-    target: {
-        linux_glibc_x86_64: {
-            enabled: true,
-        },
-    },
-}
-
-///////////////////////////////////////////////////////////////////////////////
-cc_defaults {
-    name: "libclang_rt.ubsan_minimal-android-default",
+    name: "libclang_rt.ubsan_minimal",
     defaults: ["libclang_rt-prebuilt-default"],
-    sdk_version: "minimum",
-    enabled: false,
+    sdk_version: "24",
     vendor_available: true,
     product_available: true,
-    ramdisk_available: false,
-    vendor_ramdisk_available: false,
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.ubsan_minimal-arm-android",
-    defaults: ["libclang_rt.ubsan_minimal-android-default"],
-    arch: {
-        arm: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.ubsan_minimal-aarch64-android",
-    defaults: ["libclang_rt.ubsan_minimal-android-default"],
+    recovery_available: true,
+    double_loadable: true,
     host_supported: true,
-    arch: {
-        arm64: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.ubsan_minimal-i686-android",
-    defaults: [
-        "linux_bionic_supported",
-        "libclang_rt.ubsan_minimal-android-default",
-    ],
-    arch: {
-        x86: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.ubsan_minimal-x86_64-android",
-    defaults: [
-        "linux_bionic_supported",
-        "libclang_rt.ubsan_minimal-android-default",
-    ],
-    arch: {
-        x86_64: {
-            enabled: true,
-        },
-    },
+    native_bridge_supported: true,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.ubsan_minimal-i386",
-    enabled: false,
-    host_supported: true,
-    target: {
-        linux_glibc_x86: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.ubsan_minimal-x86_64",
-    enabled: false,
-    host_supported: true,
-    target: {
-        linux_glibc_x86_64: {
-            enabled: true,
-        },
-    },
-}
-
-///////////////////////////////////////////////////////////////////////////////
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.hwasan_static-aarch64-android",
+    name: "libclang_rt.hwasan_static",
     sdk_version: "minimum",
     enabled: false,
     recovery_available: true,
     vendor_available: true,
     product_available: true,
     host_supported: true,
-    arch: {
-        arm64: {
+    target: {
+        bionic_arm64: {
             enabled: true,
         },
     },
@@ -560,17 +208,17 @@ libclang_rt_prebuilt_library_static {
 
 ///////////////////////////////////////////////////////////////////////////////
 libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.hwasan-aarch64-android",
+    name: "libclang_rt.hwasan",
     sdk_version: "minimum",
     enabled: false,
     recovery_available: true,
     host_supported: true,
-    arch: {
-        arm64: {
+    target: {
+        bionic_arm64: {
             enabled: true,
         },
     },
-    check_elf_files: false,  // Bypass circular dependency between libc++
+    check_elf_files: false, // Bypass circular dependency between libc++
     is_llndk: true,
     defaults: [
         "libclang_rt-prebuilt-default",
@@ -578,82 +226,26 @@ libclang_rt_prebuilt_library_shared {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-cc_defaults {
-    name: "libclang_rt.profile-android-default",
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.profile",
     defaults: ["libclang_rt-prebuilt-default"],
+    host_supported: true,
     sdk_version: "minimum",
-    enabled: false,
     recovery_available: true,
     vendor_available: true,
     product_available: true,
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.profile-arm-android",
-    defaults: ["libclang_rt.profile-android-default"],
-    arch: {
-        arm: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.profile-aarch64-android",
-    defaults: ["libclang_rt.profile-android-default"],
-    host_supported: true,
-    arch: {
-        arm64: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.profile-i686-android",
-    defaults: ["libclang_rt.profile-android-default"],
-    arch: {
-        x86: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.profile-x86_64-android",
-    defaults: ["libclang_rt.profile-android-default"],
-    arch: {
-        x86_64: {
-            enabled: true,
-        },
-    },
+    check_elf_files: false, // Bypass circular dependency between libc++
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.profile-x86_64",
-    sdk_version: "minimum",
-    enabled: false,
-    host_supported: true,
-    ramdisk_available: false,
-    vendor_ramdisk_available: false,
-    target: {
-        linux_glibc_x86_64: {
-            enabled: true,
-        },
-    },
-    defaults: [
-        "libclang_rt-prebuilt-default",
-    ],
-}
-
-///////////////////////////////////////////////////////////////////////////////
-cc_defaults {
-    name: "libclang_rt.fuzzer-default",
+    name: "libclang_rt.fuzzer",
     defaults: ["libclang_rt-prebuilt-default"],
     sdk_version: "minimum",
-    enabled: false,
     host_supported: true,
+    recovery_available: true,
+    vendor_available: true,
+    product_available: true,
     ramdisk_available: false,
     vendor_ramdisk_available: false,
     sanitize: {
@@ -661,121 +253,17 @@ cc_defaults {
     },
 }
 
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.fuzzer-x86_64",
-    defaults: ["libclang_rt.fuzzer-default"],
-    target: {
-        linux_glibc_x86_64: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.fuzzer-i386",
-    defaults: ["libclang_rt.fuzzer-default"],
-    target: {
-        linux_glibc_x86: {
-            enabled: true,
-        },
-    },
-}
-
 ///////////////////////////////////////////////////////////////////////////////
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.asan-x86_64",
-    enabled: false,
-    host_supported: true,
-    target: {
-        linux_glibc_x86_64: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_shared {
-    name: "libclang_rt.asan-i386",
-    enabled: false,
-    host_supported: true,
-    target: {
-        linux_glibc_x86: {
-            enabled: true,
-        },
-    },
-}
-
-///////////////////////////////////////////////////////////////////////////////
-cc_defaults {
-    name: "libclang_rt.fuzzer-android-default",
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.fuzzer_interceptors",
     defaults: ["libclang_rt-prebuilt-default"],
     sdk_version: "minimum",
-    enabled: false,
+    host_supported: true,
     recovery_available: true,
     vendor_available: true,
     product_available: true,
-    sanitize: {
-        never: true,
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.fuzzer-arm-android",
-    defaults: ["libclang_rt.fuzzer-android-default"],
-    arch: {
-        arm: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.fuzzer-aarch64-android",
-    defaults: ["libclang_rt.fuzzer-android-default"],
-    host_supported: true,
-    arch: {
-        arm64: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.fuzzer-i686-android",
-    defaults: ["libclang_rt.fuzzer-android-default"],
-    arch: {
-        x86: {
-            enabled: true,
-        },
-    },
-}
-
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.fuzzer-x86_64-android",
-    defaults: ["libclang_rt.fuzzer-android-default"],
-    arch: {
-        x86_64: {
-            enabled: true,
-        },
-    },
-}
-
-///////////////////////////////////////////////////////////////////////////////
-libclang_rt_prebuilt_library_static {
-    name: "libclang_rt.profile-i386",
-    sdk_version: "minimum",
-    enabled: false,
-    host_supported: true,
     ramdisk_available: false,
     vendor_ramdisk_available: false,
-    target: {
-        linux_glibc_x86: {
-            enabled: true,
-        },
-    },
-    check_elf_files: false,  // Bypass circular dependency between libc++
-    defaults: [
-        "libclang_rt-prebuilt-default",
-    ],
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -816,6 +304,11 @@ cc_defaults {
 llvm_prebuilt_library_static {
     name: "libunwind",
     defaults: ["libunwind-android-default"],
+    target: {
+        musl: {
+            enabled: true,
+        },
+    },
 }
 
 llvm_prebuilt_library_static {
@@ -827,27 +320,52 @@ llvm_prebuilt_library_static {
     visibility: [
         "//bionic:__subpackages__",
         "//frameworks/libs/native_bridge_support/libc:__subpackages__",
+        "//frameworks/libs/native_bridge_support/android_api/libc:__subpackages__",
+    ],
+}
+
+llvm_prebuilt_library_static {
+    name: "libsimpleperf_readelf",
+    host_supported: true,
+    sdk_version: "minimum",
+    sanitize: {
+        never: true,
+    },
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
+    visibility: [
+        "//cts/tests/tests/simpleperf",
+        "//system/extras/simpleperf",
     ],
 }
 
 // -----------------------------------------------------------------------------
-// Export shared libraries for host tools (libLLVM, libclang, libc++).  These
-// are exported only when the LLVM_BUILD_HOST_TOOLS environment variable is set.
+// Export libc++ and libclang-cpp.so.
 // -----------------------------------------------------------------------------
 
-// Export LLVM_BUILD_HOST_TOOLS
 llvm_host_defaults {
     name: "llvm-build-host-tools-defaults",
+    target: {
+        // We don't have a musl build of libclang-cpp.so, so disable the host
+        // tools for musl.
+        musl: {
+            enabled: false,
+        },
+    },
 }
 
 // Export libclang-cpp shared library
-llvm_host_prebuilt_library_shared {
+llvm_prebuilt_library_shared {
     name: "libclang-cpp_host",
+    host_supported: true,
+    device_supported: false,
     sanitize: {
         never: true,
     },
-    compile_multilib: "64",
-    shared_libs: ["libc++_host"],
+    shared_libs: ["libc++"],
     target: {
         darwin: {
             strip: {
@@ -857,27 +375,142 @@ llvm_host_prebuilt_library_shared {
     },
 }
 
-// Export libc++.so for the host LLVM tools
-llvm_host_prebuilt_library_shared {
-    name: "libc++_host",
-    sanitize: {
-        never: true,
-    },
-    compile_multilib: "64",
-    target: {
-        darwin: {
-            shared_libs: ["libc++abi_host"],
-        },
-    },
+cc_defaults {
+    name: "libc++-device-base-default",
+    device_supported: true,
+    ramdisk_available: true,
+    vendor_ramdisk_available: true,
+    recovery_available: true,
+    native_bridge_supported: true,
+    sdk_version: "minimum",
 }
 
-// Export libc++abi.so for the host LLVM tools
-llvm_host_prebuilt_library_shared {
-    name: "libc++abi_host",
-    sanitize: {
-        never: true,
+cc_defaults {
+    name: "libc++-device-default",
+    defaults: ["libc++-device-base-default"],
+    vendor_available: true,
+    product_available: true,
+    apex_available: [
+        "//apex_available:platform",
+        "//apex_available:anyapex",
+    ],
+}
+
+// The "noexcept" variants of libc++_static and libc++demangle are intended for
+// use in the dynamic linker. The linker doesn't implement ELF TLS for itself,
+// so it needs to avoid using the per-thread EH globals pointer.
+cc_defaults {
+    name: "libc++-noexcept-default",
+    defaults: [
+        "libc++-device-base-default",
+        "linux_bionic_supported",
+    ],
+    apex_available: [
+        "com.android.runtime",
+    ],
+    visibility: [
+        "//bionic:__subpackages__",
+        "//frameworks/libs/native_bridge_support:__subpackages__",
+    ],
+}
+
+llvm_prebuilt_library_shared {
+    name: "libc++",
+    host_supported: true,
+    defaults: ["libc++-device-default"],
+    double_loadable: true,
+    // TODO(b/298326651): Soong doesn't output a shared library module for
+    // libc.native_bridge, so when check_elf_file.py checks
+    // libc++.native_bridge, it's missing a --shared-lib argument for libc.so.
+    check_elf_files: false,
+}
+
+llvm_prebuilt_library_shared {
+    name: "libc++abi_shared",
+    host_supported: true,
+    device_supported: false,
+}
+
+llvm_prebuilt_library_static {
+    name: "libc++_static",
+    host_supported: true,
+    defaults: ["libc++-device-default"],
+    target: {
+        windows: {
+            enabled: true,
+        },
     },
-    compile_multilib: "64",
+    stl: "none",
+}
+
+llvm_prebuilt_library_static {
+    name: "libc++abi_static",
+    host_supported: true,
+    device_supported: false,
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
+    stl: "none",
+}
+
+llvm_prebuilt_library_static {
+    name: "libc++demangle",
+    host_supported: false,
+    defaults: ["libc++-device-default"],
+    stl: "none",
+}
+
+llvm_prebuilt_library_static {
+    name: "libc++_static_noexcept",
+    defaults: ["libc++-noexcept-default"],
+    stl: "none",
+}
+
+llvm_prebuilt_library_static {
+    name: "libc++demangle_noexcept",
+    defaults: ["libc++-noexcept-default"],
+    stl: "none",
+}
+
+// Stub out this library. It's not needed anymore because libc++.so and
+// libc++_static.a now contain the stable std::filesystem APIs.
+// TODO: Remove dependencies on this library, then remove this library.
+cc_library_static {
+    name: "libc++fs",
+    srcs: [],
+    host_supported: true,
+    defaults: ["libc++-device-default"],
+    min_sdk_version: "apex_inherit",
+    stl: "none",
+}
+
+cc_defaults {
+    name: "libc++-ndk-default",
+    sdk_version: "minimum",
+    apex_available: [
+        "//apex_available:platform",
+        "//apex_available:anyapex",
+    ],
+}
+
+ndk_prebuilt_shared_stl {
+    name: "ndk_libc++_shared",
+    defaults: ["libc++-ndk-default"],
+    stem: "libc++_shared",
+}
+
+ndk_prebuilt_static_stl {
+    name: "ndk_libc++_static",
+    defaults: ["libc++-ndk-default"],
+    stl: "none",
+}
+
+ndk_prebuilt_static_stl {
+    name: "ndk_libc++abi",
+    defaults: ["libc++-ndk-default"],
+    stl: "none",
 }
 
 clang_builtin_headers {
@@ -890,11 +523,50 @@ clang_builtin_headers {
 // tests.
 llvm_tools_filegroup {
     name: "llvm-tools",
-    visibility: ["//development/scripts:__subpackages__"],
+    visibility: [
+        "//development/scripts:__subpackages__",
+        "//packages/modules/Bluetooth/system:__subpackages__",
+    ],
     // The tools and libs in the filegroup are in
     // ./soong/clangprebuilts.go:llvmToolsFiles
+}
+
+llvm_prebuilt_build_tool {
+    name: "llvm-dwarfdump",
+}
+
+llvm_prebuilt_build_tool {
+    name: "llvm-objdump",
+}
+
+llvm_prebuilt_build_tool {
+    name: "llvm-strings",
 }
 
 subdirs = [
     "soong",
 ]
+
+filegroup {
+    name: "py-clang-srcs",
+    srcs: [
+        "clang-stable/lib/python3/site-packages/clang/*.py",
+    ],
+    path: "clang-stable/lib/python3/site-packages/clang",
+}
+
+python_library {
+    name: "py-clang",
+    pkg_path: "clang",
+    host_supported: true,
+    srcs: [
+        ":py-clang-srcs",
+    ],
+}
+
+filegroup {
+    name: "libclang",
+    srcs: [
+        "clang-stable/lib/libclang.so",
+    ],
+}
