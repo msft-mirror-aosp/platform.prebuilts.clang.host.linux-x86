@@ -9,13 +9,13 @@
 
   <superproject name="platform/superproject" remote="aosp" revision="llvm-toolchain" />
 
-  <project path="bionic" name="platform/bionic" revision="94f46d493251dc776d0da6b914824a21aac1bde4" />
+  <project path="bionic" name="platform/bionic" revision="3abc79db85306079782db401b2e80020dcc6253a" />
 
   <project path="toolchain/binutils" name="toolchain/binutils" revision="c19795e958ed532462948fd14b1bdfd4f6e96e03" />
 
   <project path="toolchain/llvm-project" name="toolchain/llvm-project" revision="b3a530ec6537146650e42be89f1089e9a3588460" />
 
-  <project path="toolchain/llvm_android" name="toolchain/llvm_android" revision="f313d3ce868ff1bd93f281e0dfd526ff876ac19b" />
+  <project path="toolchain/llvm_android" name="toolchain/llvm_android" revision="d66b2db85b75fb963dbbeb168fe3770d01718fd4" />
 
   <project path="toolchain/common" name="toolchain/common" revision="0bce8b062126242872e9f3fc66760d3f76773c49" />
 
@@ -23,7 +23,7 @@
 
   <project path="prebuilts/gcc/darwin-x86/host/headers" name="platform/prebuilts/gcc/darwin-x86/host/headers" groups="pdk,darwin" clone-depth="1" revision="4ac4f7cc41cf3c9e36fc3d6cf37fd1cfa9587a68" />
 
-  <project path="prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8" name="platform/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8" clone-depth="1" revision="59dcd1d7f770fd9485d9f2d132b8bfa04c824439" />
+  <project path="prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8" name="platform/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8" clone-depth="1" revision="44af49731f10a7d76d749e70802972d8ec3f5e9c" />
 
   <project path="prebuilts/gcc/linux-x86/host/x86_64-w64-mingw32-4.8" name="platform/prebuilts/gcc/linux-x86/host/x86_64-w64-mingw32-4.8" clone-depth="1" revision="97914b44bb197db77d851df67a29868665b4b578" />
 
@@ -31,11 +31,11 @@
 
   <project path="prebuilts/cmake/linux-x86" name="platform/prebuilts/cmake/linux-x86" clone-depth="1" revision="e57c88d59d7d8408a32b16425158fd2aa64e2b3e" />
 
-  <project path="prebuilts/build-tools" name="platform/prebuilts/build-tools" clone-depth="1" revision="1b196ecda57a196a5c788c6a03d9a196a5cbd18d" />
+  <project path="prebuilts/build-tools" name="platform/prebuilts/build-tools" clone-depth="1" revision="26a9cb18152df9c8ba81b25ab238185ce1e4f170" />
 
-  <project path="prebuilts/go/darwin-x86" name="platform/prebuilts/go/darwin-x86" groups="darwin,pdk,tradefed" clone-depth="1" revision="275bee4f278b5f10137fc4b5ea6dfd76bb67d0fa" />
+  <project path="prebuilts/go/darwin-x86" name="platform/prebuilts/go/darwin-x86" groups="darwin,pdk,tradefed" clone-depth="1" revision="6df03c368ef7f1bd3eb77cf16d85d5b340272f68" />
 
-  <project path="prebuilts/go/linux-x86" name="platform/prebuilts/go/linux-x86" groups="linux,pdk,tradefed" clone-depth="1" revision="92e7742ca56ccf8c88f65fd83f3f8fb0ce84ed1c" />
+  <project path="prebuilts/go/linux-x86" name="platform/prebuilts/go/linux-x86" groups="linux,pdk,tradefed" clone-depth="1" revision="c0a0954aed5d3afbfffce56fe46b58b1f60f8b7c" />
 
   <project path="external/zstd" name="platform/external/zstd" revision="d06a29da1edcc46177e774010cc2ef6158366b52" />
 
@@ -57,13 +57,13 @@
 
   <project path="prebuilts/clang/host/darwin-x86" name="platform/prebuilts/clang/host/darwin-x86" clone-depth="1" revision="71134eab4c18a12afe19bc1b56fd62033b0a2627" />
 
-  <project path="prebuilts/clang/host/linux-x86" name="platform/prebuilts/clang/host/linux-x86" clone-depth="1" revision="2de087e0ceeecc0ee944f800f874f3657a4ffcb7" />
+  <project path="prebuilts/clang/host/linux-x86" name="platform/prebuilts/clang/host/linux-x86" clone-depth="1" revision="05d69d6f300762b811305fc498a6e1dd2caede1c" />
 
   <project path="prebuilts/clang/host/windows-x86" name="platform/prebuilts/clang/host/windows-x86" clone-depth="1" revision="be24b4d5c551da208825412b941a5ed7546755ff" />
 
   <project path="toolchain/prebuilts/ndk/releases" name="toolchain/prebuilts/ndk/releases" clone-depth="1" revision="e98ef7e0275b506b8843f2d0d52f3256e46df4b5" />
 
-  <project path="tools/repohooks" name="platform/tools/repohooks" revision="4792680e0a07f98f726b07451cfff961156f23d5" />
+  <project path="tools/repohooks" name="platform/tools/repohooks" revision="aad4d88f1b21f4618496f60c638d30914eade449" />
 
   <project path="toolchain/prebuilts/sysroot/platform/riscv64-linux-android" name="toolchain/prebuilts/sysroot/platform/riscv64-linux-android" revision="d19c6ae1817af6846099905de2a422eae1de5d11" />
 
