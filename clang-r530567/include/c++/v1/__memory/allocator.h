@@ -56,6 +56,8 @@ public:
 #  endif
 };
 
+// TODO(LLVM 20): Remove the escape hatch
+#  ifdef _LIBCPP_ENABLE_REMOVED_ALLOCATOR_CONST
 template <>
 class _LIBCPP_TEMPLATE_VIS allocator<const void> {
 #  if _LIBCPP_STD_VER <= 17 || defined(_LIBCPP_ENABLE_CXX20_REMOVED_ALLOCATOR_MEMBERS)
@@ -71,6 +73,7 @@ public:
   };
 #  endif
 };
+#  endif // _LIBCPP_ENABLE_REMOVED_ALLOCATOR_CONST
 #endif
 
 // This class provides a non-trivial default constructor to the class that derives from it
@@ -100,6 +103,7 @@ struct __non_trivial_if<true, _Unique> {
 
 template <class _Tp>
 class _LIBCPP_TEMPLATE_VIS allocator : private __non_trivial_if<!is_void<_Tp>::value, allocator<_Tp> > {
+  static_assert(!is_const<_Tp>::value, "std::allocator does not support const types");
   static_assert(!is_volatile<_Tp>::value, "std::allocator does not support volatile types");
 
 public:
@@ -177,6 +181,8 @@ public:
 #endif
 };
 
+// TODO(LLVM 20): Remove the escape hatch
+#ifdef _LIBCPP_ENABLE_REMOVED_ALLOCATOR_CONST
 template <class _Tp>
 class _LIBCPP_TEMPLATE_VIS allocator<const _Tp>
     : private __non_trivial_if<!is_void<_Tp>::value, allocator<const _Tp> > {
@@ -253,6 +259,7 @@ public:
   _LIBCPP_DEPRECATED_IN_CXX17 _LIBCPP_HIDE_FROM_ABI void destroy(pointer __p) { __p->~_Tp(); }
 #endif
 };
+#endif // _LIBCPP_ENABLE_REMOVED_ALLOCATOR_CONST
 
 template <class _Tp, class _Up>
 inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_SINCE_CXX20 bool
