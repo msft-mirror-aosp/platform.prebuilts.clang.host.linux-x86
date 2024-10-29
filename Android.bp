@@ -484,19 +484,6 @@ llvm_prebuilt_library_static {
     stl: "none",
 }
 
-// Stub out this library. It's not needed anymore because libc++.so and
-// libc++_static.a now contain the stable std::filesystem APIs.
-// TODO: Remove dependencies on this library, then remove this library.
-cc_library_static {
-    name: "libc++fs",
-    srcs: [],
-    host_supported: true,
-    defaults: ["libc++-device-default"],
-    min_sdk_version: "apex_inherit",
-    stl: "none",
-    visibility: ["//vendor:__subpackages__"],
-}
-
 cc_defaults {
     name: "libc++-ndk-default",
     sdk_version: "minimum",
