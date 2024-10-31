@@ -570,3 +570,9 @@ filegroup {
         "clang-stable/lib/libclang.so",
     ],
 }
+
+dirgroup {
+    name: "trusty_dirgroup_prebuilts_clang_host_linux-x86",
+    dirs: ["."],
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+}
