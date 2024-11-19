@@ -229,6 +229,7 @@ libclang_rt_prebuilt_library_shared {
     },
     check_elf_files: false, // Bypass circular dependency between libc++
     is_llndk: true,
+    llndk_moved_to_apex: true,
     defaults: [
         "libclang_rt-prebuilt-non-platform-default",
     ],
