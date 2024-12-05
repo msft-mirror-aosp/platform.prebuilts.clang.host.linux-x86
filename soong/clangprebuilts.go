@@ -398,7 +398,8 @@ func llvmPrebuiltBuildTool(ctx android.LoadHookContext) {
 }
 
 type prebuiltLibrarySharedProps struct {
-	Is_llndk *bool
+	Is_llndk            *bool
+	Llndk_moved_to_apex *bool
 
 	Shared_libs []string
 }
@@ -435,7 +436,8 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, libProps *preb
 			Versions    []string
 		}
 		Llndk struct {
-			Symbol_file *string
+			Symbol_file   *string
+			Moved_to_apex *bool
 		}
 	}
 
@@ -483,6 +485,7 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, libProps *preb
 
 	if proptools.Bool(sharedProps.Is_llndk) {
 		p.Stubs.Versions = []string{"29", "10000"}
+		p.Llndk.Moved_to_apex = sharedProps.Llndk_moved_to_apex
 		// Set the symbol_file of the "base" variant to a fake file. This will be overridden later.
 		// This is necessary today since `image` mutator which creates the llndk variants runs before `arch` mutator.
 		// Without this hack, the llndk variants will not be created.
