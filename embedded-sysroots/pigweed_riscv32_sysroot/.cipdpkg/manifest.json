@@ -1,0 +1,6 @@
+{
+  "format_version": "1.1",
+  "package_name": "fuchsia/third_party/clang/target/riscv32-unknown-elf",
+  "version_file": ".versions/target.cipd_version",
+  "install_mode": "copy"
+}
