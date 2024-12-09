@@ -14,12 +14,13 @@
 
 """Defines a cc toolchain for kernel build, based on clang."""
 
-load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "CPP_TOOLCHAIN_TYPE")
 load(
     "@kernel_toolchain_info//:dict.bzl",
     "VARS",
 )
 load(":clang_config.bzl", "clang_config")
+
+_CC_TOOLCHAIN_TYPE = Label("@bazel_tools//tools/cpp:toolchain_type")
 
 def _clang_toolchain_internal(
         name,
@@ -189,7 +190,7 @@ def _clang_toolchain_internal(
         ] + extra_compatible_with,
         target_compatible_with = target_compatible_with,
         toolchain = name + "_cc_toolchain",
-        toolchain_type = CPP_TOOLCHAIN_TYPE,
+        toolchain_type = _CC_TOOLCHAIN_TYPE,
         visibility = ["@kleaf_clang_toolchain//:__subpackages__"],
     )
 
