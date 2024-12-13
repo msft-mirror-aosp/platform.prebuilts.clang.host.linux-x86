@@ -494,6 +494,7 @@ cc_library_static {
     defaults: ["libc++-device-default"],
     min_sdk_version: "apex_inherit",
     stl: "none",
+    visibility: ["//vendor:__subpackages__"],
 }
 
 cc_defaults {
