@@ -21,7 +21,7 @@ LLVM Users
     * [AOSP Code Search link](https://cs.android.com/android/platform/superproject/+/master:build/soong/cc/config/global.go?q=ClangDefaultVersion)
 
 * [**Android Platform LLVM binutils**](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/llvm-binutils-stable/)
-  * Currently clang-r530567
+  * Currently clang-r536225
   * These are *symlinks* to llvm tools and can be updated by running [update-binutils.py](https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/master/update-binutils.py).
 
 * [**Android Platform clang-stable**](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-stable/)
