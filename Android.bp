@@ -55,12 +55,21 @@ llvm_prebuilt_library_static {
     },
 }
 
+// All libclang_rt.* modules are available to the platform except
+// hwasan, which is distributed as part of the runtime apex.
 cc_defaults {
-    name: "libclang_rt-prebuilt-default",
+    name: "libclang_rt-prebuilt-non-platform-default",
     ramdisk_available: true,
     vendor_ramdisk_available: true,
     apex_available: [
         "//apex_available:anyapex",
+    ],
+}
+
+cc_defaults {
+    name: "libclang_rt-prebuilt-default",
+    defaults: ["libclang_rt-prebuilt-non-platform-default"],
+    apex_available: [
         "//apex_available:platform",
     ],
 }
@@ -220,8 +229,9 @@ libclang_rt_prebuilt_library_shared {
     },
     check_elf_files: false, // Bypass circular dependency between libc++
     is_llndk: true,
+    llndk_moved_to_apex: true,
     defaults: [
-        "libclang_rt-prebuilt-default",
+        "libclang_rt-prebuilt-non-platform-default",
     ],
 }
 
@@ -569,4 +579,10 @@ filegroup {
     srcs: [
         "clang-stable/lib/libclang.so",
     ],
+}
+
+dirgroup {
+    name: "trusty_dirgroup_prebuilts_clang_host_linux-x86",
+    dirs: ["."],
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
 }
