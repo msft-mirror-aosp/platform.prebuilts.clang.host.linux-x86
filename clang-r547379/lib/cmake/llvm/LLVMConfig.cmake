@@ -284,7 +284,7 @@ set(LLVM_HAVE_OPT_VIEWER_MODULES 0)
 set(LLVM_CONFIGURATION_TYPES )
 set(LLVM_ENABLE_SHARED_LIBS OFF)
 
-set(LLVM_DEFAULT_EXTERNAL_LIT "/mnt/disks/build-disk/src/android/llvm-toolchain/out/stage2/./bin/llvm-lit")
+set(LLVM_DEFAULT_EXTERNAL_LIT "/mnt/disks/build-disk/src/android/llvm-r547379-release/out/stage2/./bin/llvm-lit")
 set(LLVM_LIT_ARGS "-sv")
 
 if(NOT TARGET LLVMSupport)
