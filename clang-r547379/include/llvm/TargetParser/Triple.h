@@ -261,12 +261,6 @@ public:
     MuslEABIHF,
     MuslX32,
 
-    // As in wasm64-unknown-unknown-nativeandroid.
-    // Turns off 64->32 function pointer cast on indirect
-    // lookup and compiles varargs calls using intrinsics
-    // for varargs allocation:
-    NativeAndroid,
-
     MSVC,
     Itanium,
     Cygnus,
@@ -802,8 +796,6 @@ public:
   bool isOpenHOS() const { return getEnvironment() == Triple::OpenHOS; }
 
   bool isOSLiteOS() const { return getOS() == Triple::LiteOS; }
-
-  bool isNativeAndroid() const { return getEnvironment() == Triple::NativeAndroid; }
 
   /// Tests whether the target is DXIL.
   bool isDXIL() const {
