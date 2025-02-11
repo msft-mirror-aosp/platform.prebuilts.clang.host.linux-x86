@@ -53,7 +53,9 @@ Now, set up a Virtualenv and install Tensorflow and other dependencies:
 cd $WORKING_DIR
 python3 -m venv venv
 source venv/bin/activate
-pip3 install tensorflow-cpu gin-config cloudpickle psutil tf_agents mlgo-utils
+cd $WORKING_DIR/ml-compiler-opt
+pip3 install pipenv
+pipenv sync --system --categories "packages dev-packages ci"
 ```
 
 ### Set up TFLite
@@ -98,7 +100,7 @@ USE_RBE=false \
 ### Corpus extraction
 
 ```sh
-cd $WORKING_DIR/ml_compiler_opt
+cd $WORKING_DIR/ml-compiler-opt
 extract_ir \
   --cmd_filter="^-O2|-O3" \
   --llvm_objcopy_path=$WORKING_DIR/llvm-build/bin/llvm-objcopy \
