@@ -2,7 +2,11 @@ Android Clang/LLVM Prebuilts
 ============================
 
 For the latest version of this doc, please make sure to visit:
-[Android Clang/LLVM Prebuilts Readme Doc](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/README.md)
+[Android Clang/LLVM Prebuilts Readme Doc](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/mirror-goog-main-llvm-toolchain-source/README.md)
+
+> The links in the sections below are outdated in light of
+> https://source.android.com/docs/whatsnew/site-updates#aosp-changes
+> and will be fixed soon.
 
 LLVM Users
 ----------
