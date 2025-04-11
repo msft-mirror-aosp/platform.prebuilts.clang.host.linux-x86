@@ -229,6 +229,28 @@ dict_value {
                 }
               }
               fields {
+                key: "is_callee_avail_external"
+                value {
+                  tensor_spec_value {
+                    name: "is_callee_avail_external"
+                    shape {
+                    }
+                    dtype: DT_INT64
+                  }
+                }
+              }
+              fields {
+                key: "is_caller_avail_external"
+                value {
+                  tensor_spec_value {
+                    name: "is_caller_avail_external"
+                    shape {
+                    }
+                    dtype: DT_INT64
+                  }
+                }
+              }
+              fields {
                 key: "is_multiple_blocks"
                 value {
                   tensor_spec_value {
@@ -291,6 +313,20 @@ dict_value {
                     shape {
                     }
                     dtype: DT_INT64
+                  }
+                }
+              }
+              fields {
+                key: "model_selector"
+                value {
+                  tensor_spec_value {
+                    name: "model_selector"
+                    shape {
+                      dim {
+                        size: 2
+                      }
+                    }
+                    dtype: DT_UINT64
                   }
                 }
               }
