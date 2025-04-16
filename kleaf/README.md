@@ -7,7 +7,6 @@ Source: [BUILD.bazel](BUILD.bazel)
 The following toolchains are declared:
 
 *   Default toolchains
-*   Versioned toolchains
 *   User toolchains, provided via command line flags
 
 ### Default toolchains
@@ -28,27 +27,6 @@ These toolchains are marked "exec_compatible_with":
 
 These toolchains have `cc_toolchain.compiler` set to `CLANG_VERSION` from
 `@kernel_toolchain_info//:dict.bzl`.
-
-### Versioned toolchains
-
-[Source: `BUILD.bazel`](BUILD.bazel)
-
-Versioned toolchains, named
-`{version}_{target_os}_{target_cpu}_clang_toolchain`,
-are the toolchains bearing extra version information.
-
-These toolchains are marked "target_compatible_with":
-*   the corresponding `@platforms//os:{target_os}`
-*   the corresponding `@platforms//cpu:{target_cpu}`
-*   the corresponding `//prebuilts/clang/host/linux-x86/kleaf:{version}`
-
-These toolchains are marked "exec_compatible_with":
-*   `@platforms//os:linux`
-*   `@platforms//cpu:x86_64`
-*   the corresponding `//prebuilts/clang/host/linux-x86/kleaf:{version}`
-
-These toolchains have `cc_toolchain.compiler` set to the corresponding
-`{version}`.
 
 ### User toolchains
 
@@ -77,8 +55,7 @@ Toolchains are registered in the following order:
 
 1.  If `--user_clang_toolchain` is set, the user toolchains are registered.
     Otherwise, fake user toolchains are registered.
-2.  The versioned toolchains
-3.  The default toolchains
+2.  The default toolchains
 
 ## Toolchain resolution
 
@@ -132,10 +109,7 @@ the following order:
     of the platform's constraint values (`linux`, `x86_64`). Otherwise, if
     `--user_clang_toolchain` is not set, Bazel continues checking the following
     toolchains.
-2.  The versioned toolchains are skipped because their constraint values
-    (`{version}`, `{target_os}`, `{target_cpu}`) are not a subset of
-    the platform's constraint values (`linux`, `x86_64`).
-3.  The default toolchain `linux_x86_64_clang_toolchain` is returned because
+2.  The default toolchain `linux_x86_64_clang_toolchain` is returned because
     its constraint values (`linux`, `x86_64`) are a subset
     of the platform's constraint values (`linux`, `x86_64`)
 
@@ -148,10 +122,7 @@ up in the following order:
     of the platform's constraint values (`android`, `arm64`). Otherwise, if
     `--user_clang_toolchain` is not set, Bazel continues checking the following
     toolchains.
-2.  The versioned toolchains are skipped because their constraint values
-    (`{version}`, `{target_os}`, `{target_cpu}`) are not a subset of
-    the platform's constraint values (`android`, `arm64`).
-3.  The default toolchain `android_arm64_clang_toolchain` is returned because
+2.  The default toolchain `android_arm64_clang_toolchain` is returned because
     its constraint values (`android`, `arm64`) are a subset
     of the platform's constraint values (`android`, `arm64`)
 
@@ -183,58 +154,6 @@ for [`cc_*` rules](#example-cc_-rules). That is:
         execution platform
     *   `android_{target_cpu}_clang_toolchain` is resolved for the
         target platform
-
-### Example: kernel\_* rules with toolchain\_version
-
-This is unusual. You are recommended to not set `kernel_build.toolchain_version`
-to use the default toolchains.
-
-If a `kernel_build` does specify `toolchain_version`:
-
-*   Its execution platform has constraint values
-    (`linux`, `x86_64`, `{toolchain_version}`)
-*   Its target platform has constraint values
-    (`android`, `{target_cpu}`, `{toolchain_version}`) where
-    `{target_cpu}` is specified in `kernel_build.arch`.
-
-When `kernel_toolchains` looks up the toolchains for the execution platform:
-
-*   If `--user_clang_toolchain` is set, the user toolchain
-    `1_user_linux_x86_64_clang_toolchain` is returned because its constraint
-    values (`linux`, `x86_64`) are a subset of the execution platform's
-    constraint values (`linux`, `x86_64`, `{toolchain_version}`). However,
-    `kernel_toolchains` rejects the user toolchain because the version
-    `"unknown"` does not match the declared value,
-    `kernel_build.toolchain_version`, resulting in a build error. You should
-    delete `kernel_build.toolchain_version`, and try again.
-*   If `--user_clang_toolchain` is not set, the matching versioned toolchain,
-    `{version}_linux_x86_64_clang_toolchain` is returned because
-    its constraint values (`linux`, `x86_64` `{toolchain_version}`) are a subset
-    of the execution platform's constraint values
-    (`linux`, `x86_64`, `{toolchain_version}`).
-*   If no matching versioned toolchain is found, the default toolchain is
-    returned. However, `kernel_toolchains` rejects the default toolchain
-    because the version does not match the declared value,
-    `kernel_build.toolchain_version`, resulting in a build error as expected.
-
-The same goes for the target platform:
-
-*   If `--user_clang_toolchain` is set, the user toolchain
-    `1_user_android_{target_cpu}_clang_toolchain` is returned because its
-    constraint values (`android`, `{target_cpu}`) are a subset of the target
-    platform's constraint values
-    (`android`, `{target_cpu}`, `{toolchain_version}`).
-    `kernel_toolchains` accepts the user toolchain with a warning because
-    the version of the user toolchain
-    `"kleaf_clang_toolchain_skip_version_check"` does not match the declared value, `kernel_build.toolchain_version`.
-*   If `--user_clang_toolchain` is not set, the matching versioned toolchain,
-    `{version}_android_{target_cpu}_clang_toolchain` is returned because
-    its constraint values (`android`, `{target_cpu}` `{toolchain_version}`) are a subset of the target platform's constraint values
-    (`android`, `{target_cpu}`, `{toolchain_version}`).
-*   If no matching versioned toolchain is found, the default toolchain is
-    returned. However, `kernel_toolchains` rejects the default toolchain
-    because the version does not match the declared value,
-    `kernel_build.toolchain_version`, resulting in a build error as expected.
 
 ## Caveats
 
