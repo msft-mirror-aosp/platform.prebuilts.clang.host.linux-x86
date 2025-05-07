@@ -146,14 +146,6 @@ def _common_aliases_build_file():
 # Default toolchains.
 
 [clang_toolchain(
-    name = "2_versioned_{{}}_{{}}_clang_toolchain".format(version, arch.name),
-    clang_pkg = "{linux_x86_pkg}/clang-{{}}".format(version),
-    clang_version = version,
-    extra_compatible_with = ["{this_pkg}:{{}}".format(version)],
-    arch = arch,
-) for version in VERSIONS for arch in SUPPORTED_ARCHITECTURES]
-
-[clang_toolchain(
     name = "3_default_{{}}_clang_toolchain".format(arch.name),
     clang_pkg = "{linux_x86_pkg}/clang-{{}}".format(VARS["CLANG_VERSION"]),
     clang_version = VARS["CLANG_VERSION"],
