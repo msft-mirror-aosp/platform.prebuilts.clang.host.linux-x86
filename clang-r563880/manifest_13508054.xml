@@ -9,7 +9,7 @@
 
   <project path="toolchain/llvm-project" name="toolchain/llvm-project" revision="5e96669f06077099aa41290cdb4c5e6fa0f59349" upstream="llvm-r563880-release" />
 
-  <project path="toolchain/llvm_android" name="toolchain/llvm_android" revision="40311f465c1b40abf7db6ea2c918cef04b0c14de" upstream="llvm-r563880-release" />
+  <project path="toolchain/llvm_android" name="toolchain/llvm_android" revision="f238963fddd06d76c1d47858713490eca4c2fc7f" upstream="llvm-r563880-release" />
 
   <project path="toolchain/common" name="toolchain/common" revision="0bce8b062126242872e9f3fc66760d3f76773c49" upstream="llvm-r563880-release" />
 
