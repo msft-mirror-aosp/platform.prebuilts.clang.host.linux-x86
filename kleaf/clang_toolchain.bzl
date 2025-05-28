@@ -35,7 +35,6 @@ def _clang_toolchain_internal(
         lib_files = None,
         lib_dirs = None,
         target = None,
-        extra_compatible_with = None,
         extra_features = None,
         dynamic_runtime_lib = None,
         static_runtime_lib = None,
@@ -58,7 +57,6 @@ def _clang_toolchain_internal(
         lib_files: Files for `-L`
         lib_dirs: Directory to be set in `-L`
         target: The `--target` option provided to clang. This is usually `NDK_TRIPLE`.
-        extra_compatible_with: Extra `exec_compatible_with` / `target_compatible_with`.
         extra_features: Extra features enabled on this toolchain
         dynamic_runtime_lib: pass to cc_toolchain
         static_runtime_lib: pass to cc_toolchain
@@ -78,9 +76,6 @@ def _clang_toolchain_internal(
 
     if lib_files == None:
         lib_files = []
-
-    if extra_compatible_with == None:
-        extra_compatible_with = []
 
     clang_pkg = native.package_relative_label(clang_pkg)
     clang_includes = clang_pkg.relative(":includes")
@@ -178,7 +173,7 @@ def _clang_toolchain_internal(
     target_compatible_with = [
         "@platforms//os:{}".format(arch.target_os),
         "@platforms//cpu:{}".format(arch.target_cpu),
-    ] + extra_compatible_with
+    ]
     if arch.target_libc != None:
         target_compatible_with.append(Label("//build/kernel/kleaf/platforms/libc:{}".format(arch.target_libc)))
 
@@ -187,7 +182,7 @@ def _clang_toolchain_internal(
         exec_compatible_with = [
             "@platforms//os:linux",
             "@platforms//cpu:x86_64",
-        ] + extra_compatible_with,
+        ],
         target_compatible_with = target_compatible_with,
         toolchain = name + "_cc_toolchain",
         toolchain_type = _CC_TOOLCHAIN_TYPE,
@@ -198,8 +193,7 @@ def clang_toolchain(
         name,
         clang_version,
         clang_pkg,
-        arch,
-        extra_compatible_with = None):
+        arch):
     """Declare a clang toolchain for the given OS-architecture.
 
     The toolchain should be under `prebuilts/clang/host/linux-x86`.
@@ -212,7 +206,6 @@ def clang_toolchain(
             This is used as an anchor to locate other targets in the package.
             Name of the label is ignored.
         arch: key to look up extra kwargs.
-        extra_compatible_with: nonconfigurable. extra `exec_compatible_with` and `target_compatible_with`
     """
 
     extra_kwargs = _get_extra_kwargs(arch)
@@ -222,7 +215,6 @@ def clang_toolchain(
         clang_version = clang_version,
         arch = arch,
         clang_pkg = clang_pkg,
-        extra_compatible_with = extra_compatible_with,
         **extra_kwargs
     )
 
