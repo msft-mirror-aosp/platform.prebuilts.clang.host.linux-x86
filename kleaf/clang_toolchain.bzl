@@ -18,6 +18,7 @@ load(
     "@kernel_toolchain_info//:dict.bzl",
     "VARS",
 )
+load("@rules_cc//cc/toolchains:cc_toolchain.bzl", "cc_toolchain")
 load(":clang_config.bzl", "clang_config")
 
 _CC_TOOLCHAIN_TYPE = Label("@bazel_tools//tools/cpp:toolchain_type")
@@ -159,7 +160,7 @@ def _clang_toolchain_internal(
         static_link_cpp_runtimes = static_link_cpp_runtimes,
     )
 
-    native.cc_toolchain(
+    cc_toolchain(
         name = name + "_cc_toolchain",
         all_files = name + "_all_files",
         ar_files = clang_all_binaries,
