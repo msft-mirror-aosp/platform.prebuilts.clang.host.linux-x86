@@ -242,8 +242,8 @@ def _get_extra_kwargs(arch):
     if arch.target_os == "linux" and arch.target_libc == "glibc":
         return dict(
             target = "x86_64-unknown-linux-gnu",
-            sysroot_label = Label("//build/kernel:sysroot"),
-            sysroot_dir = Label("//build/kernel:sysroot_dir"),
+            sysroot_label = _GCC_PKG.relative(":sysroot_files"),
+            sysroot_dir = _GCC_PKG.relative(":sysroot_dir"),
             bin_files = [_GCC_PKG.relative(":bin_files")],
             bin_dirs = [_GCC_PKG.relative(":bin_dirs")],
             lib_files = [_GCC_PKG.relative(":lib_files")],
