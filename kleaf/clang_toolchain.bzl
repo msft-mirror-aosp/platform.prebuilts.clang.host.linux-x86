@@ -239,7 +239,7 @@ def _get_extra_kwargs(arch):
             static_link_cpp_runtimes = True,
         )
 
-    if arch.target_os == "linux":
+    if arch.target_os == "linux" and arch.target_libc == "glibc":
         return dict(
             linker_files = [
                 Label("//prebuilts/kernel-build-tools:linux-x86-libs"),
