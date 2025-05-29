@@ -13,7 +13,6 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load(":versions.bzl", "VERSIONS")
 
 bzl_library(
     name = "architecture_constants",
@@ -32,14 +31,6 @@ bzl_library(
     srcs = ["versions.bzl"],
     visibility = ["//visibility:public"],
 )
-
-constraint_setting(name = "clang_version")
-
-[constraint_value(
-    name = version,
-    constraint_setting = ":clang_version",
-    visibility = ["//visibility:public"],
-) for version in VERSIONS]
 
 filegroup(
     name = "empty_filegroup",
