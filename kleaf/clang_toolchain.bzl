@@ -241,9 +241,6 @@ def _get_extra_kwargs(arch):
 
     if arch.target_os == "linux" and arch.target_libc == "glibc":
         return dict(
-            linker_files = [
-                Label("//prebuilts/kernel-build-tools:linux-x86-libs"),
-            ],
             target = "x86_64-unknown-linux-gnu",
             sysroot_label = Label("//build/kernel:sysroot"),
             sysroot_dir = Label("//build/kernel:sysroot_dir"),
