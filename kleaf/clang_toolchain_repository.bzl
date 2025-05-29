@@ -38,11 +38,9 @@ All clang toolchains used by Kleaf.
 load("@kernel_toolchain_info//:dict.bzl","VARS")
 load("{architecture_constants}", "SUPPORTED_ARCHITECTURES")
 load("{clang_toolchain}", "clang_toolchain")
-load("{versions}", "VERSIONS")
 '''.format(
         architecture_constants = Label(":architecture_constants.bzl"),
         clang_toolchain = Label(":clang_toolchain.bzl"),
-        versions = Label(":versions.bzl"),
     )
 
     if "KLEAF_USER_CLANG_TOOLCHAIN_PATH" not in repository_ctx.os.environ:
@@ -127,7 +125,6 @@ filegroup(
 '''.format(
         architecture_constants = Label(":architecture_constants.bzl"),
         clang_toolchain = Label(":clang_toolchain.bzl"),
-        versions = Label(":versions.bzl"),
     )
 
     return build_file_content
