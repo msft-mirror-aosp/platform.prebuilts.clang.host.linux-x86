@@ -39,7 +39,7 @@ SUPPORTED_ARCHITECTURES = [
         name = "2_linux_x86_64",
         target_os = "linux",
         target_cpu = "x86_64",
-        target_libc = None,
+        target_libc = "glibc",
     ),
     ArchInfo(
         name = "android_arm64",
