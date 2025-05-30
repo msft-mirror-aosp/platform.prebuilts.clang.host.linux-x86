@@ -43,7 +43,6 @@ LLVM Users
     * Look for "clang-" in [mainline build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android-mainline/build.config.constants)
     * Look for "clang-" in [android16-6.12 build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android16-6.12/build.config.constants)
     * Look for "clang-" in [android15-6.6 build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android15-6.6/build.config.constants)
-  * When adding or removing a clang prebuilt, the list in `kleaf/versions.bzl` needs to be updated.
   * Internal LLVM developers should look in the partner gerrit for more kernel configurations.
 
 * [**NDK**](https://developer.android.com/ndk)
