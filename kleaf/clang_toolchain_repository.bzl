@@ -38,11 +38,9 @@ All clang toolchains used by Kleaf.
 load("@kernel_toolchain_info//:dict.bzl","VARS")
 load("{architecture_constants}", "SUPPORTED_ARCHITECTURES")
 load("{clang_toolchain}", "clang_toolchain")
-load("{versions}", "VERSIONS")
 '''.format(
         architecture_constants = Label(":architecture_constants.bzl"),
         clang_toolchain = Label(":clang_toolchain.bzl"),
-        versions = Label(":versions.bzl"),
     )
 
     if "KLEAF_USER_CLANG_TOOLCHAIN_PATH" not in repository_ctx.os.environ:
@@ -127,7 +125,6 @@ filegroup(
 '''.format(
         architecture_constants = Label(":architecture_constants.bzl"),
         clang_toolchain = Label(":clang_toolchain.bzl"),
-        versions = Label(":versions.bzl"),
     )
 
     return build_file_content
@@ -144,14 +141,6 @@ def _common_aliases_build_file():
     build_file_content = """
 
 # Default toolchains.
-
-[clang_toolchain(
-    name = "2_versioned_{{}}_{{}}_clang_toolchain".format(version, arch.name),
-    clang_pkg = "{linux_x86_pkg}/clang-{{}}".format(version),
-    clang_version = version,
-    extra_compatible_with = ["{this_pkg}:{{}}".format(version)],
-    arch = arch,
-) for version in VERSIONS for arch in SUPPORTED_ARCHITECTURES]
 
 [clang_toolchain(
     name = "3_default_{{}}_clang_toolchain".format(arch.name),
