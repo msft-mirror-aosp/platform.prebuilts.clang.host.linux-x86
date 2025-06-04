@@ -28,6 +28,8 @@ def _clang_toolchain_internal(
         clang_version,
         arch,
         clang_pkg,
+        clang_all_binaries,
+        clang_includes,
         linker_files = None,
         sysroot_label = None,
         sysroot_dir = None,
@@ -50,6 +52,8 @@ def _clang_toolchain_internal(
 
             This is used as an anchor to locate other targets in the package.
             Name of the label is ignored.
+        clang_all_binaries: Label to All compiler, linker, etc. binaries.
+        clang_includes: Label to all include files.
         linker_files: Additional dependencies to the linker
         sysroot_label: Label to a list of files from sysroot
         sysroot_dir: Label containing a single directory to sysroot.
@@ -77,14 +81,6 @@ def _clang_toolchain_internal(
 
     if lib_files == None:
         lib_files = []
-
-    clang_pkg = native.package_relative_label(clang_pkg)
-    clang_includes = clang_pkg.relative(":includes")
-
-    # Technically we can split the binaries into those for compiler, linker
-    # etc., but since these binaries are usually updated together, it is okay
-    # to use a superset here.
-    clang_all_binaries = clang_pkg.relative(":binaries")
 
     # Individual binaries
     # From _setup_env.sh
@@ -209,7 +205,8 @@ def clang_toolchain(
         arch: key to look up extra kwargs.
     """
 
-    extra_kwargs = _get_extra_kwargs(arch)
+    clang_pkg = native.package_relative_label(clang_pkg)
+    extra_kwargs = _get_extra_kwargs(arch, clang_pkg)
 
     _clang_toolchain_internal(
         name = name,
@@ -221,7 +218,12 @@ def clang_toolchain(
 
 _GCC_PKG = Label("//prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8")
 
-def _get_extra_kwargs(arch):
+def _get_extra_kwargs(arch, clang_pkg):
+    # Common comment on all_binaries:
+    # Technically we can split the binaries into those for compiler, linker
+    # etc., but since these binaries are usually updated together, it is okay
+    # to use a superset here.
+
     if arch.target_os == "linux" and arch.target_libc == "musl":
         return dict(
             target = "x86_64-unknown-linux-musl",
@@ -237,6 +239,8 @@ def _get_extra_kwargs(arch):
             static_runtime_lib = Label(":empty_filegroup"),
             dynamic_runtime_lib = Label("//prebuilts/kernel-build-tools:libc_musl_file"),
             static_link_cpp_runtimes = True,
+            clang_all_binaries = clang_pkg.relative(":musl_binaries"),
+            clang_includes = clang_pkg.relative(":musl_includes"),
         )
 
     if arch.target_os == "linux" and arch.target_libc == "glibc":
@@ -251,6 +255,8 @@ def _get_extra_kwargs(arch):
             extra_features = [
                 "kleaf-lld",
             ],
+            clang_all_binaries = clang_pkg.relative(":glibc_binaries"),
+            clang_includes = clang_pkg.relative(":glibc_includes"),
         )
 
     if arch.target_os != "android":
@@ -261,6 +267,8 @@ def _get_extra_kwargs(arch):
             target = VARS.get("AARCH64_NDK_TRIPLE"),
             sysroot_label = "@prebuilt_ndk//:sysroot_{}_files".format(VARS.get("AARCH64_NDK_TRIPLE")) if "AARCH64_NDK_TRIPLE" in VARS else None,
             sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "AARCH64_NDK_TRIPLE" in VARS else None,
+            clang_all_binaries = clang_pkg.relative(":common_binaries"),
+            clang_includes = clang_pkg.relative(":common_includes"),
         )
 
     if arch.target_cpu == "arm":
@@ -268,6 +276,8 @@ def _get_extra_kwargs(arch):
             target = VARS.get("ARM_NDK_TRIPLE"),
             sysroot_label = "@prebuilt_ndk//:sysroot_{}_files".format(VARS.get("ARM_NDK_TRIPLE")) if "ARM_NDK_TRIPLE" in VARS else None,
             sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "ARM_NDK_TRIPLE" in VARS else None,
+            clang_all_binaries = clang_pkg.relative(":common_binaries"),
+            clang_includes = clang_pkg.relative(":common_includes"),
         )
 
     if arch.target_cpu == "x86_64":
@@ -275,6 +285,8 @@ def _get_extra_kwargs(arch):
             target = VARS.get("X86_64_NDK_TRIPLE"),
             sysroot_label = "@prebuilt_ndk//:sysroot_{}_files".format(VARS.get("X86_64_NDK_TRIPLE")) if "X86_64_NDK_TRIPLE" in VARS else None,
             sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "X86_64_NDK_TRIPLE" in VARS else None,
+            clang_all_binaries = clang_pkg.relative(":common_binaries"),
+            clang_includes = clang_pkg.relative(":common_includes"),
         )
 
     if arch.target_cpu == "i386":
@@ -283,11 +295,15 @@ def _get_extra_kwargs(arch):
             target = VARS.get("X86_64_NDK_TRIPLE"),
             sysroot_label = "@prebuilt_ndk//:sysroot_{}_files".format(VARS.get("X86_64_NDK_TRIPLE")) if "X86_64_NDK_TRIPLE" in VARS else None,
             sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "X86_64_NDK_TRIPLE" in VARS else None,
+            clang_all_binaries = clang_pkg.relative(":common_binaries"),
+            clang_includes = clang_pkg.relative(":common_includes"),
         )
 
     if arch.target_cpu == "riscv64":
         return dict(
             # TODO(b/271919464): We need NDK_TRIPLE for riscv
+            clang_all_binaries = clang_pkg.relative(":common_binaries"),
+            clang_includes = clang_pkg.relative(":common_includes"),
         )
 
     fail("Unsupported {}".format(arch))
