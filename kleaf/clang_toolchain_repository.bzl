@@ -95,25 +95,60 @@ def _real_clang_toolchain_build_file(repository_ctx):
         )
 
     build_file_content = '''\
-
-package(default_visibility = ["//visibility:public"])
-
 filegroup(
-    name = "binaries",
+    name = "common_binaries",
     srcs = glob([
         "bin/*",
         "lib/*",
-        "lib/x86_64-unknown-linux-gnu/*",
     ]),
 )
 
 filegroup(
-    name = "includes",
+    name = "common_includes",
     srcs = glob([
         "lib/clang/*/include/**",
         "include/c++/**",
-        "include/x86_64-unknown-linux-gnu/c++/**",
     ]),
+)
+
+filegroup(
+    name = "glibc_binaries",
+    srcs = glob([
+        "lib/x86_64-unknown-linux-gnu/*",
+    ]) + [
+        ":common_binaries",
+    ],
+)
+
+filegroup(
+    name = "glibc_includes",
+    srcs = glob([
+        "include/x86_64-unknown-linux-gnu/c++/**",
+    ]) + [
+        ":common_includes",
+    ],
+)
+
+filegroup(
+    name = "musl_binaries",
+    srcs = glob([
+        "bin/*",
+        "lib/*",
+        "lib/x86_64-unknown-linux-musl/*",
+    ]) + [
+        ":common_binaries",
+    ],
+)
+
+filegroup(
+    name = "musl_includes",
+    srcs = glob([
+        "lib/clang/*/include/**",
+        "include/c++/**",
+        "include/x86_64-unknown-linux-musl/c++/**",
+    ]) + [
+        ":common_includes",
+    ],
 )
 
 [clang_toolchain(
