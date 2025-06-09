@@ -33,7 +33,9 @@ var (
 	llvmToolsFiles = []string{
 		"bin/llvm-cov",
 		"bin/llvm-cxxfilt",
+		"bin/llvm-objcopy",
 		"bin/llvm-profdata",
+		"bin/llvm-strip",
 		"bin/llvm-symbolizer",
 		"lib/libc++.so",
 		"lib/x86_64-unknown-linux-gnu/libc++.so",
