@@ -76,14 +76,14 @@ func init() {
 func getClangPrebuiltDir(ctx android.LoadHookContext) string {
 	return path.Join(
 		"./",
-		ctx.Config().GetenvWithDefault("LLVM_PREBUILTS_VERSION", config.ClangDefaultVersion),
+		ctx.Config().GetenvWithDefault("LLVM_PREBUILTS_VERSION", config.ClangVersion(ctx)),
 	)
 }
 
 func getClangResourceDir(ctx android.LoadHookContext) string {
 	clangDir := getClangPrebuiltDir(ctx)
 	releaseVersion := ctx.Config().GetenvWithDefault("LLVM_RELEASE_VERSION",
-		config.ClangDefaultShortVersion)
+		config.ClangShortVersion(ctx))
 	return path.Join(clangDir, "lib", "clang", releaseVersion, "lib", "linux")
 }
 
@@ -708,7 +708,7 @@ func clangBuiltinHeaders(ctx android.LoadHookContext) {
 	builtinHeadersDir := path.Join(
 		getClangPrebuiltDir(ctx), "lib", "clang",
 		ctx.Config().GetenvWithDefault("LLVM_RELEASE_VERSION",
-			config.ClangDefaultShortVersion), "include")
+			config.ClangShortVersion(ctx)), "include")
 	s := "$(location) " + path.Join(ctx.ModuleDir(), builtinHeadersDir) + " $(in) >$(out)"
 	p.Cmd = &s
 
