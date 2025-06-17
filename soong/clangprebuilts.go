@@ -36,8 +36,10 @@ const libcxxabiSoName = "libc++abi.so.1"
 var (
 	// Files included in the llvm-tools filegroup in ../Android.bp
 	llvmToolsFiles = []string{
-		"bin/llvm-symbolizer",
 		"bin/llvm-cxxfilt",
+		"bin/llvm-objcopy",
+		"bin/llvm-strip",
+		"bin/llvm-symbolizer",
 		"lib/libc++.so.1",
 	}
 )
