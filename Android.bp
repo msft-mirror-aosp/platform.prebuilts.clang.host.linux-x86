@@ -524,7 +524,6 @@ llvm_tools_filegroup {
     visibility: [
         "//development/scripts:__subpackages__",
         "//external/deqp/android/cts:__subpackages__",
-        "//packages/modules/Bluetooth/system:__subpackages__",
     ],
     // The tools and libs in the filegroup are in
     // ./soong/clangprebuilts.go:llvmToolsFiles
