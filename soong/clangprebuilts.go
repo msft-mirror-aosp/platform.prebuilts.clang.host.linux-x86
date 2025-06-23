@@ -36,6 +36,7 @@ var (
 		"bin/llvm-strip",
 		"bin/llvm-symbolizer",
 		"lib/libc++.so",
+		"lib/x86_64-unknown-linux-gnu/libc++.so",
 	}
 )
 
