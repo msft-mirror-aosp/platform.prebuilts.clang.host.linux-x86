@@ -31,8 +31,10 @@ import (
 var (
 	// Files included in the llvm-tools filegroup in ../Android.bp
 	llvmToolsFiles = []string{
-		"bin/llvm-symbolizer",
 		"bin/llvm-cxxfilt",
+		"bin/llvm-objcopy",
+		"bin/llvm-strip",
+		"bin/llvm-symbolizer",
 		"lib/libc++.so",
 	}
 )
