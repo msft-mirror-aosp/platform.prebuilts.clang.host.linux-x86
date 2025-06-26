@@ -1,11 +1,11 @@
 {
     "attempt_id": 1,
     "best_target_priority": 1,
-    "bid": "13563557",
+    "bid": "13688100",
     "branch": "git_llvm-r563880-release",
     "branch_priority": 1,
     "build_configs": {
-        "git_llvm-r563880-release/llvm_linux_bootstrap": "13563557"
+        "git_llvm-r563880-release/llvm_linux_bootstrap": "13688100"
     },
     "build_type": "submitted",
     "device_dir": "/mnt/disks/build-disk/src/googleplex-android/llvm-r563880-release",
@@ -13,7 +13,7 @@
     "enable_docker": true,
     "git-pull": null,
     "git-server": "https://googleplex-android.googlesource.com",
-    "hostname": "r-cb7db6ea79e36e33-vztg",
+    "hostname": "r-8773ef94fb60869e-xmfk",
     "inc-build": false,
     "java-version": "",
     "last_logfile": null,
@@ -44,7 +44,7 @@
                     "name": "goog",
                     "review": "https://googleplex-android.googlesource.com/"
                 },
-                "revision": "b2e62addd57658e765c222f8bc330c74227c5557",
+                "revision": "c5447c777fd4811bb1053bfdc024f66f44f51aa4",
                 "upstream": "llvm-r563880-release"
             },
             {
@@ -326,7 +326,7 @@
             },
             {
                 "name": "platform/manifest",
-                "revision": "164efed34d29dda862304b3a65028d2f8a5fc1f7"
+                "revision": "5a18f9834ca1c555f4ebb31ee71fa30d1db56993"
             }
         ],
         "remotes": [
@@ -350,7 +350,7 @@
         "platform/external/swig": "dcabe60c35082d3beab79359d48093a23f0b09aa",
         "platform/external/toolchain-utils": "987e85a3529fe6be878ce391e5708f465e86451f",
         "platform/external/zstd": "7ce0c0484513223124cb8c4f036ebd7bd18a61f1",
-        "platform/manifest": "164efed34d29dda862304b3a65028d2f8a5fc1f7",
+        "platform/manifest": "5a18f9834ca1c555f4ebb31ee71fa30d1db56993",
         "platform/prebuilts/build-tools": "33bb76fd08d10f224866f45e5b036da4b2973443",
         "platform/prebuilts/clang/host/darwin-x86": "c89b9c5bc6375ebab012e4f1135d53e3c80621f0",
         "platform/prebuilts/clang/host/linux-x86": "3795f4c8985f2c16f070561ad7d3ce8a318b43cb",
@@ -367,7 +367,7 @@
         "platform/tools/repohooks": "2895b391eb6c83e54f98aabc4c09dc00c9e97c99",
         "toolchain/common": "0bce8b062126242872e9f3fc66760d3f76773c49",
         "toolchain/llvm-project": "5e96669f06077099aa41290cdb4c5e6fa0f59349",
-        "toolchain/llvm_android": "b2e62addd57658e765c222f8bc330c74227c5557",
+        "toolchain/llvm_android": "c5447c777fd4811bb1053bfdc024f66f44f51aa4",
         "toolchain/prebuilts/ndk/releases": "70449f53a7e2767c41ad1ad6171ea8f9c239112d",
         "toolchain/xz": "344ec8838064682d8803fa483bee7e4455cbddac"
     },
@@ -376,18 +376,18 @@
     "repo_manifest_file": "default.xml",
     "reset_image_build": false,
     "src_ctrl": "repo",
-    "sync_finish_time": 1748439046.8937209,
-    "sync_start_time": 1748438951.3784277,
+    "sync_finish_time": 1750763612.9320915,
+    "sync_start_time": 1750763458.7965555,
     "sync_succeed": 1,
     "target": {
         "apiary_target": "llvm_linux",
         "dir_list": [
             "applied.prop",
             "build_times.txt",
+            "manifest_13688100.xml",
             "build_info.json",
             "multiple.intoto.jsonl",
-            "clang-13563557-linux-x86.tar.xz",
-            "manifest_13563557.xml",
+            "clang-13688100-linux-x86.tar.xz",
             "repo.prop",
             "logs/execute_build_result.textproto",
             "logs/buildbot_trace.trace",
@@ -410,7 +410,7 @@
             "logs/resource_utilization/cpu_usage.json",
             "BUILD_INFO"
         ],
-        "dist-dir": "/buildbot/dist_dirs/git_llvm-r563880-release-linux-llvm/13563557",
+        "dist-dir": "/buildbot/dist_dirs/git_llvm-r563880-release-linux-llvm/13688100",
         "name": "llvm_linux",
         "rules": [
             [
@@ -420,9 +420,9 @@
                 false
             ]
         ],
-        "storage_path": "/bigstore/android-build/builds/git_llvm-r563880-release-linux-llvm_linux/13563557/28e79f0a5546c67d58ab40d7cb3b5a6561b96ecb592140ba8e2c8df61f67d2e1/1",
-        "target_finish_time": 1748445510.577471,
-        "target_start_time": 1748439048.3645718,
+        "storage_path": "/bigstore/android-build/builds/git_llvm-r563880-release-linux-llvm_linux/13688100/6806495974190af98971d35dbcb08a0bebd800a8d40366b94c85c48a5aa2f8da/1",
+        "target_finish_time": 1750770291.9846883,
+        "target_start_time": 1750763614.6409595,
         "target_status": 1
     },
     "trident_usage": {
@@ -431,50 +431,50 @@
     },
     "use_goma": false,
     "worknode": {
-        "containerId": "L50500030012587021",
-        "creationTimeMillis": "1748437269262",
+        "containerId": "L45500030013410086",
+        "creationTimeMillis": "1750761900816",
         "currentAttempt": {
-            "attemptId": "CZffzWzBL+2wJZWKBW/C4A==",
+            "attemptId": "O6nn4GNbJO1KLcKRlcLHfg==",
             "progressMessages": [
                 {
-                    "displayMessage": "Build 13563557 for node L50500030012587021:N36500030212132817 has been inserted",
-                    "messageString": "Build 13563557 for node L50500030012587021:N36500030212132817 has been inserted",
-                    "timeMillis": "1748438562416"
+                    "displayMessage": "Build 13688100 for node L45500030013410086:N71600030224294163 has been inserted",
+                    "messageString": "Build 13688100 for node L45500030013410086:N71600030224294163 has been inserted",
+                    "timeMillis": "1750763245189"
                 }
             ],
-            "startTimeMillis": "1748438558539"
+            "startTimeMillis": "1750763240248"
         },
         "heartbeatTimeMillis": "86400000",
-        "id": "L50500030012587021:N36500030212132817",
+        "id": "L45500030013410086:N71600030224294163",
         "inputEdges": [
             {
-                "neighborId": "L50500030012587021:N37700030212132811"
+                "neighborId": "L45500030013410086:N25900030224294157"
             },
             {
-                "neighborId": "L50500030012587021:N62800030212132820"
+                "neighborId": "L45500030013410086:N53200030224294166"
             }
         ],
         "isFinal": false,
-        "lastUpdatedMillis": "1748438562535",
+        "lastUpdatedMillis": "1750763245294",
         "nodeClass": "postsubmit",
         "retryStatus": {
             "maximumRetries": 4,
             "retryCount": 0
         },
-        "revision": "lDHRm0Oa4J0uKEtjYCVBlA==",
+        "revision": "LaCvWb5AsaleTtSMnI8wGQ==",
         "status": "scheduled",
         "statusHistorys": [
             {
                 "status": "created",
-                "timestampMillis": "1748437269262"
+                "timestampMillis": "1750761900816"
             },
             {
                 "status": "pending",
-                "timestampMillis": "1748438557548"
+                "timestampMillis": "1750763234882"
             },
             {
                 "status": "scheduled",
-                "timestampMillis": "1748438558539"
+                "timestampMillis": "1750763240248"
             }
         ],
         "workExecutorType": "submittedBuild",
@@ -486,7 +486,7 @@
                 },
                 "buildDependencies": [
                     {
-                        "dependencyBuildId": "13563557",
+                        "dependencyBuildId": "13688100",
                         "dependencyInfo": {
                             "artifactPrefixs": [
                                 "stage1-install"
@@ -498,8 +498,8 @@
                         }
                     }
                 ],
-                "buildId": "13563557",
-                "gerritPollerTimestamp": "1748437248548",
+                "buildId": "13688100",
+                "gerritPollerTimestamp": "1750761713770",
                 "manuallyTriggered": false,
                 "syncTimeoutSecond": 5400,
                 "target": {
