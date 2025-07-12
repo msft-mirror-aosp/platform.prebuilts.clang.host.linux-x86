@@ -134,7 +134,8 @@ filegroup(
     srcs = glob([
         "bin/*",
         "lib/*",
-        "lib/x86_64-unknown-linux-musl/*",
+        "lib/**/x86_64-unknown-linux-musl/*",
+        "musl/lib/**/x86_64-unknown-linux-musl/*",
     ]) + [
         ":common_binaries",
     ],
