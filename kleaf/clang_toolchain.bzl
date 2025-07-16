@@ -267,7 +267,7 @@ def _get_extra_kwargs(arch, clang_pkg):
             target = VARS.get("AARCH64_NDK_TRIPLE"),
             sysroot_label = "@prebuilt_ndk//:sysroot_{}_files".format(VARS.get("AARCH64_NDK_TRIPLE")) if "AARCH64_NDK_TRIPLE" in VARS else None,
             sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "AARCH64_NDK_TRIPLE" in VARS else None,
-            clang_all_binaries = clang_pkg.relative(":common_binaries"),
+            clang_all_binaries = clang_pkg.relative(":android_aarch64_binaries"),
             clang_includes = clang_pkg.relative(":common_includes"),
         )
 
@@ -276,7 +276,7 @@ def _get_extra_kwargs(arch, clang_pkg):
             target = VARS.get("ARM_NDK_TRIPLE"),
             sysroot_label = "@prebuilt_ndk//:sysroot_{}_files".format(VARS.get("ARM_NDK_TRIPLE")) if "ARM_NDK_TRIPLE" in VARS else None,
             sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "ARM_NDK_TRIPLE" in VARS else None,
-            clang_all_binaries = clang_pkg.relative(":common_binaries"),
+            clang_all_binaries = clang_pkg.relative(":android_arm_binaries"),
             clang_includes = clang_pkg.relative(":common_includes"),
         )
 
@@ -285,7 +285,7 @@ def _get_extra_kwargs(arch, clang_pkg):
             target = VARS.get("X86_64_NDK_TRIPLE"),
             sysroot_label = "@prebuilt_ndk//:sysroot_{}_files".format(VARS.get("X86_64_NDK_TRIPLE")) if "X86_64_NDK_TRIPLE" in VARS else None,
             sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "X86_64_NDK_TRIPLE" in VARS else None,
-            clang_all_binaries = clang_pkg.relative(":common_binaries"),
+            clang_all_binaries = clang_pkg.relative(":android_x86_64_binaries"),
             clang_includes = clang_pkg.relative(":common_includes"),
         )
 
@@ -295,14 +295,14 @@ def _get_extra_kwargs(arch, clang_pkg):
             target = VARS.get("X86_64_NDK_TRIPLE"),
             sysroot_label = "@prebuilt_ndk//:sysroot_{}_files".format(VARS.get("X86_64_NDK_TRIPLE")) if "X86_64_NDK_TRIPLE" in VARS else None,
             sysroot_dir = "@prebuilt_ndk//:sysroot_dir" if "X86_64_NDK_TRIPLE" in VARS else None,
-            clang_all_binaries = clang_pkg.relative(":common_binaries"),
+            clang_all_binaries = clang_pkg.relative(":android_x86_64_binaries"),
             clang_includes = clang_pkg.relative(":common_includes"),
         )
 
     if arch.target_cpu == "riscv64":
         return dict(
             # TODO(b/271919464): We need NDK_TRIPLE for riscv
-            clang_all_binaries = clang_pkg.relative(":common_binaries"),
+            clang_all_binaries = clang_pkg.relative(":android_riscv64_binaries"),
             clang_includes = clang_pkg.relative(":common_includes"),
         )
 
