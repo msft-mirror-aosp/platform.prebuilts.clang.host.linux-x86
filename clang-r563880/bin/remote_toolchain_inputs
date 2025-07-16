@@ -2,8 +2,11 @@ clang
 clang++
 clang.real
 clang++.real
+clang-real
+clang++-real
 clang-tidy
 clang-tidy.real
+clang-tidy-real
 ../lib/libc++.so
 lld
 ld64.lld
