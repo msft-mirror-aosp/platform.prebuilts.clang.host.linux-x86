@@ -114,7 +114,7 @@ filegroup(
 filegroup(
     name = "glibc_binaries",
     srcs = glob([
-        "lib/x86_64-unknown-linux-gnu/*",
+        "lib/**/x86_64-unknown-linux-gnu/*",
     ]) + [
         ":common_binaries",
     ],
@@ -156,6 +156,7 @@ filegroup(
     name = "android_aarch64_binaries",
     srcs = glob([
         "lib/**/*-aarch64-android*",
+        "lib/**/aarch64/**",
     ]) + [
         ":common_binaries",
     ],
@@ -166,6 +167,7 @@ filegroup(
     name = "android_arm_binaries",
     srcs = glob([
         "lib/**/*-arm-android*",
+        "lib/**/arm/**",
     ]) + [
         ":common_binaries",
     ],
@@ -176,6 +178,7 @@ filegroup(
     name = "android_riscv64_binaries",
     srcs = glob([
         "lib/**/*-riscv64-android*",
+        "lib/**/riscv64/**",
     ]) + [
         ":common_binaries",
     ],
@@ -186,6 +189,7 @@ filegroup(
     name = "android_x86_64_binaries",
     srcs = glob([
         "lib/**/*-x86_64-android*",
+        "lib/**/x86_64/**",
     ]) + [
         ":common_binaries",
     ],
