@@ -1,21 +1,122 @@
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
-    name = "binaries",
+    name = "common_binaries",
     srcs = glob([
         "bin/*",
         "lib/*",
-        "lib/x86_64-unknown-linux-gnu/*",
     ]),
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
-    name = "includes",
+    name = "common_includes",
     srcs = glob([
         "lib/clang/*/include/**",
         "include/c++/**",
-        "include/x86_64-unknown-linux-gnu/c++/**",
     ]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "glibc_binaries",
+    srcs = glob([
+        "lib/**/x86_64-unknown-linux-gnu/*",
+    ]) + [
+        ":common_binaries",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "glibc_includes",
+    srcs = glob([
+        "include/x86_64-unknown-linux-gnu/c++/**",
+    ]) + [
+        ":common_includes",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "musl_binaries",
+    srcs = glob([
+        "lib/**/x86_64-unknown-linux-musl/*",
+        "musl/lib/**/x86_64-unknown-linux-musl/*",
+    ]) + [
+        ":common_binaries",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "musl_includes",
+    srcs = glob([
+        "lib/clang/*/include/**",
+        "include/c++/**",
+        "include/x86_64-unknown-linux-musl/c++/**",
+    ]) + [
+        ":common_includes",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "android_aarch64_binaries",
+    srcs = glob([
+        "lib/**/*-aarch64-android*",
+        "lib/**/aarch64/**",
+    ]) + [
+        ":common_binaries",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "android_arm_binaries",
+    srcs = glob([
+        "lib/**/*-arm-android*",
+        "lib/**/arm/**",
+    ]) + [
+        ":common_binaries",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "android_riscv64_binaries",
+    srcs = glob([
+        "lib/**/*-riscv64-android*",
+        "lib/**/riscv64/**",
+    ]) + [
+        ":common_binaries",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "android_x86_64_binaries",
+    srcs = glob([
+        "lib/**/*-x86_64-android*",
+        "lib/**/x86_64/**",
+    ]) + [
+        ":common_binaries",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "binaries",
+    actual = ":glibc_binaries",
+    deprecation = "Use :glibc_binaries or :musl_binaries instead",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "includes",
+    actual = ":glibc_binaries",
+    deprecation = "Use :glibc_binaries or :musl_binaries instead",
+    visibility = ["//visibility:public"],
 )
 
 # Special python3 for u-boot.
@@ -31,3 +132,11 @@ py_runtime(
     python_version = "PY3",
     visibility = ["//u-boot:__subpackages__"],
 )
+
+exports_files([
+    "bin/clang",
+    "bin/clang++",
+    "bin/llvm-ar",
+    "bin/llvm-objcopy",
+    "bin/llvm-strip",
+])
