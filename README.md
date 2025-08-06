@@ -58,9 +58,8 @@ LLVM Users
   * Currently clang-r530567.
   * "clang_emu_prebuilts" is hardcoded to clang-r487747c.
   * The manifest for this project is pinned.
-  * Look for "clang-" in [external/qemu/android/build/toolchains.json](https://android.googlesource.com/platform/external/qemu/+/emu-master-dev/android/build/toolchains.json#2).
-    * Note that they work out of the emu-master-dev branch.
-    * [Android Code Search link](https://cs.android.com/android/platform/superproject/+/emu-master-dev:external/qemu/android/build/toolchains.json?q=clang)
+  * Look for "clang-" in [external/qemu/android/build/toolchains.json](https://googleplex-android.git.corp.google.com/platform/external/qemu/+/refs/heads/emu-main-dev/android/build/toolchains.json).
+    * Note that they work out of the emu-main-dev branch.
 
 * [**Context Hub Runtime Environment (CHRE)**](https://android.googlesource.com/platform/system/chre/)
   * Currently clang-r563880
