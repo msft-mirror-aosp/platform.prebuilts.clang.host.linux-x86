@@ -534,6 +534,10 @@ llvm_prebuilt_build_tool {
 }
 
 llvm_prebuilt_build_tool {
+    name: "llvm-objcopy",
+}
+
+llvm_prebuilt_build_tool {
     name: "llvm-objdump",
 }
 
