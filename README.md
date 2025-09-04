@@ -160,6 +160,7 @@ Prebuilt Versions
 * [clang-r530567](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-r530567) - July 2024
 * [clang-r536225](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/main/clang-r536225) - November 2024
 * [clang-r547379](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/main/clang-r547379) - February 2025
+* [clang-r563880](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/main/clang-r563880) - July 2025
 
 
 More Information
