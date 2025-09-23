@@ -38,6 +38,15 @@ def _action_configs(ctx):
             ),
         ],
     )
+    preprocess_assemble = action_config(
+        action_name = ACTION_NAMES.preprocess_assemble,
+        tools = [
+            struct(
+                type_name = "tool",
+                tool = ctx.file.clang,
+            ),
+        ],
+    )
     compile_plus_plus = action_config(
         action_name = ACTION_NAMES.cpp_compile,
         tools = [
@@ -95,6 +104,7 @@ def _action_configs(ctx):
         ar,
         strip,
         objcopy,
+        preprocess_assemble,
     ]
 
 def _tool_attrs():
