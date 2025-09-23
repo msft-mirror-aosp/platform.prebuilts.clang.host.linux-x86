@@ -35,7 +35,6 @@ var (
 		"bin/llvm-objcopy",
 		"bin/llvm-strip",
 		"bin/llvm-symbolizer",
-		"lib/libc++.so",
 		"lib/x86_64-unknown-linux-gnu/libc++.so",
 	}
 )
@@ -375,7 +374,6 @@ func llvmPrebuiltBuildTool(ctx android.LoadHookContext) {
 	name := strings.TrimPrefix(ctx.ModuleName(), "prebuilt_")
 	src := path.Join(clangDir, "bin", name)
 	deps := []string{
-		path.Join(clangDir, "lib", "libc++.so"),
 		path.Join(clangDir, "lib", "x86_64-unknown-linux-gnu", "libc++.so"),
 	}
 
