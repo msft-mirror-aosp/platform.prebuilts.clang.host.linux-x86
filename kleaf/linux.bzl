@@ -47,6 +47,22 @@ def _linux_features(ctx):
     features.append(feature(
         name = "kleaf-host-musl",
         enabled = False,
+
+        # musl-specific flags
+        flag_sets = [
+            # Do not link to default libs; we already provide libc_musl.so.
+            flag_set(
+                actions = ALL_CC_LINK_ACTION_NAMES,
+                flag_groups = [
+                    flag_group(
+                        flags = [
+                            "-z",
+                            "nodefaultlib",
+                        ],
+                    ),
+                ],
+            ),
+        ],
     ))
 
     # Flags applied to C++ code
