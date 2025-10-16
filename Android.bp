@@ -385,6 +385,24 @@ llvm_prebuilt_library_shared {
     },
 }
 
+// Export libLLVM shared library
+llvm_prebuilt_library_shared {
+    name: "libLLVM_host",
+    host_supported: true,
+    device_supported: false,
+    sanitize: {
+        never: true,
+    },
+    shared_libs: ["libc++"],
+    target: {
+        darwin: {
+            strip: {
+                none: true,
+            },
+        },
+    },
+}
+
 cc_defaults {
     name: "libc++-device-base-default",
     device_supported: true,
