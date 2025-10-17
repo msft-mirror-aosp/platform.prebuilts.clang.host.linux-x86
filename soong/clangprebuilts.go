@@ -255,6 +255,12 @@ func llvmPrebuiltLibraryShared(ctx android.LoadHookContext) {
 		if hasDarwinClangPrebuilt(ctx) {
 			p.Target.Darwin.Srcs = []string{":libclang-cpp_host_darwin"}
 		}
+	} else if moduleName == "libLLVM_host" {
+		p.Export_include_dirs = []string{path.Join(clangDir, "include")}
+		p.Target.Glibc_x86_64.Srcs = []string{path.Join(clangDir, "lib", "libLLVM.so")}
+		if hasDarwinClangPrebuilt(ctx) {
+			p.Target.Darwin.Srcs = []string{":libLLVM_host_darwin"}
+		}
 	} else {
 		ctx.ModuleErrorf("unsupported LLVM prebuilt shared library: " + moduleName)
 	}
@@ -582,6 +588,8 @@ func llvmDarwinFileGroup(ctx android.LoadHookContext) {
 	switch moduleName {
 	case "libclang-cpp_host_darwin":
 		libName = "libclang-cpp.dylib"
+	case "libLLVM_host_darwin":
+		libName = "libLLVM.dylib"
 	case "libc++_darwin":
 		libName = "libc++.dylib"
 	case "libc++abi_shared_darwin":
