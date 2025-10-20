@@ -99,6 +99,11 @@ LLVM Users
   * Look for "CLANG_VERSION" in [bootable/libbootloader/gbl/integration/aosp_uefi-gbl-mainline/workspace.bzl](https://android.googlesource.com/platform/bootable/libbootloader/+/refs/heads/master/gbl/integration/aosp_uefi-gbl-mainline/workspace.bzl)
     * [Android Code Search link](https://cs.android.com/android/platform/superproject/main/+/main:bootable/libbootloader/gbl/integration/aosp_uefi-gbl-mainline/workspace.bzl)
 
+* **Proprietary Media DRM**
+  * Currently clang-r547379
+  * Look for clang version in go/android-drm-clang-version.
+  * Please contact g/android-drm-team for more information.
+
 
 Prebuilt Versions
 -----------------
@@ -160,6 +165,7 @@ Prebuilt Versions
 * [clang-r530567](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-r530567) - July 2024
 * [clang-r536225](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/main/clang-r536225) - November 2024
 * [clang-r547379](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/main/clang-r547379) - February 2025
+* [clang-r563880](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/main/clang-r563880) - July 2025
 
 
 More Information

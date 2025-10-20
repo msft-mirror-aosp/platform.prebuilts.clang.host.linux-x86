@@ -35,7 +35,6 @@ var (
 		"bin/llvm-objcopy",
 		"bin/llvm-strip",
 		"bin/llvm-symbolizer",
-		"lib/libc++.so",
 		"lib/x86_64-unknown-linux-gnu/libc++.so",
 	}
 )
@@ -256,6 +255,12 @@ func llvmPrebuiltLibraryShared(ctx android.LoadHookContext) {
 		if hasDarwinClangPrebuilt(ctx) {
 			p.Target.Darwin.Srcs = []string{":libclang-cpp_host_darwin"}
 		}
+	} else if moduleName == "libLLVM_host" {
+		p.Export_include_dirs = []string{path.Join(clangDir, "include")}
+		p.Target.Glibc_x86_64.Srcs = []string{path.Join(clangDir, "lib", "libLLVM.so")}
+		if hasDarwinClangPrebuilt(ctx) {
+			p.Target.Darwin.Srcs = []string{":libLLVM_host_darwin"}
+		}
 	} else {
 		ctx.ModuleErrorf("unsupported LLVM prebuilt shared library: " + moduleName)
 	}
@@ -375,7 +380,6 @@ func llvmPrebuiltBuildTool(ctx android.LoadHookContext) {
 	name := strings.TrimPrefix(ctx.ModuleName(), "prebuilt_")
 	src := path.Join(clangDir, "bin", name)
 	deps := []string{
-		path.Join(clangDir, "lib", "libc++.so"),
 		path.Join(clangDir, "lib", "x86_64-unknown-linux-gnu", "libc++.so"),
 	}
 
@@ -462,10 +466,10 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, libProps *preb
 	p.Target.Linux_bionic_arm64.Stem = proptools.StringPtr(name + "-aarch64-android" + suffix)
 	p.Target.Linux_bionic_x86_64.Srcs = []string{path.Join(libDir, name+"-x86_64-android"+suffix+".so")}
 	p.Target.Linux_bionic_x86_64.Stem = proptools.StringPtr(name + "-x86_64-android" + suffix)
-	p.Target.Glibc_x86.Srcs = []string{path.Join(libDir, name+"-i386"+suffix+".so")}
-	p.Target.Glibc_x86.Stem = proptools.StringPtr(name + "-i386" + suffix)
-	p.Target.Glibc_x86_64.Srcs = []string{path.Join(libDir, name+"-x86_64"+suffix+".so")}
-	p.Target.Glibc_x86_64.Stem = proptools.StringPtr(name + "-x86_64" + suffix)
+	p.Target.Glibc_x86.Srcs = []string{path.Join(libDir, "../i386-unknown-linux-gnu", name+suffix+".so")}
+	p.Target.Glibc_x86.Stem = proptools.StringPtr(name + suffix)
+	p.Target.Glibc_x86_64.Srcs = []string{path.Join(libDir, "../x86_64-unknown-linux-gnu", name+suffix+".so")}
+	p.Target.Glibc_x86_64.Stem = proptools.StringPtr(name + suffix)
 	p.Target.Linux_musl_x86.Srcs = []string{path.Join(libDir, "i686-unknown-linux-musl/lib/linux", name+"-i386"+suffix+".so")}
 	p.Target.Linux_musl_x86.Stem = proptools.StringPtr(name + "-i386" + suffix)
 	p.Target.Linux_musl_x86_64.Srcs = []string{path.Join(libDir, "x86_64-unknown-linux-musl/lib/linux", name+"-x86_64"+suffix+".so")}
@@ -530,8 +534,8 @@ func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext, libProps *preb
 	p.Target.Android_x86_64.Srcs = []string{path.Join(libDir, name+"-x86_64-android"+suffix+".a")}
 	p.Target.Linux_bionic_arm64.Srcs = []string{path.Join(libDir, name+"-aarch64-android"+suffix+".a")}
 	p.Target.Linux_bionic_x86_64.Srcs = []string{path.Join(libDir, name+"-x86_64-android"+suffix+".a")}
-	p.Target.Glibc_x86.Srcs = []string{path.Join(libDir, name+"-i386"+suffix+".a")}
-	p.Target.Glibc_x86_64.Srcs = []string{path.Join(libDir, name+"-x86_64"+suffix+".a")}
+	p.Target.Glibc_x86.Srcs = []string{path.Join(libDir, "../i386-unknown-linux-gnu", name+suffix+".a")}
+	p.Target.Glibc_x86_64.Srcs = []string{path.Join(libDir, "../x86_64-unknown-linux-gnu", name+suffix+".a")}
 	p.Target.Linux_musl_x86.Srcs = []string{path.Join(libDir, "i686-unknown-linux-musl/lib/linux", name+"-i386"+suffix+".a")}
 	p.Target.Linux_musl_x86_64.Srcs = []string{path.Join(libDir, "x86_64-unknown-linux-musl/lib/linux", name+"-x86_64"+suffix+".a")}
 	p.Target.Linux_musl_arm.Srcs = []string{path.Join(libDir, "arm-unknown-linux-musleabihf/lib/linux", name+"-armhf"+suffix+".a")}
@@ -567,8 +571,8 @@ func libClangRtPrebuiltObject(ctx android.LoadHookContext) {
 	name := strings.TrimPrefix(ctx.ModuleName(), "prebuilt_")
 
 	p := &props{}
-	p.Arch.X86.Srcs = []string{path.Join(libDir, name+"-i386.o")}
-	p.Arch.X86_64.Srcs = []string{path.Join(libDir, name+"-x86_64.o")}
+	p.Arch.X86.Srcs = []string{path.Join(libDir, "../i386-unknown-linux-gnu", name+".o")}
+	p.Arch.X86_64.Srcs = []string{path.Join(libDir, "../x86_64-unknown-linux-gnu", name+".o")}
 	p.Arch.Arm.Srcs = []string{path.Join(libDir, "arm-unknown-linux-musleabihf/lib/linux", name+"-armhf.o")}
 	p.Arch.Arm64.Srcs = []string{path.Join(libDir, "aarch64-unknown-linux-musl/lib/linux", name+"-aarch64.o")}
 	p.System_shared_libs = []string{}
@@ -584,6 +588,8 @@ func llvmDarwinFileGroup(ctx android.LoadHookContext) {
 	switch moduleName {
 	case "libclang-cpp_host_darwin":
 		libName = "libclang-cpp.dylib"
+	case "libLLVM_host_darwin":
+		libName = "libLLVM.dylib"
 	case "libc++_darwin":
 		libName = "libc++.dylib"
 	case "libc++abi_shared_darwin":

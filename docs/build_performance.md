@@ -9,7 +9,7 @@ time spent building the Android platform. It can be produced by running:
 
 ```
 rm -f /tmp/rusage.txt
-TOOLCHAIN_RUSAGE_OUTPUT=/tmp/rusage.txt m -j{processor count / 4}
+TOOLCHAIN_RUSAGE_OUTPUT=/tmp/rusage.txt USE_RBE=false m -j{processor count / 4}
 ```
 
 We decrease the parallelism to reduce noise caused by resource contention. Also
