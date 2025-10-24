@@ -133,7 +133,6 @@ py_runtime(
         ],
     ),
     interpreter = "python3/bin/python3",
-    python_version = "PY3",
     visibility = ["//u-boot:__subpackages__"],
 )
 
