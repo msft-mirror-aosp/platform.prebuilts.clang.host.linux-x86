@@ -27,6 +27,10 @@ load(
     "ALL_CC_COMPILE_ACTION_NAMES",
     "ALL_CC_LINK_ACTION_NAMES",
 )
+load(
+    ":action_names.bzl",
+    "READELF_ACTION_NAME",
+)
 
 def _action_configs(ctx):
     compile = action_config(
@@ -96,6 +100,15 @@ def _action_configs(ctx):
             ),
         ],
     )
+    readelf = action_config(
+        action_name = READELF_ACTION_NAME,
+        tools = [
+            struct(
+                type_name = "tool",
+                tool = ctx.file.readelf,
+            ),
+        ],
+    )
 
     return [
         compile,
@@ -105,6 +118,7 @@ def _action_configs(ctx):
         strip,
         objcopy,
         preprocess_assemble,
+        readelf,
     ]
 
 def _tool_attrs():
@@ -115,6 +129,7 @@ def _tool_attrs():
         "strip": attr.label(allow_single_file = True),
         "ar": attr.label(allow_single_file = True),
         "objcopy": attr.label(allow_single_file = True),
+        "readelf": attr.label(allow_single_file = True),
     }
 
 def _common_cflags():
