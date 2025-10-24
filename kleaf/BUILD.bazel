@@ -15,6 +15,12 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
 bzl_library(
+    name = "action_names",
+    srcs = ["action_names.bzl"],
+    visibility = ["//build/kernel/kleaf:__subpackages__"],
+)
+
+bzl_library(
     name = "architecture_constants",
     srcs = ["architecture_constants.bzl"],
     visibility = ["//visibility:private"],
