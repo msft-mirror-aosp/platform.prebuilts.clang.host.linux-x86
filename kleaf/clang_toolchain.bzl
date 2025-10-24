@@ -107,7 +107,9 @@ def _clang_toolchain_internal(
     strip = clang_pkg.relative(":bin/llvm-strip")
     ar = clang_pkg.relative(":bin/llvm-ar")
     objcopy = clang_pkg.relative(":bin/llvm-objcopy")
-    # cc_* rules doesn't seem to need nm, obj-dump, size, and readelf
+    readelf = clang_pkg.relative(":bin/llvm-readelf")
+    # cc_* rules doesn't seem to need nm, obj-dump, size.
+    # Kleaf needs readelf.
 
     native.filegroup(
         name = name + "_compiler_files",
@@ -147,6 +149,7 @@ def _clang_toolchain_internal(
         strip = strip,
         ar = ar,
         objcopy = objcopy,
+        readelf = readelf,
         extra_features = extra_features,
         static_link_cpp_runtimes = static_link_cpp_runtimes,
     )
