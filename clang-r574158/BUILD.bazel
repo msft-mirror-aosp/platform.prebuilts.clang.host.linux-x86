@@ -133,14 +133,15 @@ py_runtime(
         ],
     ),
     interpreter = "python3/bin/python3",
-    python_version = "PY3",
     visibility = ["//u-boot:__subpackages__"],
 )
 
 exports_files([
+    # keep sorted
     "bin/clang",
     "bin/clang++",
     "bin/llvm-ar",
     "bin/llvm-objcopy",
+    "bin/llvm-readelf",
     "bin/llvm-strip",
 ])
