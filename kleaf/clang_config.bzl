@@ -24,6 +24,7 @@ load(
     "@rules_cc//cc:action_names.bzl",
     "ACTION_NAMES",
 )
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load(":android.bzl", "android")
 load(":common.bzl", "common")
 load(":linux.bzl", "linux")
