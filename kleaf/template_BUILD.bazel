@@ -4,6 +4,20 @@ load("@rules_python//python:defs.bzl", "py_runtime")
 
 package(default_visibility = ["//visibility:private"])
 
+exports_files(
+    [
+        "bin/clang",
+        "bin/clang++",
+        "bin/llvm-strip",
+        "bin/llvm-ar",
+        "bin/llvm-objcopy",
+        "bin/llvm-readelf",
+    ],
+    visibility = [
+        "@kleaf_clang_toolchain//:__subpackages__",
+    ],
+)
+
 filegroup(
     name = "common_binaries",
     srcs = glob([
@@ -133,14 +147,15 @@ py_runtime(
         ],
     ),
     interpreter = "python3/bin/python3",
-    python_version = "PY3",
     visibility = ["//u-boot:__subpackages__"],
 )
 
 exports_files([
+    # keep sorted
     "bin/clang",
     "bin/clang++",
     "bin/llvm-ar",
     "bin/llvm-objcopy",
+    "bin/llvm-readelf",
     "bin/llvm-strip",
 ])
