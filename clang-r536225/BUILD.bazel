@@ -1,3 +1,5 @@
+load("@rules_python//python:defs.bzl", "py_runtime")
+
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
@@ -18,16 +20,13 @@ filegroup(
     ]),
 )
 
-# Special python3 for u-boot.
+# Special python3 for libclang and u-boot.
 py_runtime(
     name = "python3",
-    files = glob(
-        ["python3/**"],
-        exclude = [
-            "**/site-packages/**",
-        ],
-    ),
+    files = glob([
+        "python3/**",
+        "lib/python3/site-packages/clang/**",
+    ]),
     interpreter = "python3/bin/python3",
-    python_version = "PY3",
-    visibility = ["//u-boot:__subpackages__"],
+    visibility = ["//visibility:public"],
 )
