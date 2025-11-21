@@ -59,6 +59,7 @@ set_target_properties(lldCommon PROPERTIES
 
 # Create imported target lld
 add_executable(lld IMPORTED)
+set_property(TARGET lld PROPERTY ENABLE_EXPORTS 1)
 
 # Create imported target lldCOFF
 add_library(lldCOFF STATIC IMPORTED)

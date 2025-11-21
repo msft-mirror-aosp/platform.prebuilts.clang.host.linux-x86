@@ -9,7 +9,7 @@
 
   <project path="toolchain/llvm-project" name="toolchain/llvm-project" revision="9f872551d3c681d06fd303b36f16ed5c274735eb" upstream="llvm-r574158-release" />
 
-  <project path="toolchain/llvm_android" name="toolchain/llvm_android" revision="f4ede69e09592429aea78b5bce28844ada7b5d3e" upstream="llvm-r574158-release" />
+  <project path="toolchain/llvm_android" name="toolchain/llvm_android" revision="7f66b813d8e47b8e2be564f40dd9de357380a640" upstream="llvm-r574158-release" />
 
   <project path="toolchain/common" name="toolchain/common" revision="0bce8b062126242872e9f3fc66760d3f76773c49" upstream="llvm-r574158-release" />
 
@@ -49,7 +49,7 @@
 
   <project path="prebuilts/clang/host/darwin-x86" name="platform/prebuilts/clang/host/darwin-x86" clone-depth="1" revision="b1e73ae4d5409c740061a8fb656756f226b1ee08" upstream="llvm-r574158-release" />
 
-  <project path="prebuilts/clang/host/linux-x86" name="platform/prebuilts/clang/host/linux-x86" clone-depth="1" revision="e65dcf3b520bce1d31a430d90c8f7777612eb573" upstream="llvm-r574158-release" />
+  <project path="prebuilts/clang/host/linux-x86" name="platform/prebuilts/clang/host/linux-x86" clone-depth="1" revision="bdb138fc1316dc53132b11a03174bf6d2ecd5a00" upstream="llvm-r574158-release" />
 
   <project path="prebuilts/clang/host/windows-x86" name="platform/prebuilts/clang/host/windows-x86" clone-depth="1" revision="be252985c50c8ab59496ee072ff705dfd509b26c" upstream="llvm-r574158-release" />
 
