@@ -961,6 +961,7 @@ add_executable(dsymutil IMPORTED)
 
 # Create imported target llc
 add_executable(llc IMPORTED)
+set_property(TARGET llc PROPERTY ENABLE_EXPORTS 1)
 
 # Create imported target lli
 add_executable(lli IMPORTED)
@@ -1092,6 +1093,7 @@ add_executable(llvm-lipo IMPORTED)
 
 # Create imported target llvm-lto2
 add_executable(llvm-lto2 IMPORTED)
+set_property(TARGET llvm-lto2 PROPERTY ENABLE_EXPORTS 1)
 
 # Create imported target llvm-mc
 add_executable(llvm-mc IMPORTED)

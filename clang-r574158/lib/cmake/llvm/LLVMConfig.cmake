@@ -257,7 +257,7 @@ if (NOT "-lpthread" STREQUAL "")
   set(LLVM_PTHREAD_LIB "-lpthread")
 endif()
 
-set(LLVM_ENABLE_PLUGINS OFF)
+set(LLVM_ENABLE_PLUGINS ON)
 set(LLVM_EXPORT_SYMBOLS_FOR_PLUGINS OFF)
 set(LLVM_PLUGIN_EXT .so)
 

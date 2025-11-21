@@ -121,7 +121,7 @@
 #define LLVM_ENABLE_DIA_SDK 0
 
 /* Define if plugins enabled */
-/* #undef LLVM_ENABLE_PLUGINS */
+#define LLVM_ENABLE_PLUGINS
 
 /* Define if logf128 is available */
 /* #undef LLVM_HAS_LOGF128 */
