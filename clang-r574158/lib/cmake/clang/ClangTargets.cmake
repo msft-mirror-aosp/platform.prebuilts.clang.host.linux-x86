@@ -338,6 +338,7 @@ add_executable(diagtool IMPORTED)
 
 # Create imported target clang
 add_executable(clang IMPORTED)
+set_property(TARGET clang PROPERTY ENABLE_EXPORTS 1)
 
 # Create imported target clang-format
 add_executable(clang-format IMPORTED)
@@ -358,6 +359,7 @@ set_target_properties(clangHandleLLVM PROPERTIES
 
 # Create imported target clang-linker-wrapper
 add_executable(clang-linker-wrapper IMPORTED)
+set_property(TARGET clang-linker-wrapper PROPERTY ENABLE_EXPORTS 1)
 
 # Create imported target clang-nvlink-wrapper
 add_executable(clang-nvlink-wrapper IMPORTED)
@@ -603,6 +605,7 @@ set_target_properties(clangTidyMain PROPERTIES
 
 # Create imported target clang-tidy
 add_executable(clang-tidy IMPORTED)
+set_property(TARGET clang-tidy PROPERTY ENABLE_EXPORTS 1)
 
 # Create imported target clangTidyUtils
 add_library(clangTidyUtils STATIC IMPORTED)
