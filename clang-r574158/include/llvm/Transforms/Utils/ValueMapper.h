@@ -194,7 +194,7 @@ public:
 
   void scheduleMapGlobalInitializer(GlobalVariable &GV, Constant &Init,
                                     unsigned MappingContextID = 0);
-  void scheduleMapAppendingVariable(GlobalVariable &GV, Constant *InitPrefix,
+  void scheduleMapAppendingVariable(GlobalVariable &GV, GlobalVariable *OldGV,
                                     bool IsOldCtorDtor,
                                     ArrayRef<Constant *> NewMembers,
                                     unsigned MappingContextID = 0);

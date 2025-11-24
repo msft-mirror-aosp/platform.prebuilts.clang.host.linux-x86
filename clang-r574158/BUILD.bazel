@@ -4,6 +4,20 @@ load("@rules_python//python:defs.bzl", "py_runtime")
 
 package(default_visibility = ["//visibility:private"])
 
+exports_files(
+    [
+        "bin/clang",
+        "bin/clang++",
+        "bin/llvm-strip",
+        "bin/llvm-ar",
+        "bin/llvm-objcopy",
+        "bin/llvm-readelf",
+    ],
+    visibility = [
+        "@kleaf_clang_toolchain//:__subpackages__",
+    ],
+)
+
 filegroup(
     name = "common_binaries",
     srcs = glob([
@@ -123,17 +137,15 @@ alias(
     visibility = ["//visibility:public"],
 )
 
-# Special python3 for u-boot.
+# Special python3 for libclang and u-boot.
 py_runtime(
     name = "python3",
-    files = glob(
-        ["python3/**"],
-        exclude = [
-            "**/site-packages/**",
-        ],
-    ),
+    files = glob([
+        "python3/**",
+        "lib/python3/site-packages/clang/**",
+    ]),
     interpreter = "python3/bin/python3",
-    visibility = ["//u-boot:__subpackages__"],
+    visibility = ["//visibility:public"],
 )
 
 exports_files([
