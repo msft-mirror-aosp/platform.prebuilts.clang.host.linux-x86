@@ -599,10 +599,3 @@ dirgroup {
     ],
     visibility: ["//trusty/vendor/google/aosp/scripts"],
 }
-
-filegroup {
-    name: "clang-libncurses.so.5",
-    srcs: [
-        "clang-3289846/lib64/libncurses.so.5",
-    ],
-}
