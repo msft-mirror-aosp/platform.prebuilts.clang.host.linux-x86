@@ -560,7 +560,15 @@ llvm_prebuilt_build_tool {
 }
 
 llvm_prebuilt_build_tool {
+    name: "llvm-readobj",
+}
+
+llvm_prebuilt_build_tool {
     name: "llvm-strings",
+}
+
+llvm_prebuilt_build_tool {
+    name: "llvm-symbolizer",
 }
 
 subdirs = [
