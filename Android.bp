@@ -605,6 +605,7 @@ dirgroup {
         "clang-r547379",
         "clang-r563880",
         "clang-r563880c",
+        "clang-r574158",
     ],
     visibility: ["//trusty/vendor/google/aosp/scripts"],
 }
