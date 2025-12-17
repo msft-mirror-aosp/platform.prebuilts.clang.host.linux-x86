@@ -142,5 +142,6 @@ exports_files([
     "bin/clang++",
     "bin/llvm-ar",
     "bin/llvm-objcopy",
+    "bin/llvm-readelf",
     "bin/llvm-strip",
 ])
