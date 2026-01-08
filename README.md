@@ -105,6 +105,10 @@ LLVM Users
   * Look for clang version in go/android-drm-clang-version.
   * Please contact g/android-drm-team for more information.
 
+* **IDE Query**
+  * Currently clang-r584948
+  * Update [build/make/tools/ide_query/prober_scripts/ide_query.out](https://source.corp.google.com/h/googleplex-android/platform/superproject/main/+/main:build/make/tools/ide_query/prober_scripts/ide_query.out)
+  * On main branch, run this command and upload the new ide_query.out: OUT_DIR=out build/make/tools/ide_query/prober_scripts/regen.sh
 
 Prebuilt Versions
 -----------------
