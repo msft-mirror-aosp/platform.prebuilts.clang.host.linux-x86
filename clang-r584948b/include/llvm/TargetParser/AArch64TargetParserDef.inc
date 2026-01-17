@@ -11,6 +11,7 @@ ARM_PROCESSOR_FAMILY(AppleA17)
 ARM_PROCESSOR_FAMILY(Neoverse512TVB)
 ARM_PROCESSOR_FAMILY(ThunderXT81)
 ARM_PROCESSOR_FAMILY(CortexA725)
+ARM_PROCESSOR_FAMILY(C1Premium)
 ARM_PROCESSOR_FAMILY(CortexA55)
 ARM_PROCESSOR_FAMILY(MONAKA)
 ARM_PROCESSOR_FAMILY(CortexA78AE)
@@ -27,6 +28,7 @@ ARM_PROCESSOR_FAMILY(AppleA16)
 ARM_PROCESSOR_FAMILY(CortexA73)
 ARM_PROCESSOR_FAMILY(CortexX2)
 ARM_PROCESSOR_FAMILY(AppleA7)
+ARM_PROCESSOR_FAMILY(C1Nano)
 ARM_PROCESSOR_FAMILY(CortexA77)
 ARM_PROCESSOR_FAMILY(CortexA53)
 ARM_PROCESSOR_FAMILY(Ampere1B)
@@ -57,7 +59,9 @@ ARM_PROCESSOR_FAMILY(NeoverseV3)
 ARM_PROCESSOR_FAMILY(ThunderXT88)
 ARM_PROCESSOR_FAMILY(CortexA320)
 ARM_PROCESSOR_FAMILY(Falkor)
+ARM_PROCESSOR_FAMILY(C1Ultra)
 ARM_PROCESSOR_FAMILY(CortexX3)
+ARM_PROCESSOR_FAMILY(C1Pro)
 ARM_PROCESSOR_FAMILY(CortexA720)
 ARM_PROCESSOR_FAMILY(CortexX1)
 ARM_PROCESSOR_FAMILY(CortexA78)
@@ -891,6 +895,47 @@ inline constexpr CpuInfo CpuInfos[] = {
     })
   },
   {
+    "c1-nano",
+    ARMV9_3A,
+    AArch64::ExtensionBitset({
+      AArch64::AEK_SIMD,
+      AArch64::AEK_CLRBHB,
+      AArch64::AEK_CHK,
+      AArch64::AEK_FP,
+      AArch64::AEK_PERFMON,
+      AArch64::AEK_SPECRES2,
+      AArch64::AEK_SSBS,
+      AArch64::AEK_RDM,
+      AArch64::AEK_VH,
+      AArch64::AEK_BF16,
+      AArch64::AEK_DOTPROD,
+      AArch64::AEK_FP16FML,
+      AArch64::AEK_FP16,
+      AArch64::AEK_MPAM,
+      AArch64::AEK_SVE,
+      AArch64::AEK_CCIDX,
+      AArch64::AEK_FCMA,
+      AArch64::AEK_FPAC,
+      AArch64::AEK_JSCVT,
+      AArch64::AEK_AM,
+      AArch64::AEK_RAS,
+      AArch64::AEK_SEL2,
+      AArch64::AEK_TRACEV8_4,
+      AArch64::AEK_ALTERNATIVENZCV,
+      AArch64::AEK_FRINT3264,
+      AArch64::AEK_MTE,
+      AArch64::AEK_FINEGRAINEDTRAPS,
+      AArch64::AEK_HCX,
+      AArch64::AEK_RCPC3,
+      AArch64::AEK_ETE,
+      AArch64::AEK_SVEBITPERM,
+      AArch64::AEK_SVE2,
+      AArch64::AEK_TRBE,
+      AArch64::AEK_SME,
+      AArch64::AEK_SME2,
+    })
+  },
+  {
     "cortex-a57",
     ARMV8A,
     AArch64::ExtensionBitset({
@@ -1277,6 +1322,49 @@ inline constexpr CpuInfo CpuInfos[] = {
     })
   },
   {
+    "c1-pro",
+    ARMV9_3A,
+    AArch64::ExtensionBitset({
+      AArch64::AEK_SIMD,
+      AArch64::AEK_CLRBHB,
+      AArch64::AEK_CHK,
+      AArch64::AEK_FP,
+      AArch64::AEK_PERFMON,
+      AArch64::AEK_SPECRES2,
+      AArch64::AEK_SSBS,
+      AArch64::AEK_RDM,
+      AArch64::AEK_VH,
+      AArch64::AEK_BF16,
+      AArch64::AEK_DOTPROD,
+      AArch64::AEK_FP16FML,
+      AArch64::AEK_FP16,
+      AArch64::AEK_MPAM,
+      AArch64::AEK_PROFILE,
+      AArch64::AEK_SVE,
+      AArch64::AEK_CCIDX,
+      AArch64::AEK_FCMA,
+      AArch64::AEK_FPAC,
+      AArch64::AEK_JSCVT,
+      AArch64::AEK_AM,
+      AArch64::AEK_RAS,
+      AArch64::AEK_SEL2,
+      AArch64::AEK_TRACEV8_4,
+      AArch64::AEK_ALTERNATIVENZCV,
+      AArch64::AEK_FRINT3264,
+      AArch64::AEK_MTE,
+      AArch64::AEK_FINEGRAINEDTRAPS,
+      AArch64::AEK_HCX,
+      AArch64::AEK_SPE_EEF,
+      AArch64::AEK_RCPC3,
+      AArch64::AEK_ETE,
+      AArch64::AEK_SVEBITPERM,
+      AArch64::AEK_SVE2,
+      AArch64::AEK_TRBE,
+      AArch64::AEK_SME,
+      AArch64::AEK_SME2,
+    })
+  },
+  {
     "cortex-r82",
     ARMV8R,
     AArch64::ExtensionBitset({
@@ -1510,6 +1598,92 @@ inline constexpr CpuInfo CpuInfos[] = {
       AArch64::AEK_RCPC,
       AArch64::AEK_RDM,
       AArch64::AEK_FPAC,
+    })
+  },
+  {
+    "c1-premium",
+    ARMV9_3A,
+    AArch64::ExtensionBitset({
+      AArch64::AEK_SIMD,
+      AArch64::AEK_CLRBHB,
+      AArch64::AEK_CHK,
+      AArch64::AEK_FP,
+      AArch64::AEK_PERFMON,
+      AArch64::AEK_SPECRES2,
+      AArch64::AEK_SSBS,
+      AArch64::AEK_RDM,
+      AArch64::AEK_VH,
+      AArch64::AEK_BF16,
+      AArch64::AEK_DOTPROD,
+      AArch64::AEK_FP16FML,
+      AArch64::AEK_FP16,
+      AArch64::AEK_MPAM,
+      AArch64::AEK_PROFILE,
+      AArch64::AEK_SVE,
+      AArch64::AEK_CCIDX,
+      AArch64::AEK_FCMA,
+      AArch64::AEK_FPAC,
+      AArch64::AEK_JSCVT,
+      AArch64::AEK_AM,
+      AArch64::AEK_RAS,
+      AArch64::AEK_SEL2,
+      AArch64::AEK_TRACEV8_4,
+      AArch64::AEK_ALTERNATIVENZCV,
+      AArch64::AEK_FRINT3264,
+      AArch64::AEK_MTE,
+      AArch64::AEK_FINEGRAINEDTRAPS,
+      AArch64::AEK_HCX,
+      AArch64::AEK_SPE_EEF,
+      AArch64::AEK_RCPC3,
+      AArch64::AEK_ETE,
+      AArch64::AEK_SVEBITPERM,
+      AArch64::AEK_SVE2,
+      AArch64::AEK_TRBE,
+      AArch64::AEK_SME,
+      AArch64::AEK_SME2,
+    })
+  },
+  {
+    "c1-ultra",
+    ARMV9_3A,
+    AArch64::ExtensionBitset({
+      AArch64::AEK_SIMD,
+      AArch64::AEK_CLRBHB,
+      AArch64::AEK_CHK,
+      AArch64::AEK_FP,
+      AArch64::AEK_PERFMON,
+      AArch64::AEK_SPECRES2,
+      AArch64::AEK_SSBS,
+      AArch64::AEK_RDM,
+      AArch64::AEK_VH,
+      AArch64::AEK_BF16,
+      AArch64::AEK_DOTPROD,
+      AArch64::AEK_FP16FML,
+      AArch64::AEK_FP16,
+      AArch64::AEK_MPAM,
+      AArch64::AEK_PROFILE,
+      AArch64::AEK_SVE,
+      AArch64::AEK_CCIDX,
+      AArch64::AEK_FCMA,
+      AArch64::AEK_FPAC,
+      AArch64::AEK_JSCVT,
+      AArch64::AEK_AM,
+      AArch64::AEK_RAS,
+      AArch64::AEK_SEL2,
+      AArch64::AEK_TRACEV8_4,
+      AArch64::AEK_ALTERNATIVENZCV,
+      AArch64::AEK_FRINT3264,
+      AArch64::AEK_MTE,
+      AArch64::AEK_FINEGRAINEDTRAPS,
+      AArch64::AEK_HCX,
+      AArch64::AEK_SPE_EEF,
+      AArch64::AEK_RCPC3,
+      AArch64::AEK_ETE,
+      AArch64::AEK_SVEBITPERM,
+      AArch64::AEK_SVE2,
+      AArch64::AEK_TRBE,
+      AArch64::AEK_SME,
+      AArch64::AEK_SME2,
     })
   },
   {
