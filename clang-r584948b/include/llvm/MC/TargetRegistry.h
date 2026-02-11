@@ -46,7 +46,7 @@ class MCDisassembler;
 class MCInstPrinter;
 class MCInstrAnalysis;
 class MCInstrInfo;
-class MCLFIExpander;
+class MCLFIRewriter;
 class MCObjectWriter;
 class MCRegisterInfo;
 class MCRelocationInfo;
@@ -238,9 +238,10 @@ public:
       mca::InstrumentManager *(*)(const MCSubtargetInfo &STI,
                                   const MCInstrInfo &MCII);
 
-  using MCLFIExpanderCtorTy = MCLFIExpander *(*)(
-      MCStreamer &S, std::unique_ptr<MCRegisterInfo> &&RegInfo,
-      std::unique_ptr<MCInstrInfo> &&InstInfo);
+  using MCLFIRewriterCtorTy =
+      MCLFIRewriter *(*)(MCStreamer & S,
+                         std::unique_ptr<MCRegisterInfo> &&RegInfo,
+                         std::unique_ptr<MCInstrInfo> &&InstInfo);
 
 private:
   /// Next - The next registered target in the linked list, maintained by the
@@ -356,9 +357,9 @@ private:
   /// InstrumentManager, if registered (default = nullptr).
   InstrumentManagerCtorTy InstrumentManagerCtorFn = nullptr;
 
-  // MCLFIExpanderCtorFn - Construction function for this target's
-  // MCLFIExpander, if registered.
-  MCLFIExpanderCtorTy MCLFIExpanderCtorFn;
+  // MCLFIRewriterCtorFn - Construction function for this target's
+  // MCLFIRewriter, if registered (default = nullptr).
+  MCLFIRewriterCtorTy MCLFIRewriterCtorFn = nullptr;
 
 public:
   Target() = default;
@@ -559,13 +560,6 @@ public:
       const Triple &T, MCContext &Ctx, std::unique_ptr<MCAsmBackend> TAB,
       std::unique_ptr<MCObjectWriter> OW,
       std::unique_ptr<MCCodeEmitter> Emitter, const MCSubtargetInfo &STI) const;
-  
-  void createMCLFIExpander(MCStreamer &S,
-                           std::unique_ptr<MCRegisterInfo> &&RegInfo,
-                           std::unique_ptr<MCInstrInfo> &&InstInfo) const {
-    if (MCLFIExpanderCtorFn)
-      MCLFIExpanderCtorFn(S, std::move(RegInfo), std::move(InstInfo));
-  }
 
   LLVM_ABI MCStreamer *
   createAsmStreamer(MCContext &Ctx, std::unique_ptr<formatted_raw_ostream> OS,
@@ -591,6 +585,13 @@ public:
     if (NullTargetStreamerCtorFn)
       return NullTargetStreamerCtorFn(S);
     return nullptr;
+  }
+
+  void createMCLFIRewriter(MCStreamer &S,
+                           std::unique_ptr<MCRegisterInfo> &&RegInfo,
+                           std::unique_ptr<MCInstrInfo> &&InstInfo) const {
+    if (MCLFIRewriterCtorFn)
+      MCLFIRewriterCtorFn(S, std::move(RegInfo), std::move(InstInfo));
   }
 
   /// createMCRelocationInfo - Create a target specific MCRelocationInfo.
@@ -1047,9 +1048,8 @@ struct TargetRegistry {
     T.InstrumentManagerCtorFn = Fn;
   }
 
-  static void RegisterMCLFIExpander(Target &T,
-                                    Target::MCLFIExpanderCtorTy Fn) {
-    T.MCLFIExpanderCtorFn = Fn;
+  static void RegisterMCLFIRewriter(Target &T, Target::MCLFIRewriterCtorTy Fn) {
+    T.MCLFIRewriterCtorFn = Fn;
   }
 
   /// @}
