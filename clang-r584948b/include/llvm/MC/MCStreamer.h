@@ -19,8 +19,8 @@
 #include "llvm/ADT/StringRef.h"
 #include "llvm/MC/MCDirectives.h"
 #include "llvm/MC/MCDwarf.h"
+#include "llvm/MC/MCLFIRewriter.h"
 #include "llvm/MC/MCLinkerOptimizationHint.h"
-#include "llvm/MC/MCLFIExpander.h"
 #include "llvm/MC/MCPseudoProbe.h"
 #include "llvm/MC/MCSection.h"
 #include "llvm/MC/MCWinEH.h"
@@ -104,8 +104,6 @@ public:
 
   // Allow a target to add behavior to the EmitLabel of MCStreamer.
   virtual void emitLabel(MCSymbol *Symbol);
-  virtual void emitBBStart();
-  virtual void emitBBEnd();
   // Allow a target to add behavior to the emitAssignment of MCStreamer.
   virtual void emitAssignment(MCSymbol *Symbol, const MCExpr *Value);
 
@@ -293,7 +291,7 @@ protected:
   /// Returns true if the .cv_loc directive is in the right section.
   bool checkCVLocSection(unsigned FuncId, unsigned FileNo, SMLoc Loc);
 
-  std::unique_ptr<MCLFIExpander> LFIExpander;
+  std::unique_ptr<MCLFIRewriter> LFIRewriter;
 
 public:
   MCStreamer(const MCStreamer &) = delete;
@@ -312,9 +310,9 @@ public:
     return StartTokLocPtr ? *StartTokLocPtr : SMLoc();
   }
 
-  void setLFIExpander(MCLFIExpander *Exp) { LFIExpander.reset(Exp); }
+  void setLFIRewriter(MCLFIRewriter *Exp) { LFIRewriter.reset(Exp); }
 
-  MCLFIExpander *getLFIExpander() { return LFIExpander.get(); }
+  MCLFIRewriter *getLFIRewriter() { return LFIRewriter.get(); }
 
   /// State management
   ///
@@ -490,9 +488,6 @@ public:
   // FIXME: These emission are non-const because we mutate the symbol to
   // add the section we're emitting it to later.
   virtual void emitLabel(MCSymbol *Symbol, SMLoc Loc = SMLoc());
-
-  virtual void emitBBStart();
-  virtual void emitBBEnd();
 
   virtual void emitEHSymAttributes(const MCSymbol *Symbol, MCSymbol *EHSymbol);
 
