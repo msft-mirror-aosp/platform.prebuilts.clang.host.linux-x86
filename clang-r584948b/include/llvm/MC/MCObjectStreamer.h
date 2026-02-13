@@ -91,8 +91,6 @@ public:
   void appendContents(size_t Num, char Elt);
   void addFixup(const MCExpr *Value, MCFixupKind Kind);
 
-  void emitBBStart() override;
-  void emitBBEnd() override;
   void emitLabel(MCSymbol *Symbol, SMLoc Loc = SMLoc()) override;
   virtual void emitLabelAtPos(MCSymbol *Symbol, SMLoc Loc, MCFragment &F,
                               uint64_t Offset);
