@@ -152,7 +152,6 @@ public:
 
     AArch64SubArch_arm64e,
     AArch64SubArch_arm64ec,
-
     AArch64SubArch_lfi,
 
     KalimbaSubArch_v3,
@@ -696,16 +695,6 @@ public:
            getSubArch() == Triple::AArch64SubArch_arm64ec;
   }
 
-  bool isLFI() const {
-    return isAArch64LFI();
-  }
-
-  /// Checks if we're targeting the AArch64 LFI subarch.
-  bool isAArch64LFI() const {
-    return getArch() == Triple::aarch64 &&
-           getSubArch() == Triple::AArch64SubArch_lfi;
-  }
-
   bool isWindowsCoreCLREnvironment() const {
     return isOSWindows() && getEnvironment() == Triple::CoreCLR;
   }
@@ -922,6 +911,12 @@ public:
   /// Tests whether the target is ARM (little and big endian).
   bool isARM() const {
     return getArch() == Triple::arm || getArch() == Triple::armeb;
+  }
+
+  /// Tests whether the target is LFI.
+  bool isLFI() const {
+    return getArch() == Triple::aarch64 &&
+           getSubArch() == Triple::AArch64SubArch_lfi;
   }
 
   /// Tests whether the target supports the EHABI exception
