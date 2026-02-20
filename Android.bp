@@ -216,7 +216,19 @@ libclang_rt_prebuilt_library_static {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-libclang_rt_prebuilt_library_shared {
+
+soong_config_module_type {
+    name: "libclang_rt_prebuilt_library_shared_hwasan",
+    module_type: "libclang_rt_prebuilt_library_shared",
+    config_namespace: "ANDROID",
+    bool_variables: ["release_deprecate_runtime_apex"],
+    properties: [
+        "defaults",
+        "llndk_moved_to_apex",
+    ],
+}
+
+libclang_rt_prebuilt_library_shared_hwasan {
     name: "libclang_rt.hwasan",
     sdk_version: "minimum",
     enabled: false,
@@ -229,10 +241,22 @@ libclang_rt_prebuilt_library_shared {
     },
     check_elf_files: false, // Bypass circular dependency between libc++
     is_llndk: true,
-    llndk_moved_to_apex: true,
-    defaults: [
-        "libclang_rt-prebuilt-non-platform-default",
-    ],
+
+    soong_config_variables: {
+        release_deprecate_runtime_apex: {
+            llndk_moved_to_apex: false,
+            defaults: [
+                "libclang_rt-prebuilt-default",
+            ],
+
+            conditions_default: {
+                llndk_moved_to_apex: true,
+                defaults: [
+                    "libclang_rt-prebuilt-non-platform-default",
+                ],
+            },
+        },
+    },
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -435,6 +459,7 @@ cc_defaults {
     ],
     apex_available: [
         "com.android.runtime",
+        "//apex_available:platform",
     ],
     visibility: [
         "//bionic:__subpackages__",
