@@ -277,6 +277,40 @@ libclang_rt_prebuilt_library_static {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+libclang_rt_prebuilt_library_shared {
+    name: "libclang_rt.tsan",
+    defaults: ["libclang_rt-prebuilt-default"],
+    host_supported: true,
+    device_supported: false,
+    enabled: false,
+    target: {
+        linux_glibc_x86_64: {
+            enabled: true,
+        },
+        linux_musl_x86_64: {
+            enabled: true,
+        },
+    },
+}
+
+///////////////////////////////////////////////////////////////////////////////
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.tsan.static",
+    defaults: ["libclang_rt-prebuilt-default"],
+    host_supported: true,
+    device_supported: false,
+    enabled: false,
+    target: {
+        linux_glibc_x86_64: {
+            enabled: true,
+        },
+        linux_musl_x86_64: {
+            enabled: true,
+        },
+    },
+}
+
+///////////////////////////////////////////////////////////////////////////////
 libclang_rt_prebuilt_object {
     name: "clang_rt.crtbegin",
     host_supported: true,
