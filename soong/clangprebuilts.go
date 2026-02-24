@@ -77,11 +77,22 @@ func getClangPrebuiltDir(ctx android.LoadHookContext) string {
 	)
 }
 
+func getDirectoryInClangShortVersionLibDir(ctx android.LoadHookContext, dir string) string {
+	libDir := path.Join(getClangPrebuiltDir(ctx), "lib", "clang", "*", dir)
+
+	// Verify that exactly one directory exists
+	globbedDirs := android.Glob(ctx, path.Join(ctx.ModuleDir(), libDir), nil)
+	if len(globbedDirs) == 0 {
+		ctx.ModuleErrorf("failed to find directory in %s", path.Join(ctx.ModuleDir(), libDir))
+	} else if len(globbedDirs) > 1 {
+		ctx.ModuleErrorf("found multiple directories in %s, expected one: %q", path.Join(ctx.ModuleDir(), libDir), globbedDirs.Strings())
+	}
+
+	return libDir
+}
+
 func getClangResourceDir(ctx android.LoadHookContext) string {
-	clangDir := getClangPrebuiltDir(ctx)
-	releaseVersion := ctx.Config().GetenvWithDefault("LLVM_RELEASE_VERSION",
-		config.ClangShortVersion(ctx))
-	return path.Join(clangDir, "lib", "clang", releaseVersion, "lib", "linux")
+	return getDirectoryInClangShortVersionLibDir(ctx, "lib/linux")
 }
 
 func getSymbolFilePath(ctx android.LoadHookContext, arch string) string {
@@ -709,10 +720,8 @@ func clangBuiltinHeaders(ctx android.LoadHookContext) {
 	}
 
 	p := &props{}
-	builtinHeadersDir := path.Join(
-		getClangPrebuiltDir(ctx), "lib", "clang",
-		ctx.Config().GetenvWithDefault("LLVM_RELEASE_VERSION",
-			config.ClangShortVersion(ctx)), "include")
+	builtinHeadersDir := getDirectoryInClangShortVersionLibDir(ctx, "include")
+
 	s := "$(location) " + path.Join(ctx.ModuleDir(), builtinHeadersDir) + " $(in) >$(out)"
 	p.Cmd = &s
 
