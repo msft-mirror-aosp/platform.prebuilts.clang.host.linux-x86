@@ -69,6 +69,15 @@ def _action_configs(ctx):
             ),
         ],
     )
+    dynamic_link = action_config(
+        action_name = ACTION_NAMES.cpp_link_dynamic_library,
+        tools = [
+            struct(
+                type_name = "tool",
+                tool = ctx.file.ld,
+            ),
+        ],
+    )
     ar = action_config(
         action_name = ACTION_NAMES.cpp_link_static_library,
         tools = [
@@ -114,6 +123,7 @@ def _action_configs(ctx):
         compile,
         compile_plus_plus,
         link,
+        dynamic_link,
         ar,
         strip,
         objcopy,
