@@ -1,0 +1,604 @@
+{
+    "attempt_id": 1,
+    "best_target_priority": 1,
+    "bid": "15071444",
+    "branch": "git_llvm-r596125-release",
+    "branch_priority": 1,
+    "build_configs": {
+        "git_llvm-r596125-release/llvm_linux_bootstrap": "15071444"
+    },
+    "build_type": "submitted",
+    "device_dir": "/mnt/disks/build-disk/src/googleplex-android/llvm-r596125-release",
+    "docker_image": "us-docker.pkg.dev/google.com/android-llvm-kokoro/android-llvm/llvm-ubuntu@sha256:c2a13c4b9cec71e5596eda932b417105baabf84c403e02c05198b97b447cedfa",
+    "enable_docker": true,
+    "git-pull": null,
+    "git-server": "https://googleplex-android.googlesource.com",
+    "hostname": "r-bf390d34ed036105-hb8n",
+    "inc-build": false,
+    "java-version": "",
+    "last_logfile": null,
+    "out_dir": "/mnt/disks/build-disk/src/googleplex-android/llvm-r596125-release/out",
+    "parsed_manifest": {
+        "parsedDefault": {
+            "remote": "goog",
+            "revision": "llvm-r596125-release",
+            "syncJ": "4"
+        },
+        "projects": [
+            {
+                "name": "toolchain/llvm-project",
+                "path": "toolchain/llvm-project",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "de03d430485c884861198b25459851f429cbdbad",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "name": "toolchain/llvm_android",
+                "path": "toolchain/llvm_android",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "c48b7b1b29d64f31cfaa84013c93e4861f509179",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "name": "toolchain/common",
+                "path": "toolchain/common",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "0bce8b062126242872e9f3fc66760d3f76773c49",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "name": "platform/external/toolchain-utils",
+                "path": "external/toolchain-utils",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "6ec3cf854e298b1d2ebcfadb59ab155aa51c8c4f",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "cloneDepth": "1",
+                "name": "platform/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8",
+                "path": "prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "178883fce6d7bdb28eca348c971be6053ad706e0",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "cloneDepth": "1",
+                "name": "platform/prebuilts/gcc/linux-x86/host/x86_64-w64-mingw32-4.8",
+                "path": "prebuilts/gcc/linux-x86/host/x86_64-w64-mingw32-4.8",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "a6c64a6502e0a89ee8ad3e3f8be97223a69e5bd7",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "cloneDepth": "1",
+                "name": "platform/prebuilts/cmake/darwin-x86",
+                "path": "prebuilts/cmake/darwin-x86",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "7aea7e9880110799088cd1de509886871078306f",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "cloneDepth": "1",
+                "name": "platform/prebuilts/cmake/linux-arm64",
+                "path": "prebuilts/cmake/linux-arm64",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "5dee08b343f84461df7bb7e00f3350b67af4cab0",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "cloneDepth": "1",
+                "name": "platform/prebuilts/cmake/linux-x86",
+                "path": "prebuilts/cmake/linux-x86",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "e57c88d59d7d8408a32b16425158fd2aa64e2b3e",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "cloneDepth": "1",
+                "name": "platform/prebuilts/build-tools",
+                "path": "prebuilts/build-tools",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "87883a7be08f57f625636bcf005d9e235009e759",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "cloneDepth": "1",
+                "groups": [
+                    "darwin",
+                    "pdk",
+                    "tradefed"
+                ],
+                "name": "platform/prebuilts/go/darwin-x86",
+                "path": "prebuilts/go/darwin-x86",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "48eb6504e50320eb28ef3a00430a1993c295cb00",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "cloneDepth": "1",
+                "groups": [
+                    "linux",
+                    "pdk",
+                    "tradefed"
+                ],
+                "name": "platform/prebuilts/go/linux-arm64",
+                "path": "prebuilts/go/linux-arm64",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "85088d1ab9a678cc8531f9cc05de9fa802f91c58",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "cloneDepth": "1",
+                "groups": [
+                    "linux",
+                    "pdk",
+                    "tradefed"
+                ],
+                "name": "platform/prebuilts/go/linux-x86",
+                "path": "prebuilts/go/linux-x86",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "6dd2c20ce621ec1e806528c3a1f8cd799807faf5",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "name": "platform/external/zstd",
+                "path": "external/zstd",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "189c2afae425b607dacd66afdea38a688408fd07",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "name": "platform/external/libedit",
+                "path": "external/libedit",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "e05eb8459b1631dcb8d2ac71bca9f6ff3dc2d95a",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "name": "platform/external/swig",
+                "path": "external/swig",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "dcabe60c35082d3beab79359d48093a23f0b09aa",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "name": "toolchain/xz",
+                "path": "toolchain/xz",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "344ec8838064682d8803fa483bee7e4455cbddac",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "name": "platform/external/libxml2",
+                "path": "external/libxml2",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "7384a55a0fe34ffdd701b35ca4d77ea593d1799b",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "name": "platform/external/ncurses",
+                "path": "external/libncurses",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "f52d90dc5f989e833e9d6168691b51a6e322f7ff",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "cloneDepth": "1",
+                "name": "platform/prebuilts/python/linux-arm64",
+                "path": "prebuilts/python/linux-arm64",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "e771c72074e9b17b6ccf15f8eee2755cac20dc27",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "cloneDepth": "1",
+                "name": "platform/prebuilts/python/linux-x86",
+                "path": "prebuilts/python/linux-x86",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "e9077f5d4803bd8822bd07ce16956bcc80a059f1",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "cloneDepth": "1",
+                "name": "platform/prebuilts/python/darwin-x86",
+                "path": "prebuilts/python/darwin-x86",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "af1cb9d742aad1f364858b7b5cccb8885a04a062",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "cloneDepth": "1",
+                "name": "platform/prebuilts/python/windows-x86",
+                "path": "prebuilts/python/windows-x86",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "06e01277ae8369c2442be4b9793ab04a278b589c",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "cloneDepth": "1",
+                "name": "platform/prebuilts/clang/host/darwin-x86",
+                "path": "prebuilts/clang/host/darwin-x86",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "2302c35e854c86a08f00da0256f59ff760f72b1b",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "cloneDepth": "1",
+                "name": "platform/prebuilts/clang/host/linux-arm64",
+                "path": "prebuilts/clang/host/linux-arm64",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "198cef08637a6133e98b4a80e36f0ca35775fa9a",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "cloneDepth": "1",
+                "name": "platform/prebuilts/clang/host/linux-x86",
+                "path": "prebuilts/clang/host/linux-x86",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "05caf14d5f846c9955d1718cd95cb6ee59a22eac",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "cloneDepth": "1",
+                "name": "platform/prebuilts/clang/host/windows-x86",
+                "path": "prebuilts/clang/host/windows-x86",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "cb522a1d7c3ea6be1c9907d0a3ff0c871b91443f",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "cloneDepth": "1",
+                "name": "toolchain/prebuilts/ndk/releases",
+                "path": "toolchain/prebuilts/ndk/releases",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "fe7dffc28e346df68199eefc0f1f3b6dbe6a669e",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "name": "platform/tools/repohooks",
+                "path": "tools/repohooks",
+                "remote": {
+                    "fetch": "https://googleplex-android.googlesource.com/",
+                    "name": "goog",
+                    "review": "https://googleplex-android.googlesource.com/"
+                },
+                "revision": "3573b21010a0f4b7256046d1c4171a7b48f68a4a",
+                "upstream": "llvm-r596125-release"
+            },
+            {
+                "name": "platform/manifest",
+                "revision": "98bfa53023bfb78aba1cc97c686717e443861969"
+            }
+        ],
+        "remotes": [
+            {
+                "fetch": "https://googleplex-android.googlesource.com/",
+                "name": "goog",
+                "review": "https://googleplex-android.googlesource.com/"
+            }
+        ],
+        "repoHooks": {
+            "enabledList": "pre-upload",
+            "inProject": "platform/tools/repohooks"
+        }
+    },
+    "platform": "linux",
+    "proof_build": false,
+    "repo-dict": {
+        "platform/external/libedit": "e05eb8459b1631dcb8d2ac71bca9f6ff3dc2d95a",
+        "platform/external/libxml2": "7384a55a0fe34ffdd701b35ca4d77ea593d1799b",
+        "platform/external/ncurses": "f52d90dc5f989e833e9d6168691b51a6e322f7ff",
+        "platform/external/swig": "dcabe60c35082d3beab79359d48093a23f0b09aa",
+        "platform/external/toolchain-utils": "6ec3cf854e298b1d2ebcfadb59ab155aa51c8c4f",
+        "platform/external/zstd": "189c2afae425b607dacd66afdea38a688408fd07",
+        "platform/manifest": "98bfa53023bfb78aba1cc97c686717e443861969",
+        "platform/prebuilts/build-tools": "87883a7be08f57f625636bcf005d9e235009e759",
+        "platform/prebuilts/clang/host/darwin-x86": "2302c35e854c86a08f00da0256f59ff760f72b1b",
+        "platform/prebuilts/clang/host/linux-arm64": "198cef08637a6133e98b4a80e36f0ca35775fa9a",
+        "platform/prebuilts/clang/host/linux-x86": "05caf14d5f846c9955d1718cd95cb6ee59a22eac",
+        "platform/prebuilts/clang/host/windows-x86": "cb522a1d7c3ea6be1c9907d0a3ff0c871b91443f",
+        "platform/prebuilts/cmake/darwin-x86": "7aea7e9880110799088cd1de509886871078306f",
+        "platform/prebuilts/cmake/linux-arm64": "5dee08b343f84461df7bb7e00f3350b67af4cab0",
+        "platform/prebuilts/cmake/linux-x86": "e57c88d59d7d8408a32b16425158fd2aa64e2b3e",
+        "platform/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8": "178883fce6d7bdb28eca348c971be6053ad706e0",
+        "platform/prebuilts/gcc/linux-x86/host/x86_64-w64-mingw32-4.8": "a6c64a6502e0a89ee8ad3e3f8be97223a69e5bd7",
+        "platform/prebuilts/go/darwin-x86": "48eb6504e50320eb28ef3a00430a1993c295cb00",
+        "platform/prebuilts/go/linux-arm64": "85088d1ab9a678cc8531f9cc05de9fa802f91c58",
+        "platform/prebuilts/go/linux-x86": "6dd2c20ce621ec1e806528c3a1f8cd799807faf5",
+        "platform/prebuilts/python/darwin-x86": "af1cb9d742aad1f364858b7b5cccb8885a04a062",
+        "platform/prebuilts/python/linux-arm64": "e771c72074e9b17b6ccf15f8eee2755cac20dc27",
+        "platform/prebuilts/python/linux-x86": "e9077f5d4803bd8822bd07ce16956bcc80a059f1",
+        "platform/prebuilts/python/windows-x86": "06e01277ae8369c2442be4b9793ab04a278b589c",
+        "platform/tools/repohooks": "3573b21010a0f4b7256046d1c4171a7b48f68a4a",
+        "toolchain/common": "0bce8b062126242872e9f3fc66760d3f76773c49",
+        "toolchain/llvm-project": "de03d430485c884861198b25459851f429cbdbad",
+        "toolchain/llvm_android": "c48b7b1b29d64f31cfaa84013c93e4861f509179",
+        "toolchain/prebuilts/ndk/releases": "fe7dffc28e346df68199eefc0f1f3b6dbe6a669e",
+        "toolchain/xz": "344ec8838064682d8803fa483bee7e4455cbddac"
+    },
+    "repo-init-branch": "llvm-r596125-release",
+    "repo-manifest": "platform/manifest",
+    "repo_manifest_file": "default.xml",
+    "reset_image_build": false,
+    "src_ctrl": "repo",
+    "sync_finish_time": 1774284867.8904295,
+    "sync_start_time": 1774284808.71569,
+    "sync_succeed": 1,
+    "target": {
+        "apiary_target": "llvm_linux",
+        "dir_list": [
+            "applied.prop",
+            "clang-15071444-linux-x86.tar.xz",
+            "build_times.txt",
+            "manifest_15071444.xml",
+            "build_info.json",
+            "multiple.intoto.jsonl",
+            "repo.prop",
+            "logs/execute_build_result.textproto",
+            "logs/buildbot_trace.trace",
+            "logs/STARTED",
+            "logs/git_metrics.textproto",
+            "logs/SUCCEEDED",
+            "logs/git.log",
+            "logs/build_tee_error.log",
+            "logs/execute_build_config.textproto",
+            "logs/git_thread.log",
+            "logs/build.log",
+            "logs/init_build_config.textproto",
+            "logs/resource_utilization/memory_usage.json",
+            "logs/resource_utilization/memory_usage.log",
+            "logs/resource_utilization/disk_usage.json",
+            "logs/resource_utilization/cpu_time.log",
+            "logs/resource_utilization/disk_usage.log",
+            "logs/resource_utilization/cpu_time.json",
+            "logs/resource_utilization/cpu_usage.log",
+            "logs/resource_utilization/cpu_usage.json",
+            "BUILD_INFO"
+        ],
+        "dist-dir": "/buildbot/dist_dirs/git_llvm-r596125-release-linux-llvm/15071444",
+        "name": "llvm_linux",
+        "rules": [
+            [
+                "DIST_DIR=%dist_dir% OUT_DIR=out BUILD_NAME=%bid% prebuilts/python/linux-x86/bin/python3 toolchain/llvm_android/dispatch.py git_main-llvm-toolchain llvm_linux",
+                "build.log",
+                true,
+                false
+            ]
+        ],
+        "storage_path": "/bigstore/android-build/builds/git_llvm-r596125-release-linux-llvm_linux/15071444/1eb2ac4feddba8709d72798bbdaaafbcae2aae9cf58c8ccf7f33bb017a735936/1",
+        "target_finish_time": 1774292108.8605838,
+        "target_start_time": 1774284869.8067377,
+        "target_status": 1
+    },
+    "trident_usage": {
+        "external_disk_no_space": false,
+        "trident_used": false
+    },
+    "use_goma": false,
+    "worknode": {
+        "containerId": "L38200030092860181",
+        "creationTimeMillis": "1774279394861",
+        "currentAttempt": {
+            "attemptId": "O+hVw47gT8/P6prDKGeiEw==",
+            "progressMessages": [
+                {
+                    "displayMessage": "Build 15071444 for node L38200030092860181:N02300030655846356 has been inserted",
+                    "messageString": "Build 15071444 for node L38200030092860181:N02300030655846356 has been inserted",
+                    "timeMillis": "1774284688945"
+                }
+            ],
+            "startTimeMillis": "1774284683801"
+        },
+        "heartbeatTimeMillis": "86400000",
+        "id": "L38200030092860181:N02300030655846356",
+        "inputEdges": [
+            {
+                "neighborId": "L38200030092860181:N94100030655846350"
+            },
+            {
+                "neighborId": "L38200030092860181:N34500030655846362"
+            }
+        ],
+        "isFinal": false,
+        "lastUpdatedMillis": "1774284689097",
+        "nodeClass": "postsubmit",
+        "retryStatus": {
+            "maximumRetries": 4,
+            "retryCount": 0
+        },
+        "revision": "mzhe4bbh+YEGv7uI56qsug==",
+        "status": "scheduled",
+        "statusHistorys": [
+            {
+                "status": "created",
+                "timestampMillis": "1774279394861"
+            },
+            {
+                "status": "pending",
+                "timestampMillis": "1774284682840"
+            },
+            {
+                "status": "scheduled",
+                "timestampMillis": "1774284683801"
+            }
+        ],
+        "workExecutorType": "submittedBuild",
+        "workParameters": {
+            "submittedBuild": {
+                "branch": "git_llvm-r596125-release",
+                "branchConfig": {
+                    "sloTier": "bestEffort"
+                },
+                "buildDependencies": [
+                    {
+                        "dependencyBuildId": "15071444",
+                        "dependencyInfo": {
+                            "artifactPrefixs": [
+                                "stage1-install"
+                            ],
+                            "branch": "git_llvm-r596125-release",
+                            "destDir": "artifacts/linux_bootstrap",
+                            "fixedBuildId": "",
+                            "target": "llvm_linux_bootstrap"
+                        }
+                    }
+                ],
+                "buildId": "15071444",
+                "gerritPollerTimestamp": "1774279192735",
+                "manuallyTriggered": false,
+                "syncTimeoutSecond": 5400,
+                "target": {
+                    "buildCommands": [
+                        "DIST_DIR=%dist_dir% OUT_DIR=out BUILD_NAME=%bid% prebuilts/python/linux-x86/bin/python3 toolchain/llvm_android/dispatch.py git_main-llvm-toolchain llvm_linux"
+                    ],
+                    "buildPlatform": "linux",
+                    "dependencyTargets": [
+                        {
+                            "artifactPrefixs": [
+                                "stage1-install"
+                            ],
+                            "destDir": "artifacts/linux_bootstrap",
+                            "targetName": "llvm_linux_bootstrap"
+                        }
+                    ],
+                    "disabled": false,
+                    "dockerInfo": {
+                        "dockerRepo": "us-docker.pkg.dev/google.com:android-llvm-kokoro/android-llvm/llvm-ubuntu",
+                        "tag": "r596125"
+                    },
+                    "enableReleaseBuildChaining": false,
+                    "flashstation": {
+                        "enabled": true
+                    },
+                    "incrementalBuild": false,
+                    "launchcontrolName": "llvm_linux",
+                    "name": "llvm_linux",
+                    "platformVersion": "docker",
+                    "priority": "low",
+                    "product": "linux",
+                    "provenanceInfo": {
+                        "bbcpDepotContextCl": 876382188,
+                        "bbcpFileApiPath": "/google_built/overlay/latest/busytown/google3/wireless/android/launchcontrol/config/branch_config.asciipb",
+                        "branchConfigPath": "google3/wireless/android/launchcontrol/config/branch_config.asciipb"
+                    },
+                    "rbeSupported": true,
+                    "releaseBranch": true,
+                    "target": "llvm_linux"
+                }
+            }
+        },
+        "workerId": "buildassembler_buildnotifier_workers"
+    }
+}
