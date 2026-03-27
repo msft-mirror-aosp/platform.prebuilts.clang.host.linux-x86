@@ -251,10 +251,6 @@ def _get_extra_kwargs(arch, clang_pkg):
             target = "x86_64-unknown-linux-gnu",
             sysroot_label = _GCC_PKG.relative(":sysroot_files"),
             sysroot_dir = _GCC_PKG.relative(":sysroot_dir"),
-            bin_files = [_GCC_PKG.relative(":bin_files")],
-            bin_dirs = [_GCC_PKG.relative(":bin_dirs")],
-            lib_files = [_GCC_PKG.relative(":lib_files")],
-            lib_dirs = [_GCC_PKG.relative(":lib_dirs")],
             extra_features = [
                 "kleaf-lld",
             ],
