@@ -1,3 +1,0 @@
-21.0.0
-based on r563880c
-for additional information on LLVM revision and cherry-picks, see clang_source_info.md
