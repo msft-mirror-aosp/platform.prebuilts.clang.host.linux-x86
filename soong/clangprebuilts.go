@@ -35,7 +35,6 @@ var (
 		"bin/llvm-objcopy",
 		"bin/llvm-strip",
 		"bin/llvm-symbolizer",
-		"lib/x86_64-unknown-linux-gnu/libc++.so",
 	}
 )
 
@@ -390,9 +389,6 @@ func llvmPrebuiltBuildTool(ctx android.LoadHookContext) {
 	clangDir := getClangPrebuiltDir(ctx)
 	name := strings.TrimPrefix(ctx.ModuleName(), "prebuilt_")
 	src := path.Join(clangDir, "bin", name)
-	deps := []string{
-		path.Join(clangDir, "lib", "x86_64-unknown-linux-gnu", "libc++.so"),
-	}
 
 	type props struct {
 		Enabled *bool
@@ -400,7 +396,6 @@ func llvmPrebuiltBuildTool(ctx android.LoadHookContext) {
 			Linux struct {
 				Enabled *bool
 				Src     *string
-				Deps    []string
 			}
 		}
 	}
@@ -408,7 +403,6 @@ func llvmPrebuiltBuildTool(ctx android.LoadHookContext) {
 	p.Enabled = proptools.BoolPtr(false)
 	p.Target.Linux.Enabled = proptools.BoolPtr(true)
 	p.Target.Linux.Src = &src
-	p.Target.Linux.Deps = deps
 	ctx.AppendProperties(p)
 }
 
