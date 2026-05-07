@@ -138,6 +138,12 @@ func hasDarwinClangPrebuilt(ctx android.LoadHookContext) bool {
 		"bin/clang").Valid()
 }
 
+func hasLinuxArm64ClangPrebuilt(ctx android.LoadHookContext) bool {
+	return android.ExistentPathForSource(
+		ctx, "prebuilts/clang/host/linux-arm64", getClangPrebuiltDir(ctx),
+		"bin/clang").Valid()
+}
+
 type archInnerProps struct {
 	Enabled             *bool
 	Export_include_dirs []string
@@ -262,6 +268,9 @@ func llvmPrebuiltLibraryShared(ctx android.LoadHookContext) {
 	} else if moduleName == "libclang-cpp_host" {
 		p.Export_include_dirs = []string{path.Join(clangDir, "include")}
 		p.Target.Glibc_x86_64.Srcs = []string{path.Join(clangDir, "lib", "libclang-cpp.so")}
+		if hasLinuxArm64ClangPrebuilt(ctx) {
+			p.Target.Linux_musl_arm64.Srcs = []string{":libclang-cpp_host_linux_arm64"}
+		}
 		if hasDarwinClangPrebuilt(ctx) {
 			p.Target.Darwin.Srcs = []string{":libclang-cpp_host_darwin"}
 		}
@@ -270,6 +279,9 @@ func llvmPrebuiltLibraryShared(ctx android.LoadHookContext) {
 		p.Target.Glibc_x86_64.Srcs = []string{path.Join(clangDir, "lib", "libLLVM.so")}
 		if hasDarwinClangPrebuilt(ctx) {
 			p.Target.Darwin.Srcs = []string{":libLLVM_host_darwin"}
+		}
+		if hasLinuxArm64ClangPrebuilt(ctx) {
+			p.Target.Linux_musl_arm64.Srcs = []string{":libLLVM_host_linux_arm64"}
 		}
 	} else {
 		ctx.ModuleErrorf("unsupported LLVM prebuilt shared library: " + moduleName)

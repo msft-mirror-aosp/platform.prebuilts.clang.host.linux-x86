@@ -417,9 +417,9 @@ llvm_prebuilt_library_static {
 llvm_host_defaults {
     name: "llvm-build-host-tools-defaults",
     target: {
-        // We don't have a musl build of libclang-cpp.so, so disable the host
-        // tools for musl.
-        musl: {
+        // We don't have a linux x86_64 musl build of libclang-cpp.so, so
+        // disable the host tools.
+        linux_musl_x86_64: {
             enabled: false,
         },
     },
