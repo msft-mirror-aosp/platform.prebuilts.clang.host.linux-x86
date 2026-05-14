@@ -35,7 +35,6 @@ var (
 		"bin/llvm-objcopy",
 		"bin/llvm-strip",
 		"bin/llvm-symbolizer",
-		"lib/x86_64-unknown-linux-gnu/libc++.so",
 	}
 )
 
@@ -62,8 +61,8 @@ func init() {
 		libClangRtPrebuiltLibraryStaticFactory)
 	android.RegisterModuleType("libclang_rt_prebuilt_object",
 		libClangRtPrebuiltObjectFactory)
-	android.RegisterModuleType("llvm_darwin_filegroup",
-		llvmDarwinFileGroupFactory)
+	android.RegisterModuleType("llvm_host_arch_filegroup",
+		llvmHostArchFileGroupFactory)
 	android.RegisterModuleType("clang_builtin_headers",
 		clangBuiltinHeadersFactory)
 	android.RegisterModuleType("llvm_tools_filegroup",
@@ -136,6 +135,12 @@ func hostLibcxxHeaderDirs(ctx android.LoadHookContext, triple string) []string {
 func hasDarwinClangPrebuilt(ctx android.LoadHookContext) bool {
 	return android.ExistentPathForSource(
 		ctx, "prebuilts/clang/host/darwin-x86", getClangPrebuiltDir(ctx),
+		"bin/clang").Valid()
+}
+
+func hasLinuxArm64ClangPrebuilt(ctx android.LoadHookContext) bool {
+	return android.ExistentPathForSource(
+		ctx, "prebuilts/clang/host/linux-arm64", getClangPrebuiltDir(ctx),
 		"bin/clang").Valid()
 }
 
@@ -263,6 +268,9 @@ func llvmPrebuiltLibraryShared(ctx android.LoadHookContext) {
 	} else if moduleName == "libclang-cpp_host" {
 		p.Export_include_dirs = []string{path.Join(clangDir, "include")}
 		p.Target.Glibc_x86_64.Srcs = []string{path.Join(clangDir, "lib", "libclang-cpp.so")}
+		if hasLinuxArm64ClangPrebuilt(ctx) {
+			p.Target.Linux_musl_arm64.Srcs = []string{":libclang-cpp_host_linux_arm64"}
+		}
 		if hasDarwinClangPrebuilt(ctx) {
 			p.Target.Darwin.Srcs = []string{":libclang-cpp_host_darwin"}
 		}
@@ -271,6 +279,9 @@ func llvmPrebuiltLibraryShared(ctx android.LoadHookContext) {
 		p.Target.Glibc_x86_64.Srcs = []string{path.Join(clangDir, "lib", "libLLVM.so")}
 		if hasDarwinClangPrebuilt(ctx) {
 			p.Target.Darwin.Srcs = []string{":libLLVM_host_darwin"}
+		}
+		if hasLinuxArm64ClangPrebuilt(ctx) {
+			p.Target.Linux_musl_arm64.Srcs = []string{":libLLVM_host_linux_arm64"}
 		}
 	} else {
 		ctx.ModuleErrorf("unsupported LLVM prebuilt shared library: " + moduleName)
@@ -390,9 +401,6 @@ func llvmPrebuiltBuildTool(ctx android.LoadHookContext) {
 	clangDir := getClangPrebuiltDir(ctx)
 	name := strings.TrimPrefix(ctx.ModuleName(), "prebuilt_")
 	src := path.Join(clangDir, "bin", name)
-	deps := []string{
-		path.Join(clangDir, "lib", "x86_64-unknown-linux-gnu", "libc++.so"),
-	}
 
 	type props struct {
 		Enabled *bool
@@ -400,7 +408,6 @@ func llvmPrebuiltBuildTool(ctx android.LoadHookContext) {
 			Linux struct {
 				Enabled *bool
 				Src     *string
-				Deps    []string
 			}
 		}
 	}
@@ -408,7 +415,6 @@ func llvmPrebuiltBuildTool(ctx android.LoadHookContext) {
 	p.Enabled = proptools.BoolPtr(false)
 	p.Target.Linux.Enabled = proptools.BoolPtr(true)
 	p.Target.Linux.Src = &src
-	p.Target.Linux.Deps = deps
 	ctx.AppendProperties(p)
 }
 
@@ -591,32 +597,14 @@ func libClangRtPrebuiltObject(ctx android.LoadHookContext) {
 	ctx.AppendProperties(p)
 }
 
-func llvmDarwinFileGroup(ctx android.LoadHookContext) {
+func llvmHostArchFileGroupHook(ctx android.LoadHookContext, fileGroupProps *llvmHostArchFileGroupProperties) {
 	clangDir := getClangPrebuiltDir(ctx)
-	moduleName := ctx.ModuleName()
-	var libName string
 
-	switch moduleName {
-	case "libclang-cpp_host_darwin":
-		libName = "libclang-cpp.dylib"
-	case "libLLVM_host_darwin":
-		libName = "libLLVM.dylib"
-	case "libc++_darwin":
-		libName = "libc++.dylib"
-	case "libc++abi_shared_darwin":
-		libName = "libc++abi.dylib"
-	case "libc++_static_darwin":
-		libName = "libc++.a"
-	case "libc++abi_static_darwin":
-		libName = "libc++abi.a"
-	case "libsimpleperf_readelf_darwin":
-		libName = "libsimpleperf_readelf.a"
-	default:
-		ctx.ModuleErrorf("unsupported host LLVM file group: " + moduleName)
-	}
-	lib := path.Join(clangDir, "lib", libName)
+	lib := path.Join(clangDir, proptools.String(fileGroupProps.Lib))
 
-	if hasDarwinClangPrebuilt(ctx) {
+	// On main-plus-llvm the darwin filegroup modules will exist, but the clang version is overridden to
+	// clang-dev, and there are no darwin prebuilts with that version.  Ignore any missing sources.
+	if android.ExistentPathForSource(ctx, ctx.ModuleDir(), lib).Valid() {
 		type props struct {
 			Srcs []string
 		}
@@ -689,9 +677,24 @@ func libClangRtPrebuiltObjectFactory() android.Module {
 	return module.Init()
 }
 
-func llvmDarwinFileGroupFactory() android.Module {
-	module := android.FileGroupFactory()
-	android.AddLoadHook(module, llvmDarwinFileGroup)
+type llvmHostArchFileGroupProperties struct {
+	Lib *string
+}
+
+type llvmHostArchFileGroup struct {
+	android.Module
+
+	properties llvmHostArchFileGroupProperties
+}
+
+func llvmHostArchFileGroupFactory() android.Module {
+	module := &llvmHostArchFileGroup{
+		Module: android.FileGroupFactory(),
+	}
+	module.AddProperties(&module.properties)
+	android.AddLoadHook(module, func(ctx android.LoadHookContext) {
+		llvmHostArchFileGroupHook(ctx, &module.properties)
+	})
 	return module
 }
 
