@@ -417,9 +417,9 @@ llvm_prebuilt_library_static {
 llvm_host_defaults {
     name: "llvm-build-host-tools-defaults",
     target: {
-        // We don't have a musl build of libclang-cpp.so, so disable the host
-        // tools for musl.
-        musl: {
+        // We don't have a linux x86_64 musl build of libclang-cpp.so, so
+        // disable the host tools.
+        linux_musl_x86_64: {
             enabled: false,
         },
     },
@@ -451,14 +451,63 @@ llvm_prebuilt_library_shared {
     sanitize: {
         never: true,
     },
-    shared_libs: ["libc++"],
+    shared_libs: [
+        "libc++",
+    ],
     target: {
+        linux_glibc_x86_64: {
+            shared_libs: ["libLLVM_libedit_host"],
+        },
+        linux_musl_arm64: {
+            shared_libs: ["libLLVM_libedit_host"],
+        },
+        darwin: {
+            shared_libs: ["libLLVM_libedit_host"],
+            strip: {
+                none: true,
+            },
+        },
+    },
+}
+
+// Export libedit shared library
+llvm_prebuilt_library_shared {
+    name: "libLLVM_libedit_host",
+    host_supported: true,
+    device_supported: false,
+    sanitize: {
+        never: true,
+    },
+    target: {
+        linux_glibc_x86_64: {
+            shared_libs: ["libLLVM_libncurses_host"],
+        },
+        linux_musl_arm64: {
+            shared_libs: ["libLLVM_libncurses_host"],
+        },
         darwin: {
             strip: {
                 none: true,
             },
         },
     },
+    visibility: [":__subpackages__"],
+}
+
+// Export libedit shared library
+llvm_prebuilt_library_shared {
+    name: "libLLVM_libncurses_host",
+    host_supported: true,
+    device_supported: false,
+    sanitize: {
+        never: true,
+    },
+    target: {
+        darwin: {
+            enabled: false,
+        },
+    },
+    visibility: [":__subpackages__"],
 }
 
 cc_defaults {
@@ -663,6 +712,7 @@ dirgroup {
     dirs: [
         "clang-r547379",
         "clang-r584948b",
+        "clang-r596125",
     ],
     visibility: ["//trusty/vendor/google/aosp/scripts"],
 }

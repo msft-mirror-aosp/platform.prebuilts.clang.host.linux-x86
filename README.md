@@ -12,7 +12,7 @@ LLVM Users
 ----------
 
 * [**Android Platform**](https://android.googlesource.com/platform/)
-  * Currently clang-r584948
+  * Currently clang-r584948b
   * clang-r547379 for Android 16 release
   * clang-r522817 for Android V release
   * clang-r487747c for Android U release
@@ -40,7 +40,7 @@ LLVM Users
     * [AOSP Code Search link](https://cs.android.com/android/platform/superproject/+/master:build/soong/cc/config/global.go?q=RSClangVersion)
 
 * [**Android Linux Kernel**](http://go/android-systems)
-  * Currently clang-r547379 for Android Mainline kernel.
+  * Currently clang-r584948b for Android Mainline kernel.
     * Look for "clang-" in [mainline build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android-mainline/build.config.constants)
     * Look for "clang-" in [android16-6.12 build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android16-6.12/build.config.constants)
     * Look for "clang-" in [android15-6.6 build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android15-6.6/build.config.constants)
@@ -51,8 +51,8 @@ LLVM Users
   * Look for "clang-" in [ndk/toolchains.py](https://source.corp.google.com/h/googleplex-android/platform/superproject/main-ndk/+/main-ndk:ndk/ndk/toolchains.py) in internal code search.
 
 * [**Trusty**](https://source.android.com/security/trusty/)
-  * Currently clang-r584948b
-  * Look for "clang-" in [vendor/google/aosp/scripts/envsetup.sh](https://android.googlesource.com/trusty/vendor/google/aosp/+/master/scripts/envsetup.sh).
+  * Currently clang-r596125
+  * Look for "clang-" in [vendor/google/aosp/scripts/envsetup.sh](https://googleplex-android.git.corp.google.com/trusty/vendor/google/aosp/+/master/scripts/envsetup.sh).
 
 * [**Android Emulator**](https://developer.android.com/studio/run/emulator.html)
   * Currently clang-r530567.
@@ -74,7 +74,7 @@ LLVM Users
   * Look for "clang-" in [build-openjdk25-linux.sh](https://googleplex-android.googlesource.com/toolchain/jdk/build/+/refs/heads/main/build-openjdk25-linux.sh)
 
 * [**Clang Tools**](https://android.googlesource.com/platform/prebuilts/clang-tools/)
-  * Currently clang-r584948
+  * Currently clang-r584948b
   * Update [development/vndk/tools/header-checker/envsetup.sh](https://googleplex-android.git.corp.google.com/platform/development/+/refs/heads/main/vndk/tools/header-checker/android/envsetup.sh)
   * Check out branch clang-tools and run test: OUT_DIR=out prebuilts/clang-tools/build-prebuilts.sh
 
@@ -83,11 +83,11 @@ LLVM Users
     * Currently clang-r584948
     * Look for "CLANG_REVISION" in [paths.py](https://source.corp.google.com/h/googleplex-android/platform/superproject/main-rust-toolchain/+/main-rust-toolchain:toolchain/android_rust/src/android_rust/paths.py)
   * Bindgen
-    * Currently clang-r584948
+    * Currently clang-r584948b
     * Look for "bindgenClangVersion" in [bindgen.go](https://source.corp.google.com/h/googleplex-android/platform/superproject/main/+/main:build/soong/rust/bindgen.go)
 
 * **Stage 1 compiler**
-  * Currently clang-r584948
+  * Currently clang-r584948b
   * Look for "clang-r" in [toolchain/llvm_android/src/llvm_android/constants.py](https://source.corp.google.com/h/googleplex-android/platform/superproject/main-llvm-toolchain/+/main-llvm-toolchain:toolchain/llvm_android/src/llvm_android/constants.py)
   * Note the chicken & egg paradox of a self hosting bootstrapping compiler; this can only be updated AFTER a new prebuilt is checked in.
 
@@ -174,6 +174,8 @@ Prebuilt Versions
 * [clang-r563880c](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/mirror-goog-main-llvm-toolchain-source/clang-r563880c/) - September 2025
 * [clang-r574158](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/mirror-goog-main-llvm-toolchain-source/clang-r574158/) - October 2025
 * [clang-r584948](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/mirror-goog-main-llvm-toolchain-source/clang-r584948/) - January 2026
+* [clang-r584948b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/mirror-goog-main-llvm-toolchain-source/clang-r584948b/) - May 2026
+* [clang-r596125](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/mirror-goog-main-llvm-toolchain-source/clang-r596125/) - May 2026
 
 
 
