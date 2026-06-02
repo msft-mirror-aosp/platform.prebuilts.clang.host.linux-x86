@@ -41,9 +41,10 @@ LLVM Users
 
 * [**Android Linux Kernel**](http://go/android-systems)
   * Currently clang-r584948b for Android Mainline kernel.
-    * Look for "clang-" in [mainline build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android-mainline/build.config.constants)
-    * Look for "clang-" in [android16-6.12 build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android16-6.12/build.config.constants)
-    * Look for "clang-" in [android15-6.6 build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android15-6.6/build.config.constants)
+    * Look for "CLANG_VERSION" in [mainline constants](https://android.googlesource.com/kernel/common/+/refs/heads/android-mainline/bazel/constants.scl)
+    * Look for "CLANG_VERSION" in [android17-6.18 constants](https://android.googlesource.com/kernel/common/+/refs/heads/android17-6.18/bazel/constants.scl)
+    * Look for "CLANG_VERSION" in [android16-6.12 build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android16-6.12/build.config.constants)
+    * Look for "CLANG_VERSION" in [android15-6.6 build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android15-6.6/build.config.constants)
   * Internal LLVM developers should look in the partner gerrit for more kernel configurations.
 
 * [**NDK**](https://developer.android.com/ndk)
