@@ -274,31 +274,6 @@ func llvmPrebuiltLibraryShared(ctx android.LoadHookContext) {
 		if hasDarwinClangPrebuilt(ctx) {
 			p.Target.Darwin.Srcs = []string{":libclang-cpp_host_darwin"}
 		}
-	} else if moduleName == "libLLVM_host" {
-		p.Export_include_dirs = []string{path.Join(clangDir, "include")}
-		p.Target.Glibc_x86_64.Srcs = []string{path.Join(clangDir, "lib", "libLLVM.so")}
-		if hasDarwinClangPrebuilt(ctx) {
-			p.Target.Darwin.Srcs = []string{":libLLVM_host_darwin"}
-		}
-		if hasLinuxArm64ClangPrebuilt(ctx) {
-			p.Target.Linux_musl_arm64.Srcs = []string{":libLLVM_host_linux_arm64"}
-		}
-	} else if moduleName == "libLLVM_libedit_host" {
-		p.Target.Glibc_x86_64.Srcs = []string{path.Join(clangDir, "lib", "libedit.so.0")}
-		if hasDarwinClangPrebuilt(ctx) {
-			p.Target.Darwin.Srcs = []string{":libLLVM_libedit_host_darwin"}
-		}
-		if hasLinuxArm64ClangPrebuilt(ctx) {
-			p.Target.Linux_musl_arm64.Srcs = []string{":libLLVM_libedit_host_linux_arm64"}
-		}
-	} else if moduleName == "libLLVM_libncurses_host" {
-		p.Target.Glibc_x86_64.Srcs = []string{path.Join(clangDir, "lib", "libncurses.so.6")}
-		if hasDarwinClangPrebuilt(ctx) {
-			p.Target.Darwin.Srcs = []string{":libLLVM_libncurses_host_darwin"}
-		}
-		if hasLinuxArm64ClangPrebuilt(ctx) {
-			p.Target.Linux_musl_arm64.Srcs = []string{":libLLVM_libncurses_host_linux_arm64"}
-		}
 	} else {
 		ctx.ModuleErrorf("unsupported LLVM prebuilt shared library: " + moduleName)
 	}
