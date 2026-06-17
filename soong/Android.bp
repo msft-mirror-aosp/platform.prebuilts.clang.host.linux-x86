@@ -23,6 +23,7 @@ bootstrap_go_package {
     pkgPath: "android/soong/prebuilts/clang/host/linux-x86/clangprebuilts",
     deps: [
         "blueprint",
+        "blueprint-pathtools",
         "blueprint-proptools",
         "soong-android",
         "soong-cc",

@@ -20,6 +20,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/google/blueprint/pathtools"
 	"github.com/google/blueprint/proptools"
 
 	"android/soong/android"
@@ -80,7 +81,7 @@ func getDirectoryInClangShortVersionLibDir(ctx android.LoadHookContext, dir stri
 	libDir := path.Join(getClangPrebuiltDir(ctx), "lib", "clang", "*", dir)
 
 	// Verify that exactly one directory exists
-	globbedDirs := android.Glob(ctx, path.Join(ctx.ModuleDir(), libDir), nil)
+	globbedDirs := android.Glob(ctx, pathtools.GlobArgs{Pattern: path.Join(ctx.ModuleDir(), libDir)})
 	if len(globbedDirs) == 0 {
 		ctx.ModuleErrorf("failed to find directory in %s", path.Join(ctx.ModuleDir(), libDir))
 	} else if len(globbedDirs) > 1 {
