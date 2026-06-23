@@ -397,16 +397,27 @@ func llvmPrebuiltBuildTool(ctx android.LoadHookContext) {
 	type props struct {
 		Enabled *bool
 		Target  struct {
-			Linux struct {
+			Host_linux_x86_64 struct {
 				Enabled *bool
 				Src     *string
+			}
+			Host_linux_arm64 struct {
+				Enabled *bool
+				Src     *string
+				Deps []string
 			}
 		}
 	}
 	p := &props{}
 	p.Enabled = proptools.BoolPtr(false)
-	p.Target.Linux.Enabled = proptools.BoolPtr(true)
-	p.Target.Linux.Src = &src
+	p.Target.Host_linux_x86_64.Enabled = proptools.BoolPtr(true)
+	p.Target.Host_linux_x86_64.Src = &src
+
+	if hasLinuxArm64ClangPrebuilt(ctx) {
+		p.Target.Host_linux_arm64.Enabled = proptools.BoolPtr(true)
+		p.Target.Host_linux_arm64.Src = proptools.StringPtr(":" + name + "_host_linux_arm64")
+		p.Target.Host_linux_arm64.Deps = []string{":llvm_tools_libc_musl_host_linux_arm64"}
+	}
 	ctx.AppendProperties(p)
 }
 
