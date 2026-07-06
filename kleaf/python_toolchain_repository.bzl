@@ -46,7 +46,7 @@ toolchain(
         "@platforms//cpu:x86_64",
     ],
     toolchain = ":py_runtime_pair",
-    toolchain_type = "@bazel_tools//tools/python:toolchain_type",
+    toolchain_type = "@rules_python//python:toolchain_type",
     visibility = ["//visibility:public"],
 )
 '''.format(linux_x86_pkg = linux_x86_pkg, toolchain_version_bzl = toolchain_version_bzl)
