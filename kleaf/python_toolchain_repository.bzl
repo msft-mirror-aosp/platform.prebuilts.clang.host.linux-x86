@@ -29,6 +29,7 @@ Python toolchain pointing to Clang-bundled Python.
 """
 load("{toolchain_version_bzl}", "CLANG_VERSION")
 load("@rules_python//python:py_runtime_pair.bzl", "py_runtime_pair")
+load("@rules_python//python:py_exec_tools_toolchain.bzl", "py_exec_tools_toolchain")
 
 py_runtime_pair(
     name = "py_runtime_pair",
@@ -47,6 +48,23 @@ toolchain(
     ],
     toolchain = ":py_runtime_pair",
     toolchain_type = "@rules_python//python:toolchain_type",
+    visibility = ["//visibility:public"],
+)
+
+py_exec_tools_toolchain(
+    name = "py_exec_tools_toolchain_impl",
+    # Use the interpreter from //python:toolchain_type
+    exec_interpreter = None,
+)
+
+toolchain(
+    name = "py_exec_tools_toolchain",
+    exec_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    toolchain = ":py_exec_tools_toolchain_impl",
+    toolchain_type = "@rules_python//python:exec_tools_toolchain_type",
     visibility = ["//visibility:public"],
 )
 '''.format(linux_x86_pkg = linux_x86_pkg, toolchain_version_bzl = toolchain_version_bzl)
