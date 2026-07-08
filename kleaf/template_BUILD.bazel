@@ -131,6 +131,7 @@ py_runtime(
         "lib/python3/site-packages/clang/**",
     ]),
     interpreter = "python3/bin/python3",
+    # PYTHON_VERSION_INFO_PLACEHOLDER
     visibility = ["//visibility:public"],
 )
 
