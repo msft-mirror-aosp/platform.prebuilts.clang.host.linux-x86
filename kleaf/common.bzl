@@ -201,13 +201,38 @@ def _lld_compiler_rt():
         ],
     )
 
-def _common_features(_ctx):
+def _python_headers_feature(ctx):
+    if not hasattr(ctx.files, "python_includes") or not ctx.files.python_includes:
+        return []
+
+    flags = []
+    for f in ctx.files.python_includes:
+        flags.extend(["-isystem", f.path])
+
+    return [feature(
+        name = "kleaf-python-headers",
+        enabled = False,
+        flag_sets = [
+            flag_set(
+                actions = ALL_CC_COMPILE_ACTION_NAMES,
+                flag_groups = [
+                    flag_group(
+                        flags = flags,
+                    ),
+                ],
+            ),
+        ],
+    )]
+
+def _common_features(ctx):
     """Features that applies to both android and linux toolchain."""
-    return [
+    features = [
         _common_cflags(),
         _lld(),
         _lld_compiler_rt(),
     ]
+    features += _python_headers_feature(ctx)
+    return features
 
 common = struct(
     features = _common_features,
