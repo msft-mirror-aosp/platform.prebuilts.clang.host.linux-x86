@@ -152,6 +152,7 @@ def _clang_toolchain_internal(
         readelf = readelf,
         extra_features = extra_features,
         static_link_cpp_runtimes = static_link_cpp_runtimes,
+        python_includes = clang_pkg.relative(":python_includes"),
     )
 
     cc_toolchain(

@@ -1,0 +1,5 @@
+# This file is automatically discovered by soong_ui and used to predeclare
+# all the environment variables this soong plugin depends on.
+FORCE_BUILD_SANITIZER_SHARED_OBJECTS
+LLVM_BUILD_HOST_TOOLS
+LLVM_PREBUILTS_VERSION
