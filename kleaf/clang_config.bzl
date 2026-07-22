@@ -133,6 +133,7 @@ clang_config = rule(
         "clang_version": attr.string(),
         "extra_features": attr.string_list(),
         "static_link_cpp_runtimes": attr.bool(),
+        "python_includes": attr.label(allow_files = True),
     } | common.tool_attrs(),
     provides = [CcToolchainConfigInfo],
 )
