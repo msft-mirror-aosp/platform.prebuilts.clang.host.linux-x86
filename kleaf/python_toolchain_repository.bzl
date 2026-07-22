@@ -21,17 +21,18 @@ def _python_toolchain_repository_impl(repository_ctx):
     # str(Label(":x")) gives @<repo>//prebuilts/clang/host/linux-x86/kleaf:x
     this_pkg = str(Label(":x")).removesuffix(":x")
     linux_x86_pkg = this_pkg.removesuffix("/kleaf")
+    toolchain_version_bzl = repository_ctx.attr.toolchain_version_bzl
 
     build_file_content = '''\
 """
 Python toolchain pointing to Clang-bundled Python.
 """
-load("@kernel_toolchain_info//:dict.bzl", "VARS")
+load("{toolchain_version_bzl}", "CLANG_VERSION")
 load("@rules_python//python:py_runtime_pair.bzl", "py_runtime_pair")
 
 py_runtime_pair(
     name = "py_runtime_pair",
-    py3_runtime = "{linux_x86_pkg}/clang-{{}}:python3".format(VARS["CLANG_VERSION"]),
+    py3_runtime = "{linux_x86_pkg}/clang-{{}}:python3".format(CLANG_VERSION),
 )
 
 toolchain(
@@ -45,10 +46,10 @@ toolchain(
         "@platforms//cpu:x86_64",
     ],
     toolchain = ":py_runtime_pair",
-    toolchain_type = "@bazel_tools//tools/python:toolchain_type",
+    toolchain_type = "@rules_python//python:toolchain_type",
     visibility = ["//visibility:public"],
 )
-'''.format(linux_x86_pkg = linux_x86_pkg)
+'''.format(linux_x86_pkg = linux_x86_pkg, toolchain_version_bzl = toolchain_version_bzl)
 
     repository_ctx.file("BUILD.bazel", build_file_content)
 
@@ -56,4 +57,10 @@ python_toolchain_repository = repository_rule(
     doc = """Defines a repository that provides a Python toolchain pointing to Clang-bundled Python.""",
     implementation = _python_toolchain_repository_impl,
     local = True,
+    attrs = {
+        "toolchain_version_bzl": attr.string(
+            default = "@kernel_toolchain_info//:dict.bzl",
+            doc = "Label pointing to the Starlark file containing CLANG_VERSION",
+        ),
+    },
 )

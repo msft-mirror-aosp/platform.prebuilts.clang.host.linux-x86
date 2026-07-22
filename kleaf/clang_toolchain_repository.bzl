@@ -108,7 +108,16 @@ filegroup(
     srcs = glob([
         "lib/clang/*/include/**",
         "include/c++/**",
+        "python3/include/python3.*/**",
     ]),
+)
+
+filegroup(
+    name = "python_includes",
+    srcs = glob([
+        "python3/include/python3.*",
+    ], exclude_directories = 0),
+    visibility = ["@kleaf_clang_toolchain//:__subpackages__"],
 )
 
 filegroup(
