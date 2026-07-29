@@ -16,8 +16,18 @@ filegroup(
     srcs = glob([
         "lib/clang/*/include/**",
         "include/c++/**",
+        "python3/include/python3.*/**",
     ]),
     visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "python_includes",
+    srcs = glob(
+        ["python3/include/python3.*"],
+        exclude_directories = 0,
+    ),
+    visibility = ["@kleaf_clang_toolchain//:__subpackages__"],
 )
 
 filegroup(
@@ -129,6 +139,10 @@ py_runtime(
         "lib/python3/site-packages/clang/**",
     ]),
     interpreter = "python3/bin/python3",
+    interpreter_version_info = {
+        "major": "3",
+        "minor": "11",
+    },
     visibility = ["//visibility:public"],
 )
 

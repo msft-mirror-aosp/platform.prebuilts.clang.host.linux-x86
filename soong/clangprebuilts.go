@@ -20,6 +20,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/google/blueprint/pathtools"
 	"github.com/google/blueprint/proptools"
 
 	"android/soong/android"
@@ -80,7 +81,7 @@ func getDirectoryInClangShortVersionLibDir(ctx android.LoadHookContext, dir stri
 	libDir := path.Join(getClangPrebuiltDir(ctx), "lib", "clang", "*", dir)
 
 	// Verify that exactly one directory exists
-	globbedDirs := android.Glob(ctx, path.Join(ctx.ModuleDir(), libDir), nil)
+	globbedDirs := android.Glob(ctx, pathtools.GlobArgs{Pattern: path.Join(ctx.ModuleDir(), libDir)})
 	if len(globbedDirs) == 0 {
 		ctx.ModuleErrorf("failed to find directory in %s", path.Join(ctx.ModuleDir(), libDir))
 	} else if len(globbedDirs) > 1 {
@@ -274,31 +275,6 @@ func llvmPrebuiltLibraryShared(ctx android.LoadHookContext) {
 		if hasDarwinClangPrebuilt(ctx) {
 			p.Target.Darwin.Srcs = []string{":libclang-cpp_host_darwin"}
 		}
-	} else if moduleName == "libLLVM_host" {
-		p.Export_include_dirs = []string{path.Join(clangDir, "include")}
-		p.Target.Glibc_x86_64.Srcs = []string{path.Join(clangDir, "lib", "libLLVM.so")}
-		if hasDarwinClangPrebuilt(ctx) {
-			p.Target.Darwin.Srcs = []string{":libLLVM_host_darwin"}
-		}
-		if hasLinuxArm64ClangPrebuilt(ctx) {
-			p.Target.Linux_musl_arm64.Srcs = []string{":libLLVM_host_linux_arm64"}
-		}
-	} else if moduleName == "libLLVM_libedit_host" {
-		p.Target.Glibc_x86_64.Srcs = []string{path.Join(clangDir, "lib", "libedit.so.0")}
-		if hasDarwinClangPrebuilt(ctx) {
-			p.Target.Darwin.Srcs = []string{":libLLVM_libedit_host_darwin"}
-		}
-		if hasLinuxArm64ClangPrebuilt(ctx) {
-			p.Target.Linux_musl_arm64.Srcs = []string{":libLLVM_libedit_host_linux_arm64"}
-		}
-	} else if moduleName == "libLLVM_libncurses_host" {
-		p.Target.Glibc_x86_64.Srcs = []string{path.Join(clangDir, "lib", "libncurses.so.6")}
-		if hasDarwinClangPrebuilt(ctx) {
-			p.Target.Darwin.Srcs = []string{":libLLVM_libncurses_host_darwin"}
-		}
-		if hasLinuxArm64ClangPrebuilt(ctx) {
-			p.Target.Linux_musl_arm64.Srcs = []string{":libLLVM_libncurses_host_linux_arm64"}
-		}
 	} else {
 		ctx.ModuleErrorf("unsupported LLVM prebuilt shared library: " + moduleName)
 	}
@@ -421,16 +397,27 @@ func llvmPrebuiltBuildTool(ctx android.LoadHookContext) {
 	type props struct {
 		Enabled *bool
 		Target  struct {
-			Linux struct {
+			Host_linux_x86_64 struct {
 				Enabled *bool
 				Src     *string
+			}
+			Host_linux_arm64 struct {
+				Enabled *bool
+				Src     *string
+				Deps []string
 			}
 		}
 	}
 	p := &props{}
 	p.Enabled = proptools.BoolPtr(false)
-	p.Target.Linux.Enabled = proptools.BoolPtr(true)
-	p.Target.Linux.Src = &src
+	p.Target.Host_linux_x86_64.Enabled = proptools.BoolPtr(true)
+	p.Target.Host_linux_x86_64.Src = &src
+
+	if hasLinuxArm64ClangPrebuilt(ctx) {
+		p.Target.Host_linux_arm64.Enabled = proptools.BoolPtr(true)
+		p.Target.Host_linux_arm64.Src = proptools.StringPtr(":" + name + "_host_linux_arm64")
+		p.Target.Host_linux_arm64.Deps = []string{":llvm_tools_libc_musl_host_linux_arm64"}
+	}
 	ctx.AppendProperties(p)
 }
 
