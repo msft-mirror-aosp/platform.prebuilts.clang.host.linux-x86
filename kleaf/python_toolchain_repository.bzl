@@ -42,10 +42,8 @@ toolchain(
         "@platforms//os:linux",
         "@platforms//cpu:x86_64",
     ],
-    target_compatible_with = [
-        "@platforms//os:linux",
-        "@platforms//cpu:x86_64",
-    ],
+    # TODO: b/542342753 - Enable target_compatible_with = linux/x86_64
+    #   once platform constraints are aligned.
     toolchain = ":py_runtime_pair",
     toolchain_type = "@rules_python//python:toolchain_type",
     visibility = ["//visibility:public"],
