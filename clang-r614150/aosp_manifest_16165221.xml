@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='utf-8'?>
+<manifest>
+  <contactinfo bugurl="go/repo-bug" />
+  <remote name="aosp" fetch="https://android.googlesource.com/" review="https://android.googlesource.com/" />
+  <default revision="mirror-goog-llvm-r614150-release" remote="aosp" sync-j="4" />
+  <project path="toolchain/llvm-project" name="toolchain/llvm-project" revision="52d25c7f6cf8d458a5d1cda9729c2ed757ebe86e" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="toolchain/llvm_android" name="toolchain/llvm_android" revision="c8409808710fe891b9f767a8aec945ce9613b4f6" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="toolchain/common" name="toolchain/common" revision="0bce8b062126242872e9f3fc66760d3f76773c49" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="external/toolchain-utils" name="platform/external/toolchain-utils" revision="6d3858ce58cad1dfec0863a094ab7331f6ca2cad" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8" name="platform/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8" clone-depth="1" revision="f1419cdde6eb46ff7302eeb8470aec656e9f3123" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="prebuilts/gcc/linux-x86/host/x86_64-w64-mingw32-4.8" name="platform/prebuilts/gcc/linux-x86/host/x86_64-w64-mingw32-4.8" clone-depth="1" revision="a6c64a6502e0a89ee8ad3e3f8be97223a69e5bd7" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="prebuilts/cmake/darwin-x86" name="platform/prebuilts/cmake/darwin-x86" clone-depth="1" revision="10c407d8817d5778454bb8bb24f1219d7c723b6c" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="prebuilts/cmake/linux-arm64" name="platform/prebuilts/cmake/linux-arm64" clone-depth="1" revision="20526d417b6ca38b24bd4094eaaf528e2e4fb9e9" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="prebuilts/cmake/linux-x86" name="platform/prebuilts/cmake/linux-x86" clone-depth="1" revision="3dfd2881b310f9fca37327eccf47660b0712c2cc" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="prebuilts/build-tools" name="platform/prebuilts/build-tools" clone-depth="1" revision="29295a017590e5901160fe04a2306ff1437abf43" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="prebuilts/ninja/darwin-x86" name="platform/prebuilts/ninja/darwin-x86" clone-depth="1" revision="af000e92b9b3bdac34d4864e16af790220f7a25e" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="prebuilts/ninja/linux-arm64" name="platform/prebuilts/ninja/linux-arm64" clone-depth="1" revision="f5f1d6a3c3d46d64ec9d2a3f9535a01c7ec71168" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="prebuilts/ninja/linux-x86" name="platform/prebuilts/ninja/linux-x86" clone-depth="1" revision="887091ebadd51a86481129766b46bb292efa9efb" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="prebuilts/go/darwin-x86" name="platform/prebuilts/go/darwin-x86" groups="darwin,pdk,tradefed" clone-depth="1" revision="67c7f6add98b3b5e70e1535b61d51601ef8c204c" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="prebuilts/go/linux-arm64" name="platform/prebuilts/go/linux-arm64" groups="linux,pdk,tradefed" clone-depth="1" revision="9be32ea4e5beb3f7e1afbe306030b8646c72856c" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="prebuilts/go/linux-x86" name="platform/prebuilts/go/linux-x86" groups="linux,pdk,tradefed" clone-depth="1" revision="9fd8d2fa4b81b8ac667f33597ebf3a59976af9fd" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="external/zstd" name="platform/external/zstd" revision="6fc86914f6f30cc7b57f94288cc79523e16fe573" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="external/libedit" name="platform/external/libedit" revision="e05eb8459b1631dcb8d2ac71bca9f6ff3dc2d95a" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="external/swig" name="platform/external/swig" revision="dcabe60c35082d3beab79359d48093a23f0b09aa" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="toolchain/xz" name="toolchain/xz" revision="344ec8838064682d8803fa483bee7e4455cbddac" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="external/libxml2" name="platform/external/libxml2" revision="65ca4b91f4110b8a1b862fa0b9281cc961efa485" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="external/libncurses" name="platform/external/ncurses" revision="f52d90dc5f989e833e9d6168691b51a6e322f7ff" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="external/trusty/musl" name="trusty/external/musl" clone-depth="1" revision="253b4013340231f5347a500bddaaefbe70e1b2fe" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="prebuilts/python/linux-arm64" name="platform/prebuilts/python/linux-arm64" clone-depth="1" revision="b266290a399be83743a3e862f8201a72052aa1fd" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="prebuilts/python/linux-x86" name="platform/prebuilts/python/linux-x86" clone-depth="1" revision="d5e90ec730287409fe3a9863be6f7bb51b6eeac1" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="prebuilts/python/darwin-x86" name="platform/prebuilts/python/darwin-x86" clone-depth="1" revision="e143272fee90a385eff704058e9e770571a0e44d" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="prebuilts/python/windows-x86" name="platform/prebuilts/python/windows-x86" clone-depth="1" revision="feda74dea139bb9ce84512e508b4e66d39db299c" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="prebuilts/clang/host/darwin-x86" name="platform/prebuilts/clang/host/darwin-x86" clone-depth="1" revision="6fe45e5caeba183778fcaaeb64c15e3d8c609a7e" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="prebuilts/clang/host/linux-arm64" name="platform/prebuilts/clang/host/linux-arm64" clone-depth="1" revision="1ab4a0aa701ef64db8a6e08a5995a369c008f600" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="prebuilts/clang/host/linux-x86" name="platform/prebuilts/clang/host/linux-x86" clone-depth="1" revision="321f7260f6b84db5cf8e448e39204c3c37263a6e" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="prebuilts/clang/host/windows-x86" name="platform/prebuilts/clang/host/windows-x86" clone-depth="1" revision="aca656099129810e86b6230be9f76ccf037f6589" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="toolchain/prebuilts/ndk/releases" name="toolchain/prebuilts/ndk/releases" clone-depth="1" revision="0a457510088abc4c5706f87d72e50814402dde87" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="tools/repohooks" name="platform/tools/repohooks" revision="a7b6c0ca0badc17d345cb2d33fd41126049e61be" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="vendor/unbundled_google/tools/gemini-utils" name="platform/vendor/unbundled_google/tools/gemini-utils" groups="vendor,sysui-studio" revision="8bfa67660737e3b75e7b30c8fced54cc07aebe83" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <repo-hooks in-project="platform/tools/repohooks" enabled-list="pre-upload" />
+</manifest>
