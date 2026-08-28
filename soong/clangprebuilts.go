@@ -29,16 +29,6 @@ import (
 	"android/soong/genrule"
 )
 
-var (
-	// Files included in the llvm-tools filegroup in ../Android.bp
-	llvmToolsFiles = []string{
-		"bin/llvm-cxxfilt",
-		"bin/llvm-objcopy",
-		"bin/llvm-strip",
-		"bin/llvm-symbolizer",
-	}
-)
-
 // This module is used to generate libfuzzer, libomp static libraries and
 // libclang_rt.* shared libraries. When LLVM_PREBUILTS_VERSION and
 // LLVM_RELEASE_VERSION are set, the library will generated from the given
@@ -66,8 +56,6 @@ func init() {
 		llvmHostArchFileGroupFactory)
 	android.RegisterModuleType("clang_builtin_headers",
 		clangBuiltinHeadersFactory)
-	android.RegisterModuleType("llvm_tools_filegroup",
-		llvmToolsFilegroupFactory)
 }
 
 func getClangPrebuiltDir(ctx android.LoadHookContext) string {
@@ -738,24 +726,5 @@ func clangBuiltinHeaders(ctx android.LoadHookContext) {
 func clangBuiltinHeadersFactory() android.Module {
 	module := genrule.GenRuleFactory()
 	android.AddLoadHook(module, clangBuiltinHeaders)
-	return module
-}
-
-func llvmToolsFileGroup(ctx android.LoadHookContext) {
-	type props struct {
-		Srcs []string
-	}
-
-	p := &props{}
-	prebuiltDir := path.Join(getClangPrebuiltDir(ctx))
-	for _, src := range llvmToolsFiles {
-		p.Srcs = append(p.Srcs, path.Join(prebuiltDir, src))
-	}
-	ctx.AppendProperties(p)
-}
-
-func llvmToolsFilegroupFactory() android.Module {
-	module := android.FileGroupFactory()
-	android.AddLoadHook(module, llvmToolsFileGroup)
 	return module
 }
