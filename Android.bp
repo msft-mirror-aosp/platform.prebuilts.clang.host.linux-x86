@@ -576,16 +576,8 @@ clang_builtin_headers {
     out: ["clang_builtin_headers_resources.inc"],
 }
 
-// Export llvm tools as a filegroup which is packaged and available for CI
-// tests.
-llvm_tools_filegroup {
-    name: "llvm-tools",
-    visibility: [
-        "//development/scripts:__subpackages__",
-        "//external/deqp/android/cts:__subpackages__",
-    ],
-    // The tools and libs in the filegroup are in
-    // ./soong/clangprebuilts.go:llvmToolsFiles
+llvm_prebuilt_build_tool {
+    name: "llvm-cxxfilt",
 }
 
 llvm_prebuilt_build_tool {
@@ -606,6 +598,10 @@ llvm_prebuilt_build_tool {
 
 llvm_prebuilt_build_tool {
     name: "llvm-strings",
+}
+
+llvm_prebuilt_build_tool {
+    name: "llvm-strip",
 }
 
 llvm_prebuilt_build_tool {
