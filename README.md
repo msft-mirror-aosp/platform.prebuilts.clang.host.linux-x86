@@ -102,7 +102,7 @@ LLVM Users
     * [Android Code Search link](https://cs.android.com/android/platform/superproject/main/+/main:bootable/libbootloader/gbl/integration/aosp_uefi-gbl-mainline/workspace.bzl)
 
 * **Proprietary Media DRM**
-  * Currently clang-r547379
+  * Currently clang-r596125
   * Look for clang version in go/android-drm-clang-version.
   * Please contact g/android-drm-team for more information.
 
