@@ -578,34 +578,63 @@ clang_builtin_headers {
 
 llvm_prebuilt_build_tool {
     name: "llvm-cxxfilt",
+    visibility: [
+        "//development/scripts",
+    ],
 }
 
 llvm_prebuilt_build_tool {
     name: "llvm-dwarfdump",
+    visibility: [
+        "//art/tools",
+    ],
 }
 
 llvm_prebuilt_build_tool {
     name: "llvm-objcopy",
+    visibility: [
+        "//art/runtime",
+        "//development/scripts",
+        "//external/deqp/android/cts",
+    ],
 }
 
 llvm_prebuilt_build_tool {
     name: "llvm-objdump",
+    visibility: [
+        "//art/runtime",
+        "//system/extras/simpleperf/scripts",
+    ],
 }
 
 llvm_prebuilt_build_tool {
     name: "llvm-readobj",
+    visibility: [
+        "//system/extras/simpleperf/scripts",
+    ],
 }
 
 llvm_prebuilt_build_tool {
     name: "llvm-strings",
+    visibility: [
+        "//vendor:__subpackages__",
+    ],
 }
 
 llvm_prebuilt_build_tool {
     name: "llvm-strip",
+    visibility: [
+        "//development/scripts",
+        "//external/deqp/android/cts",
+    ],
 }
 
 llvm_prebuilt_build_tool {
     name: "llvm-symbolizer",
+    visibility: [
+        "//development/scripts",
+        "//system/extras/simpleperf/scripts",
+    ],
 }
 
 subdirs = [
