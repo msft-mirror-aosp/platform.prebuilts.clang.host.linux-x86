@@ -18,6 +18,7 @@ package clangprebuilts
 
 import (
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/google/blueprint/pathtools"
@@ -58,11 +59,13 @@ func init() {
 		clangBuiltinHeadersFactory)
 }
 
+
 func getClangPrebuiltDir(ctx android.LoadHookContext) string {
-	return path.Join(
-		"./",
-		ctx.Config().GetenvWithDefault("LLVM_PREBUILTS_VERSION", config.ClangVersion(ctx)),
-	)
+	return ctx.Config().GetenvWithDefault("LLVM_PREBUILTS_VERSION", config.ClangVersion(ctx))
+}
+
+func getClangPrebuiltDirWithoutOverride(ctx android.LoadHookContext) string {
+	return config.ClangVersion(ctx)
 }
 
 func getDirectoryInClangShortVersionLibDir(ctx android.LoadHookContext, dir string) string {
@@ -121,16 +124,24 @@ func hostLibcxxHeaderDirs(ctx android.LoadHookContext, triple string) []string {
 // master-plus-llvm, on the other hand, the Darwin filegroups are defined, but
 // the build uses clang-dev instead of clang-rNNNNNN, and clang-dev only exists
 // for linux-x86, not darwin-x86.
-func hasDarwinClangPrebuilt(ctx android.LoadHookContext) bool {
-	return android.ExistentPathForSource(
-		ctx, "prebuilts/clang/host/darwin-x86", getClangPrebuiltDir(ctx),
-		"bin/clang").Valid()
+func hasOtherArchClangPrebuilt(ctx android.LoadHookContext, path string) bool {
+	return android.ExistentPathForSource(ctx, path, getClangPrebuiltDir(ctx), "bin/clang").Valid() ||
+		android.ExistentPathForSource(ctx, path, getClangPrebuiltDirWithoutOverride(ctx), "bin/clang").Valid()
+
 }
 
+// hasDarwinClangPrebuilt returns true if clang prebuilts are present for darwin-x86
+// for either the version specified by LLVM_PREBUILTS_VERSION or the default configured
+// clang version.
+func hasDarwinClangPrebuilt(ctx android.LoadHookContext) bool {
+	return hasOtherArchClangPrebuilt(ctx, "prebuilts/clang/host/darwin-x86")
+}
+
+// hasLinuxArm64ClangPrebuilt returns true if clang prebuilts are present for linux-arm64
+// for either the version specified by LLVM_PREBUILTS_VERSION or the default configured
+// clang version.
 func hasLinuxArm64ClangPrebuilt(ctx android.LoadHookContext) bool {
-	return android.ExistentPathForSource(
-		ctx, "prebuilts/clang/host/linux-arm64", getClangPrebuiltDir(ctx),
-		"bin/clang").Valid()
+	return hasOtherArchClangPrebuilt(ctx, "prebuilts/clang/host/linux-arm64")
 }
 
 type archInnerProps struct {
@@ -590,19 +601,26 @@ func libClangRtPrebuiltObject(ctx android.LoadHookContext) {
 
 func llvmHostArchFileGroupHook(ctx android.LoadHookContext, fileGroupProps *llvmHostArchFileGroupProperties) {
 	clangDir := getClangPrebuiltDir(ctx)
-
-	lib := path.Join(clangDir, proptools.String(fileGroupProps.Lib))
-
-	// On main-plus-llvm the darwin filegroup modules will exist, but the clang version is overridden to
-	// clang-dev, and there are no darwin prebuilts with that version.  Ignore any missing sources.
-	if android.ExistentPathForSource(ctx, ctx.ModuleDir(), lib).Valid() {
-		type props struct {
-			Srcs []string
-		}
-		p := &props{}
-		p.Srcs = []string{lib}
-		ctx.AppendProperties(p)
+	lib := proptools.String(fileGroupProps.Lib)
+	// On some branches the darwin and linux-arm64 prebuilts don't exist at all.
+	// On main-plus-llvm the darwin and linux-arm64 filegroup modules will exist, but
+	// the clang version is overridden to clang-dev, and there are no darwin or
+	// linux-arm64 prebuilts with that version.  Check first for prebuilts using the
+	// possibly overridden version, if those don't exist try the original version, and
+	// if neither exists skip the module to implicitly treat it as disabled.
+	if !android.ExistentPathForSource(ctx, ctx.ModuleDir(), clangDir, lib).Valid() {
+		clangDir = getClangPrebuiltDirWithoutOverride(ctx)
 	}
+	if !android.ExistentPathForSource(ctx, ctx.ModuleDir(), clangDir, lib).Valid() {
+		return
+	}
+
+	type props struct {
+			Srcs []string
+	}
+	p := &props{}
+	p.Srcs = []string{filepath.Join(clangDir, lib)}
+	ctx.AppendProperties(p)
 }
 
 func llvmPrebuiltLibraryStaticFactory() android.Module {
