@@ -23,6 +23,21 @@ _LIBCPP_BEGIN_NAMESPACE_STD
 [[__noreturn__]] _LIBCPP_AVAILABILITY_VERBOSE_ABORT _LIBCPP_OVERRIDABLE_FUNC_VIS _LIBCPP_ATTRIBUTE_FORMAT(
     __printf__, 1, 2) void __libcpp_verbose_abort(const char* __format, ...) _NOEXCEPT;
 
+// NOTE(b/543356317): This is only intended to be used as we 'shake out'
+// initial libcxx hardening crashes from Android (a few weeks). It's not called
+// by a stable hardening mode, and not planned to be upstreamed. The intent is
+// _entirely_ to point people to the libcxx hardening enablement metabug in
+// backtraces.
+[[__noreturn__]] [[gnu::noinline]] [[clang::nomerge]] inline void __libcpp_hardening_failure_PLEASE_SEE_BUG_543356317(const char *) {
+  // Store to a volatile to defeat ICF.
+  [[maybe_unused]] volatile unsigned i = 0x1234567;
+  i = 0x89ABC;
+  __builtin_trap();
+}
+
+#define _ANDROID_LIBCPP_TRIAGE_VERBOSE_ABORT(message) \
+  ::std::__libcpp_hardening_failure_PLEASE_SEE_BUG_543356317(message)
+
 // _LIBCPP_VERBOSE_ABORT(format, args...)
 //
 // This macro is used to abort the program abnormally while providing additional diagnostic information.
