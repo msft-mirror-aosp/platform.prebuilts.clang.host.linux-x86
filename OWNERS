@@ -1,1 +1,1 @@
-include tools/vendor/adt_infra_internal:/OWNERS
+include platform/tools/adt_infra_internal:/OWNERS
