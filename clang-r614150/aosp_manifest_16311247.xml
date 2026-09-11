@@ -4,7 +4,7 @@
   <remote name="aosp" fetch="https://android.googlesource.com/" review="https://android.googlesource.com/" />
   <default revision="mirror-goog-llvm-r614150-release" remote="aosp" sync-j="4" />
   <project path="toolchain/llvm-project" name="toolchain/llvm-project" revision="52d25c7f6cf8d458a5d1cda9729c2ed757ebe86e" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
-  <project path="toolchain/llvm_android" name="toolchain/llvm_android" revision="c8409808710fe891b9f767a8aec945ce9613b4f6" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
+  <project path="toolchain/llvm_android" name="toolchain/llvm_android" revision="99242162b347e31f226d0ac44552cb9480cf15c5" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
   <project path="toolchain/common" name="toolchain/common" revision="0bce8b062126242872e9f3fc66760d3f76773c49" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
   <project path="external/toolchain-utils" name="platform/external/toolchain-utils" revision="6d3858ce58cad1dfec0863a094ab7331f6ca2cad" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
   <project path="prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8" name="platform/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8" clone-depth="1" revision="f1419cdde6eb46ff7302eeb8470aec656e9f3123" upstream="mirror-goog-llvm-r614150-release" remote="aosp" />
