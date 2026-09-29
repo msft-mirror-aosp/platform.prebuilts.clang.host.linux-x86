@@ -1,11 +1,11 @@
 {
     "attempt_id": 1,
     "best_target_priority": 1,
-    "bid": "16311247",
+    "bid": "16464736",
     "branch": "git_llvm-r614150-release",
     "branch_priority": 1,
     "build_configs": {
-        "git_llvm-r614150-release/llvm_linux_bootstrap": "16311247"
+        "git_llvm-r614150-release/llvm_linux_bootstrap": "16464736"
     },
     "build_type": "submitted",
     "device_dir": "/mnt/disks/build-disk/src/googleplex-android/llvm-r614150-release",
@@ -13,12 +13,13 @@
     "enable_docker": true,
     "git-pull": null,
     "git-server": "https://googleplex-android.googlesource.com",
-    "hostname": "r-aa0f18dbf739e7af-21l1",
+    "hostname": "r-aa0f18dbf739e7af-dc4s",
     "inc-build": false,
     "java-version": "",
     "last_logfile": null,
     "out_dir": "/mnt/disks/build-disk/src/googleplex-android/llvm-r614150-release/out",
     "parsed_manifest": {
+        "manifestServer": {},
         "parsedDefault": {
             "remote": "goog",
             "revision": "llvm-r614150-release",
@@ -44,7 +45,7 @@
                     "name": "goog",
                     "review": "https://googleplex-android.googlesource.com/"
                 },
-                "revision": "99242162b347e31f226d0ac44552cb9480cf15c5",
+                "revision": "7420d50e8a133bc853b33f0bde9ec3c5ec225964",
                 "upstream": "llvm-r614150-release"
             },
             {
@@ -138,7 +139,7 @@
                     "name": "goog",
                     "review": "https://googleplex-android.googlesource.com/"
                 },
-                "revision": "29295a017590e5901160fe04a2306ff1437abf43",
+                "revision": "dd12a08ce311ed93d92b20105ce0feab38590c32",
                 "upstream": "llvm-r614150-release"
             },
             {
@@ -179,6 +180,11 @@
             },
             {
                 "cloneDepth": "1",
+                "group": [
+                    "darwin",
+                    "pdk",
+                    "tradefed"
+                ],
                 "name": "platform/prebuilts/go/darwin-x86",
                 "path": "prebuilts/go/darwin-x86",
                 "remote": {
@@ -191,6 +197,11 @@
             },
             {
                 "cloneDepth": "1",
+                "group": [
+                    "linux",
+                    "pdk",
+                    "tradefed"
+                ],
                 "name": "platform/prebuilts/go/linux-arm64",
                 "path": "prebuilts/go/linux-arm64",
                 "remote": {
@@ -203,6 +214,11 @@
             },
             {
                 "cloneDepth": "1",
+                "group": [
+                    "linux",
+                    "pdk",
+                    "tradefed"
+                ],
                 "name": "platform/prebuilts/go/linux-x86",
                 "path": "prebuilts/go/linux-x86",
                 "remote": {
@@ -411,6 +427,10 @@
                 "upstream": "llvm-r614150-release"
             },
             {
+                "group": [
+                    "vendor",
+                    "sysui-studio"
+                ],
                 "name": "platform/vendor/unbundled_google/tools/gemini-utils",
                 "path": "vendor/unbundled_google/tools/gemini-utils",
                 "remote": {
@@ -423,7 +443,14 @@
             },
             {
                 "name": "platform/manifest",
-                "revision": "3c52e3eb69acbffc75db33562d95b1ead61f2a05"
+                "revision": "1dbd23cc2927f82f07cbad22db767ddadb42111b"
+            }
+        ],
+        "remote": [
+            {
+                "fetch": "https://googleplex-android.googlesource.com/",
+                "name": "goog",
+                "review": "https://googleplex-android.googlesource.com/"
             }
         ],
         "repoHooks": {
@@ -440,8 +467,8 @@
         "platform/external/swig": "dcabe60c35082d3beab79359d48093a23f0b09aa",
         "platform/external/toolchain-utils": "6d3858ce58cad1dfec0863a094ab7331f6ca2cad",
         "platform/external/zstd": "6fc86914f6f30cc7b57f94288cc79523e16fe573",
-        "platform/manifest": "3c52e3eb69acbffc75db33562d95b1ead61f2a05",
-        "platform/prebuilts/build-tools": "29295a017590e5901160fe04a2306ff1437abf43",
+        "platform/manifest": "1dbd23cc2927f82f07cbad22db767ddadb42111b",
+        "platform/prebuilts/build-tools": "dd12a08ce311ed93d92b20105ce0feab38590c32",
         "platform/prebuilts/clang/host/darwin-x86": "6fe45e5caeba183778fcaaeb64c15e3d8c609a7e",
         "platform/prebuilts/clang/host/linux-arm64": "1ab4a0aa701ef64db8a6e08a5995a369c008f600",
         "platform/prebuilts/clang/host/linux-x86": "321f7260f6b84db5cf8e448e39204c3c37263a6e",
@@ -465,7 +492,7 @@
         "platform/vendor/unbundled_google/tools/gemini-utils": "8bfa67660737e3b75e7b30c8fced54cc07aebe83",
         "toolchain/common": "0bce8b062126242872e9f3fc66760d3f76773c49",
         "toolchain/llvm-project": "52d25c7f6cf8d458a5d1cda9729c2ed757ebe86e",
-        "toolchain/llvm_android": "99242162b347e31f226d0ac44552cb9480cf15c5",
+        "toolchain/llvm_android": "7420d50e8a133bc853b33f0bde9ec3c5ec225964",
         "toolchain/prebuilts/ndk/releases": "0a457510088abc4c5706f87d72e50814402dde87",
         "toolchain/xz": "344ec8838064682d8803fa483bee7e4455cbddac",
         "trusty/external/musl": "253b4013340231f5347a500bddaaefbe70e1b2fe"
@@ -475,16 +502,16 @@
     "repo_manifest_file": "default.xml",
     "reset_image_build": false,
     "src_ctrl": "repo",
-    "sync_finish_time": 1789080503.061531,
-    "sync_start_time": 1789080467.7412415,
+    "sync_finish_time": 1790639784.533385,
+    "sync_start_time": 1790639717.1083953,
     "sync_succeed": 1,
     "target": {
         "apiary_target": "llvm_linux",
         "dir_list": [
             "applied.prop",
             "build_info.json",
-            "clang-16311247-linux-x86.tar.xz",
-            "manifest_16311247.xml",
+            "clang-16464736-linux-x86.tar.xz",
+            "manifest_16464736.xml",
             "build_times.txt",
             "repo.prop",
             "multiple.intoto.jsonl",
@@ -509,7 +536,7 @@
             "logs/resource_utilization/cpu_usage.json",
             "BUILD_INFO"
         ],
-        "dist-dir": "/buildbot/dist_dirs/git_llvm-r614150-release-linux-llvm/16311247",
+        "dist-dir": "/buildbot/dist_dirs/git_llvm-r614150-release-linux-llvm/16464736",
         "name": "llvm_linux",
         "rules": [
             [
@@ -519,9 +546,9 @@
                 false
             ]
         ],
-        "storage_path": "/bigstore/android-build/builds/git_llvm-r614150-release-linux-llvm_linux/16311247/130064581964e0f713f407e7f00a887dbda6ae02bcfe5b39224eef727a587ca2/1",
-        "target_finish_time": 1789086929.1462946,
-        "target_start_time": 1789080504.568943,
+        "storage_path": "/bigstore/android-build/builds/git_llvm-r614150-release-linux-llvm_linux/16464736/ae209eecb3268926760382c00a8a8e1b19cac3d2e20dad6c86c33ca44e6f063f/1",
+        "target_finish_time": 1790646761.492566,
+        "target_start_time": 1790639785.517046,
         "target_status": 1
     },
     "trident_usage": {
@@ -530,47 +557,66 @@
     },
     "use_goma": false,
     "worknode": {
-        "containerId": "L24300030183515094",
-        "creationTimeMillis": "1789058981348",
+        "containerId": "L12400030194662904",
+        "creationTimeMillis": "1790638441835",
         "currentAttempt": {
-            "attemptId": "lbXVNSmlj5kUoawiiWfKLA==",
+            "attemptId": "TfZndwbnPtMAlAK4y4Zibg==",
             "progressMessages": [
                 {
-                    "displayMessage": "Build 16311247 for node L24300030183515094:N99200031111150681 has been inserted",
-                    "messageString": "Build 16311247 for node L24300030183515094:N99200031111150681 has been inserted",
-                    "timeMillis": "1789074358374"
+                    "displayMessage": "Build 16464736 for node L12400030194662904:N55200031162965655 has been inserted",
+                    "messageString": "Build 16464736 for node L12400030194662904:N55200031162965655 has been inserted",
+                    "timeMillis": "1790639573720"
                 }
             ],
-            "startTimeMillis": "1789074354982"
+            "startTimeMillis": "1790639571027"
         },
         "heartbeatTimeMillis": "86400000",
-        "id": "L24300030183515094:N99200031111150681",
+        "id": "L12400030194662904:N55200031162965655",
         "inputEdges": [
             {
-                "neighborId": "L24300030183515094:N62400031111150675"
+                "neighborId": "L12400030194662904:N15900031162965649"
             },
             {
-                "neighborId": "L24300030183515094:N41600031111150687"
+                "neighborId": "L12400030194662904:N62000031162965661"
             }
         ],
         "isFinal": false,
-        "lastUpdatedMillis": "1789074358602",
+        "lastUpdatedMillis": "1790639700345",
         "nodeClass": "postsubmit",
         "retryStatus": {
             "maximumRetries": 4,
             "retryCount": 0
         },
-        "revision": "RzOn/R3zpj77CjYGPkbUAA==",
+        "revision": "ApS9txpl2zwC4AizJ8cMDw==",
         "status": "scheduled",
+        "statusHistory": [
+            {
+                "status": "CREATED",
+                "timestampMillis": "1790638441835"
+            },
+            {
+                "status": "PENDING",
+                "timestampMillis": "1790639570622"
+            },
+            {
+                "status": "SCHEDULED",
+                "timestampMillis": "1790639571027"
+            }
+        ],
         "workExecutorType": "submittedBuild",
         "workParameters": {
             "submittedBuild": {
                 "branch": "git_llvm-r614150-release",
-                "branchConfig": {},
+                "branchConfig": {
+                    "sloTier": "BEST_EFFORT"
+                },
                 "buildDependencies": [
                     {
-                        "dependencyBuildId": "16311247",
+                        "dependencyBuildId": "16464736",
                         "dependencyInfo": {
+                            "artifactPrefix": [
+                                "stage1-install"
+                            ],
                             "branch": "git_llvm-r614150-release",
                             "destDir": "artifacts/linux_bootstrap",
                             "fixedBuildId": "",
@@ -578,12 +624,24 @@
                         }
                     }
                 ],
-                "buildId": "16311247",
-                "gerritPollerTimestamp": "1789058659064",
+                "buildId": "16464736",
+                "gerritPollerTimestamp": "1790638409416",
                 "manuallyTriggered": false,
                 "syncTimeoutSecond": 5400,
                 "target": {
+                    "buildCommand": [
+                        "DIST_DIR=%dist_dir% OUT_DIR=out BUILD_NAME=%bid% prebuilts/python/linux-x86/bin/python3 toolchain/llvm_android/dispatch.py git_main-llvm-toolchain llvm_linux"
+                    ],
                     "buildPlatform": "linux",
+                    "dependencyTarget": [
+                        {
+                            "artifactPrefix": [
+                                "stage1-install"
+                            ],
+                            "destDir": "artifacts/linux_bootstrap",
+                            "targetName": "llvm_linux_bootstrap"
+                        }
+                    ],
                     "disabled": false,
                     "dockerInfo": {
                         "dockerRepo": "us-docker.pkg.dev/google.com:android-llvm-kokoro/android-llvm/llvm-ubuntu",
@@ -597,6 +655,7 @@
                     "launchcontrolName": "llvm_linux",
                     "name": "llvm_linux",
                     "platformVersion": "docker",
+                    "priority": "LOW",
                     "product": "linux",
                     "provenanceInfo": {
                         "bbcpDepotContextCl": 958888232,
