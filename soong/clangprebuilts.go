@@ -58,7 +58,6 @@ func init() {
 		clangBuiltinHeadersFactory)
 }
 
-
 func getClangPrebuiltDir(ctx android.LoadHookContext) string {
 	return ctx.Config().GetenvWithDefault("LLVM_PREBUILTS_VERSION", config.ClangVersion(ctx))
 }
@@ -383,6 +382,8 @@ func llvmPrebuiltLibraryStatic(ctx android.LoadHookContext) {
 		p.Target.Linux_musl_x86_64.Srcs = []string{filepath.Join(libDir, "x86_64-unknown-linux-musl/lib", name)}
 		p.Target.Linux_musl_arm.Srcs = []string{filepath.Join(libDir, "arm-unknown-linux-musleabihf/lib", name)}
 		p.Target.Linux_musl_arm64.Srcs = []string{filepath.Join(libDir, "aarch64-unknown-linux-musl/lib", name)}
+		p.Target.Glibc_x86.Srcs = []string{filepath.Join(clangDir, "lib", "i386-unknown-linux-gnu", name)}
+		p.Target.Glibc_x86_64.Srcs = []string{filepath.Join(clangDir, "lib", "x86_64-unknown-linux-gnu", name)}
 	}
 
 	ctx.AppendProperties(p)
@@ -403,7 +404,7 @@ func llvmPrebuiltBuildTool(ctx android.LoadHookContext) {
 			Host_linux_arm64 struct {
 				Enabled *bool
 				Src     *string
-				Deps []string
+				Deps    []string
 			}
 		}
 	}
@@ -617,7 +618,7 @@ func llvmHostArchFileGroupHook(ctx android.LoadHookContext, fileGroupProps *llvm
 	}
 
 	type props struct {
-			Srcs []string
+		Srcs []string
 	}
 	p := &props{}
 	p.Srcs = []string{filepath.Join(clangDir, lib)}
