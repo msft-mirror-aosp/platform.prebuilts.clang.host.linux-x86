@@ -9,7 +9,7 @@
 
   <project path="toolchain/llvm-project" name="toolchain/llvm-project" revision="52d25c7f6cf8d458a5d1cda9729c2ed757ebe86e" upstream="llvm-r614150-release" />
 
-  <project path="toolchain/llvm_android" name="toolchain/llvm_android" revision="99242162b347e31f226d0ac44552cb9480cf15c5" upstream="llvm-r614150-release" />
+  <project path="toolchain/llvm_android" name="toolchain/llvm_android" revision="7420d50e8a133bc853b33f0bde9ec3c5ec225964" upstream="llvm-r614150-release" />
 
   <project path="toolchain/common" name="toolchain/common" revision="0bce8b062126242872e9f3fc66760d3f76773c49" upstream="llvm-r614150-release" />
 
@@ -25,7 +25,7 @@
 
   <project path="prebuilts/cmake/linux-x86" name="platform/prebuilts/cmake/linux-x86" clone-depth="1" revision="3dfd2881b310f9fca37327eccf47660b0712c2cc" upstream="llvm-r614150-release" />
 
-  <project path="prebuilts/build-tools" name="platform/prebuilts/build-tools" clone-depth="1" revision="29295a017590e5901160fe04a2306ff1437abf43" upstream="llvm-r614150-release" />
+  <project path="prebuilts/build-tools" name="platform/prebuilts/build-tools" clone-depth="1" revision="dd12a08ce311ed93d92b20105ce0feab38590c32" upstream="llvm-r614150-release" />
 
   <project path="prebuilts/ninja/darwin-x86" name="platform/prebuilts/ninja/darwin-x86" clone-depth="1" revision="af000e92b9b3bdac34d4864e16af790220f7a25e" upstream="llvm-r614150-release" />
 
