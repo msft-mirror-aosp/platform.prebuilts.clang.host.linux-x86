@@ -84,6 +84,7 @@ libclang_rt_prebuilt_library_static {
     product_available: true,
     native_bridge_supported: true,
     host_supported: true,
+    lfi_supported: true,
     sanitize: {
         never: true,
     },
