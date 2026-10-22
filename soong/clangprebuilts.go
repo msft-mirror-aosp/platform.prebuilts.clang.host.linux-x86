@@ -147,6 +147,7 @@ type archInnerProps struct {
 	Enabled             *bool
 	Export_include_dirs []string
 	Srcs                []string
+	Exclude_srcs        []string
 	Stem                *string
 	Sanitized           struct {
 		None struct {
@@ -167,7 +168,7 @@ type archInnerProps struct {
 type archProps struct {
 	Android_arm         archInnerProps
 	Android_arm64       archInnerProps
-	Android_lfi_arm64   archInnerProps
+	Android_arm64_lfi   archInnerProps
 	Android_riscv64     archInnerProps
 	Android_x86         archInnerProps
 	Android_x86_64      archInnerProps
@@ -547,8 +548,10 @@ func libClangRtPrebuiltLibraryStatic(ctx android.LoadHookContext, libProps *preb
 	p := &props{}
 
 	p.Target.Android_arm.Srcs = []string{filepath.Join(libDir, name+"-arm-android"+suffix+".a")}
-	p.Target.Android_arm64.Srcs = []string{filepath.Join(libDir, name+"-aarch64-android"+suffix+".a")}
-	p.Target.Android_lfi_arm64.Srcs = []string{filepath.Join(getDirectoryInClangShortVersionLibDir(ctx, "lib"), "aarch64_lfi-unknown-linux-android30", name+suffix+".a")}
+	arm64Src := filepath.Join(libDir, name+"-aarch64-android"+suffix+".a")
+	p.Target.Android_arm64.Srcs = []string{arm64Src}
+	p.Target.Android_arm64_lfi.Exclude_srcs = []string{arm64Src}
+	p.Target.Android_arm64_lfi.Srcs = []string{filepath.Join(getDirectoryInClangShortVersionLibDir(ctx, "lib"), "aarch64_lfi-unknown-linux-android30", name+suffix+".a")}
 	p.Target.Android_riscv64.Srcs = []string{filepath.Join(libDir, name+"-riscv64-android"+suffix+".a")}
 	p.Target.Android_x86.Srcs = []string{filepath.Join(libDir, name+"-i686-android"+suffix+".a")}
 	p.Target.Android_x86_64.Srcs = []string{filepath.Join(libDir, name+"-x86_64-android"+suffix+".a")}
