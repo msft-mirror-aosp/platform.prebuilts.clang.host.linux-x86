@@ -377,6 +377,10 @@ llvm_prebuilt_library_static {
         musl: {
             enabled: true,
         },
+        // Rust's unwinder on glibc hosts, instead of libgcc_s.
+        linux_glibc: {
+            enabled: true,
+        },
     },
 }
 
