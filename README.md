@@ -12,7 +12,7 @@ LLVM Users
 ----------
 
 * [**Android Platform**](https://android.googlesource.com/platform/)
-  * Currently clang-r596125
+  * Currently clang-r614150
   * clang-r547379 for Android 16 release
   * clang-r522817 for Android V release
   * clang-r487747c for Android U release
@@ -27,11 +27,11 @@ LLVM Users
     * [Internal code search link](https://source.corp.google.com/h/android/platform/superproject/main/+/main:build/soong/cc/config/global.go)
 
 * [**Android Platform LLVM binutils**](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/llvm-binutils-stable/)
-  * Currently clang-r596125
+  * Currently clang-r614150
   * These are *symlinks* to llvm tools and can be updated by running [update-binutils.py](https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/master/update-binutils.py).
 
 * [**Android Platform clang-stable**](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/master/clang-stable/)
-  * Currently clang-r596125
+  * Currently clang-r614150
   * These are *copies* of some clang tools and can be updated by running [update-clang-stable.py](https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/master/update-clang-stable.py).
 
 * [**RenderScript**](https://developer.android.com/guide/topics/renderscript/index.html)
@@ -48,7 +48,7 @@ LLVM Users
   * Internal LLVM developers should look in the partner gerrit for more kernel configurations.
 
 * [**NDK**](https://developer.android.com/ndk)
-  * Currently clang-r596125
+  * Currently clang-r614150
   * Look for "clang-" in [ndk/toolchains.py](https://source.corp.google.com/h/googleplex-android/platform/superproject/main-ndk/+/main-ndk:ndk/ndk/toolchains.py) in internal code search.
 
 * [**Trusty**](https://source.android.com/security/trusty/)
@@ -63,43 +63,42 @@ LLVM Users
     * Note that they work out of the emu-main-dev branch.
 
 * [**Context Hub Runtime Environment (CHRE)**](https://android.googlesource.com/platform/system/chre/)
-  * Currently clang-r596125
+  * Currently clang-r614150
   * Look in [system/chre/build/clang.mk](https://googleplex-android.googlesource.com/platform/system/chre/+/refs/heads/master/build/clang.mk#13).
     * [Internal Code Search link](https://source.corp.google.com/h/googleplex-android/platform/superproject/main/+/main:system/chre/build/clang.mk)
 
 * [**OpenJDK (jdk/build)**](https://android.googlesource.com/toolchain/jdk/build/)
-  * Currently clang-r596125 for Linux
+  * Currently clang-r614150 for Linux
   * Darwin is pinned to older versions (clang-r487747c and clang-r522817)
   * Look for "clang-" in [build-jetbrainsruntime-common.sh](https://android.googlesource.com/toolchain/jdk/build/+/refs/heads/mirror-goog-main-openjdk-source/build-jetbrainsruntime-common.sh)
   * Look for "clang-" in [build-openjdk21-linux.sh](https://android.googlesource.com/toolchain/jdk/build/+/refs/heads/mirror-goog-main-openjdk-source/build-openjdk21-linux.sh)
   * Look for "clang-" in [build-openjdk25-linux.sh](https://android.googlesource.com/toolchain/jdk/build/+/refs/heads/mirror-goog-main-openjdk-source/build-openjdk25-linux.sh)
 
 * [**Clang Tools**](https://android.googlesource.com/platform/prebuilts/clang-tools/)
-  * Currently clang-r596125
+  * Currently clang-r614150
   * Update [development/vndk/tools/header-checker/envsetup.sh](https://googleplex-android.git.corp.google.com/platform/development/+/refs/heads/main/vndk/tools/header-checker/android/envsetup.sh)
   * Check out branch clang-tools and run test: OUT_DIR=out prebuilts/clang-tools/build-prebuilts.sh
 
 * **Android Rust**
   * Toolchain
-    * Currently clang-r596125
+    * Currently clang-r614150
     * Look for "CLANG_REVISION" in [paths.py](https://source.corp.google.com/h/googleplex-android/platform/superproject/main-rust-toolchain/+/main-rust-toolchain:toolchain/android_rust/src/android_rust/paths.py)
   * Bindgen
-    * Currently clang-r596125
+    * Currently clang-r614150
     * Look for "bindgenClangVersion" in [bindgen.go](https://source.corp.google.com/h/googleplex-android/platform/superproject/main/+/main:build/soong/rust/bindgen.go)
 
 * **Stage 1 compiler**
-  * Currently clang-r596125
+  * Currently clang-r614150
   * Look for "clang-r" in [toolchain/llvm_android/src/llvm_android/constants.py](https://source.corp.google.com/h/googleplex-android/platform/superproject/main-llvm-toolchain/+/main-llvm-toolchain:toolchain/llvm_android/src/llvm_android/constants.py)
   * Note the chicken & egg paradox of a self hosting bootstrapping compiler; this can only be updated AFTER a new prebuilt is checked in.
 
 * **Android Studio / Android Game Development Extension**
-  * Currently clang-r596125
+  * Currently clang-r614150
   * Look in [lldb-utils/config/clang.version](https://googleplex-android.git.corp.google.com/platform/external/lldb-utils/+/refs/heads/lldb-master-dev/config/clang.version)
 
 * **libbootloader**
-  * Currently clang-r547379
-  * Look for "CLANG_VERSION" in [bootable/libbootloader/gbl/integration/aosp_uefi-gbl-mainline/workspace.bzl](https://android.googlesource.com/platform/bootable/libbootloader/+/refs/heads/master/gbl/integration/aosp_uefi-gbl-mainline/workspace.bzl)
-    * [Android Code Search link](https://cs.android.com/android/platform/superproject/main/+/main:bootable/libbootloader/gbl/integration/aosp_uefi-gbl-mainline/workspace.bzl)
+  * Currently clang-r596125
+  * Look for "CLANG_VERSION" in [bootable/libbootloader/gbl/toolchain/constants.scl](https://android.googlesource.com/platform/bootable/libbootloader/+/refs/heads/gbl-mainline/gbl/toolchain/constants.scl)
 
 * **Proprietary Media DRM**
   * Currently clang-r596125
@@ -107,9 +106,14 @@ LLVM Users
   * Please contact g/android-drm-team for more information.
 
 * **IDE Query**
-  * Currently clang-r596125
+  * Currently clang-r614150
   * Update [build/make/tools/ide_query/prober_scripts/ide_query.out](https://source.corp.google.com/h/googleplex-android/platform/superproject/main/+/main:build/make/tools/ide_query/prober_scripts/ide_query.out)
   * On main branch, run this command and upload the new ide_query.out: OUT_DIR=out build/make/tools/ide_query/prober_scripts/regen.sh
+
+* **Android LLVM Libc++ Builder**
+  * Currently clang-r584948b
+  * Look for "ANDROID_CLANG_VERSION" in [libcxx/utils/ci/docker/docker-compose.yml](https://github.com/llvm/llvm-project/blob/main/libcxx/utils/ci/docker/docker-compose.yml)
+  * See [Updating Android Clang and NDK sysroot](https://g3doc.corp.google.com/company/teams/android-llvm/building_and_testing/libcxx_upstream_testing.md#updating-android-clang-and-ndk-sysroot) for how to update it.
 
 Prebuilt Versions
 -----------------
@@ -176,7 +180,8 @@ Prebuilt Versions
 * [clang-r574158](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/mirror-goog-main-llvm-toolchain-source/clang-r574158/) - October 2025
 * [clang-r584948](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/mirror-goog-main-llvm-toolchain-source/clang-r584948/) - January 2026
 * [clang-r584948b](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/mirror-goog-main-llvm-toolchain-source/clang-r584948b/) - May 2026
-* [clang-r596125](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/mirror-goog-main-llvm-toolchain-source/clang-r596125/) - May 2026
+* [clang-r596125](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/mirror-goog-main-llvm-toolchain-source/clang-r596125/) - July 2026
+* [clang-r614150](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/heads/mirror-goog-main-llvm-toolchain-source/clang-r614150/) - October 2026
 
 
 
