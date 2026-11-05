@@ -40,7 +40,7 @@ LLVM Users
     * [AOSP Code Search link](https://cs.android.com/android/platform/superproject/+/master:build/soong/cc/config/global.go?q=RSClangVersion)
 
 * [**Android Linux Kernel**](http://go/android-systems)
-  * Currently clang-r596125 for Android Mainline kernel.
+  * Currently clang-r614150 for Android Mainline kernel.
     * Look for "CLANG_VERSION" in [mainline constants](https://android.googlesource.com/kernel/common/+/refs/heads/android-mainline/bazel/constants.scl)
     * Look for "CLANG_VERSION" in [android17-6.18 constants](https://android.googlesource.com/kernel/common/+/refs/heads/android17-6.18/bazel/constants.scl)
     * Look for "CLANG_VERSION" in [android16-6.12 build configs](https://android.googlesource.com/kernel/common/+/refs/heads/android16-6.12/build.config.constants)
@@ -52,7 +52,7 @@ LLVM Users
   * Look for "clang-" in [ndk/toolchains.py](https://source.corp.google.com/h/googleplex-android/platform/superproject/main-ndk/+/main-ndk:ndk/ndk/toolchains.py) in internal code search.
 
 * [**Trusty**](https://source.android.com/security/trusty/)
-  * Currently clang-r596125
+  * Currently clang-r614150
   * Look for "clang-" in [vendor/google/aosp/scripts/envsetup.sh](https://googleplex-android.git.corp.google.com/trusty/vendor/google/aosp/+/master/scripts/envsetup.sh).
 
 * [**Android Emulator**](https://developer.android.com/studio/run/emulator.html)
@@ -111,7 +111,7 @@ LLVM Users
   * On main branch, run this command and upload the new ide_query.out: OUT_DIR=out build/make/tools/ide_query/prober_scripts/regen.sh
 
 * **Android LLVM Libc++ Builder**
-  * Currently clang-r584948b
+  * Currently clang-r596125
   * Look for "ANDROID_CLANG_VERSION" in [libcxx/utils/ci/docker/docker-compose.yml](https://github.com/llvm/llvm-project/blob/main/libcxx/utils/ci/docker/docker-compose.yml)
   * See [Updating Android Clang and NDK sysroot](https://g3doc.corp.google.com/company/teams/android-llvm/building_and_testing/libcxx_upstream_testing.md#updating-android-clang-and-ndk-sysroot) for how to update it.
 
