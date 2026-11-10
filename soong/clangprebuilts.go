@@ -162,9 +162,15 @@ type archInnerProps struct {
 	Llndk struct {
 		Symbol_file *string
 	}
+	Strip struct {
+		None         *bool
+		Keep_symbols *bool
+	}
 }
 
 type archProps struct {
+	Android             archInnerProps
+	Host                archInnerProps
 	Android_arm         archInnerProps
 	Android_arm64       archInnerProps
 	Android_arm64_lfi   archInnerProps
@@ -468,9 +474,6 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, libProps *preb
 		Sanitize           struct {
 			Never *bool
 		}
-		Strip struct {
-			None *bool
-		}
 		Pack_relocations *bool
 		Stl              *string
 		Stubs            struct {
@@ -488,6 +491,13 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, libProps *preb
 	name := proptools.StringDefault(libProps.Lib_name, strings.TrimPrefix(ctx.ModuleName(), "prebuilt_"))
 	suffix := proptools.String(libProps.Suffix)
 
+	// Strip non-alloc DWARF .debug_* sections from Android device runtime prebuilts
+	// while retaining .symtab/.strtab (alongside .dynsym/.eh_frame) for on-device
+	// sanitizer symbolication. Explicitly set strip.none on all host variants
+	// (linux_bionic, linux_glibc, linux_musl, darwin, windows) so they stay
+	// unstripped even when StripByDefault is enabled (e.g. build-prebuilts.sh).
+	p.Target.Android.Strip.Keep_symbols = proptools.BoolPtr(true)
+	p.Target.Host.Strip.None = proptools.BoolPtr(true)
 	p.Target.Android_arm.Srcs = []string{filepath.Join(libDir, name+"-arm-android"+suffix+".so")}
 	p.Target.Android_arm.Stem = proptools.StringPtr(name + "-arm-android" + suffix)
 	p.Target.Android_arm.Srcs = []string{filepath.Join(libDir, name+"-arm-android"+suffix+".so")}
@@ -524,7 +534,6 @@ func libClangRtPrebuiltLibraryShared(ctx android.LoadHookContext, libProps *preb
 	p.System_shared_libs = []string{}
 	p.No_libcrt = proptools.BoolPtr(true)
 	p.Sanitize.Never = proptools.BoolPtr(true)
-	p.Strip.None = proptools.BoolPtr(true)
 	disable := false
 	p.Pack_relocations = &disable
 	p.Stl = proptools.StringPtr("none")
