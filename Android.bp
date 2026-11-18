@@ -305,10 +305,24 @@ libclang_rt_prebuilt_library_static {
 libclang_rt_prebuilt_library_shared {
     name: "libclang_rt.tsan",
     defaults: ["libclang_rt-prebuilt-default"],
+    sdk_version: "minimum",
     host_supported: true,
-    device_supported: false,
+    vendor_available: true,
+    product_available: true,
+    recovery_available: true,
+    double_loadable: true,
+    check_elf_files: false, // Bypass circular dependency between libc++
     enabled: false,
     target: {
+        bionic_arm64: {
+            enabled: true,
+        },
+        bionic_x86_64: {
+            enabled: true,
+        },
+        android_riscv64: {
+            enabled: true,
+        },
         linux_glibc_x86_64: {
             enabled: true,
         },
@@ -322,10 +336,55 @@ libclang_rt_prebuilt_library_shared {
 libclang_rt_prebuilt_library_static {
     name: "libclang_rt.tsan.static",
     defaults: ["libclang_rt-prebuilt-default"],
+    sdk_version: "minimum",
     host_supported: true,
-    device_supported: false,
+    vendor_available: true,
+    product_available: true,
+    recovery_available: true,
+    double_loadable: true,
+    check_elf_files: false, // Bypass circular dependency between libc++
     enabled: false,
     target: {
+        bionic_arm64: {
+            enabled: true,
+        },
+        bionic_x86_64: {
+            enabled: true,
+        },
+        android_riscv64: {
+            enabled: true,
+        },
+        linux_glibc_x86_64: {
+            enabled: true,
+        },
+        linux_musl_x86_64: {
+            enabled: true,
+        },
+    },
+}
+
+///////////////////////////////////////////////////////////////////////////////
+libclang_rt_prebuilt_library_static {
+    name: "libclang_rt.tsan_cxx.static",
+    defaults: ["libclang_rt-prebuilt-default"],
+    sdk_version: "minimum",
+    host_supported: true,
+    vendor_available: true,
+    product_available: true,
+    recovery_available: true,
+    double_loadable: true,
+    check_elf_files: false, // Bypass circular dependency between libc++
+    enabled: false,
+    target: {
+        bionic_arm64: {
+            enabled: true,
+        },
+        bionic_x86_64: {
+            enabled: true,
+        },
+        android_riscv64: {
+            enabled: true,
+        },
         linux_glibc_x86_64: {
             enabled: true,
         },
